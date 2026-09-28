@@ -1181,6 +1181,10 @@ th.ef-th { padding:8px 8px 8px 12px; }
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
           Análise por Categoria
         </div>
+        <div class="nav-sub-item" onclick="showPage('ppr')" id="nav-ppr">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="6"/><path d="M15.5 13.5 17 22l-5-3-5 3 1.5-8.5"/></svg>
+          PPR — Participação
+        </div>
       </div>
 
       <!-- Admin -->
@@ -2107,6 +2111,7 @@ th.ef-th { padding:8px 8px 8px 12px; }
                 <option value="entrada">Entrada (+) — recebe lançamentos</option>
                 <option value="saida">Saída (−) — recebe lançamentos</option>
                 <option value="subtotal">Subtotal — calculado (ex: ROL, EBITDA, LAIR)</option>
+                <option value="parcial">Resultado do Bloco — calculado (soma só as linhas desde o último subtotal, ex: Resultado Financeiro)</option>
                 <option value="percentual">Percentual (%) — calculado sobre a linha anterior</option>
               </select>
             </div>
@@ -2323,37 +2328,126 @@ th.ef-th { padding:8px 8px 8px 12px; }
     <div class="page" id="page-transferencias">
       <div class="page-header">
         <div><div class="page-title">Transferência entre Contas</div><div class="page-sub" style="margin-bottom:0">Movimente valores entre bancos/caixas e mantenha o histórico salvo</div></div>
+        <button class="btn-novo" id="btn-nova-transferencia" onclick="abrirNovaTransferencia()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Nova Transferência
+        </button>
       </div>
-      <div class="card">
-        <div class="card-title">Nova Transferência</div>
-        <div class="grid3">
-          <div class="form-group"><label>Conta de Origem *</label>
-            <select id="transf-origem"><option value="">Selecione...</option></select>
+      <!-- MODAL: Nova Transferência -->
+      <div class="modal-overlay" id="modal-transferencia">
+        <div class="modal">
+          <div class="modal-title">Nova Transferência</div>
+          <div class="grid3">
+            <div class="form-group"><label>Conta de Origem *</label>
+              <select id="transf-origem"><option value="">Selecione...</option></select>
+            </div>
+            <div class="form-group" style="display:flex;align-items:center;justify-content:center;padding-top:18px;">
+              <span style="font-size:22px;color:#ea580c;">➜</span>
+            </div>
+            <div class="form-group"><label>Conta de Destino *</label>
+              <select id="transf-destino"><option value="">Selecione...</option></select>
+            </div>
           </div>
-          <div class="form-group" style="display:flex;align-items:center;justify-content:center;padding-top:18px;">
-            <span style="font-size:22px;color:#ea580c;">➜</span>
+          <div class="grid3">
+            <div class="form-group"><label>Valor (R$) *</label><input id="transf-valor" type="number" step="0.01" placeholder="0,00" /></div>
+            <div class="form-group"><label>Data *</label><input id="transf-data" type="date" /></div>
+            <div class="form-group"><label>Observação</label><input id="transf-obs" type="text" placeholder="Informações adicionais" /></div>
           </div>
-          <div class="form-group"><label>Conta de Destino *</label>
-            <select id="transf-destino"><option value="">Selecione...</option></select>
+          <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeModal('modal-transferencia')">Cancelar</button>
+            <button class="btn btn-secondary" onclick="clearTransferencia()">Limpar</button>
+            <button class="btn btn-primary" onclick="saveTransferencia()">Registrar Transferência</button>
           </div>
         </div>
-        <div class="grid3">
-          <div class="form-group"><label>Valor (R$) *</label><input id="transf-valor" type="number" step="0.01" placeholder="0,00" /></div>
-          <div class="form-group"><label>Data *</label><input id="transf-data" type="date" /></div>
-          <div class="form-group"><label>Observação</label><input id="transf-obs" type="text" placeholder="Informações adicionais" /></div>
-        </div>
-        <div class="btn-row">
-          <button class="btn btn-primary" onclick="saveTransferencia()">Registrar Transferência</button>
-          <button class="btn btn-secondary" onclick="clearTransferencia()">Limpar</button>
-        </div>
-      </div>
+      </div><!-- /modal-transferencia -->
 
-      <div class="card" style="margin-top:16px">
+      <div class="card">
         <div class="card-title">Transferências Realizadas</div>
         <div class="table-scroll"><table><thead><tr id="th-transferencias-row">
           <th>Data</th><th>Conta de Origem</th><th>Conta de Destino</th><th>Valor</th><th>Observação</th><th>Ações</th>
         </tr></thead><tbody id="tb-transferencias"><tr><td colspan="6" class="empty-state">Nenhuma transferência registrada.</td></tr></tbody></table></div>
       </div>
+    </div>
+
+    <!-- ══ PPR — PARTICIPAÇÃO NOS RESULTADOS ══ -->
+    <div class="page" id="page-ppr">
+      <div class="page-header">
+        <div><div class="page-title">PPR — Prêmio de Participação nos Resultados</div><div class="page-sub" style="margin-bottom:0">Cálculo do prêmio dos acionistas a partir da DRE, por mês e por semestre</div></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-secondary" id="btn-ppr-criterios" onclick="abrirPprCriterios()">⚙️ Critérios</button>
+          <button class="btn btn-primary" onclick="gerarPdfPpr(1)">🖨️ Extrato 1º Semestre</button>
+          <button class="btn btn-primary" onclick="gerarPdfPpr(2)">🖨️ Extrato 2º Semestre</button>
+        </div>
+      </div>
+
+      <div class="card" style="margin:12px 0 16px">
+        <div class="filter-row" style="margin-bottom:0">
+          <div class="form-group"><label>Ano</label><select id="ppr-ano" onchange="renderPpr()"></select></div>
+          <div id="ppr-criterios-resumo" style="font-size:12px;color:#78716c;line-height:1.6;flex:1;min-width:260px"></div>
+        </div>
+      </div>
+
+      <div class="grid4" id="ppr-kpis" style="margin-bottom:16px"></div>
+
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-title">Demonstrativo do PPR</div>
+        <div class="table-scroll" id="ppr-tabela-wrap"></div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:minmax(0,1fr);gap:16px;margin-bottom:16px">
+        <div class="card">
+          <div class="card-title">Acionistas e Datas de Recebimento</div>
+          <div class="table-scroll" id="ppr-acionistas-wrap"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Observações sobre o PPR</div>
+          <div id="ppr-explicacao" style="font-size:12.5px;color:#44403c;line-height:1.65"></div>
+          <div class="form-group" style="margin-top:14px">
+            <label>Observações adicionais (saem no extrato em PDF)</label>
+            <textarea id="ppr-obs-livre" rows="4" style="width:100%;resize:vertical" placeholder="Ex.: valores sujeitos à aprovação em reunião de sócios..."></textarea>
+          </div>
+          <div class="btn-row"><button class="btn btn-secondary btn-sm" onclick="salvarPprObservacoes()">Salvar observações</button></div>
+        </div>
+      </div>
+
+      <!-- MODAL: Critérios do PPR -->
+      <div class="modal-overlay" id="modal-ppr-criterios">
+        <div class="modal" style="width:920px">
+          <div class="modal-title">Critérios do PPR</div>
+          <div class="grid3">
+            <div class="form-group"><label>Base de cálculo do prêmio *</label><select id="ppr-cfg-base"></select></div>
+            <div class="form-group"><label>% distribuído da base *</label><input id="ppr-cfg-pool" type="number" step="0.01" min="0" placeholder="10" /></div>
+            <div class="form-group"><label>Apuração da meta</label>
+              <select id="ppr-cfg-apuracao">
+                <option value="mensal">Mensal — cada mês é avaliado sozinho</option>
+                <option value="semestral">Semestral — avalia o total do semestre</option>
+              </select>
+            </div>
+          </div>
+          <div class="grid3">
+            <div class="form-group"><label>Indicador da meta *</label><select id="ppr-cfg-indicador"></select></div>
+            <div class="form-group"><label>Tipo da meta</label>
+              <select id="ppr-cfg-metatipo" onchange="pprAtualizarLabelMeta()">
+                <option value="percentual">% sobre a Receita Bruta</option>
+                <option value="valor">Valor em R$</option>
+              </select>
+            </div>
+            <div class="form-group"><label id="ppr-cfg-meta-lbl">Meta mínima (maior que) *</label><input id="ppr-cfg-meta" type="number" step="0.01" placeholder="10" /></div>
+          </div>
+          <div class="card-title" style="margin-top:6px;margin-bottom:10px">Acionistas</div>
+          <div class="table-scroll"><table class="dfc-table" style="font-size:12px">
+            <thead><tr><th>Nome</th><th>% do prêmio</th><th>Recebe</th><th>Data 1º semestre (dd/mm)</th><th>Data 2º semestre (dd/mm)</th><th></th></tr></thead>
+            <tbody id="ppr-cfg-acionistas"></tbody>
+          </table></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px">
+            <button class="btn btn-secondary btn-sm" onclick="pprAddAcionista()">+ Adicionar acionista</button>
+            <div id="ppr-cfg-soma" style="font-size:12px;font-weight:700"></div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeModal('modal-ppr-criterios')">Cancelar</button>
+            <button class="btn btn-primary" onclick="salvarPprCriterios()">Salvar Critérios</button>
+          </div>
+        </div>
+      </div><!-- /modal-ppr-criterios -->
     </div>
 
     <!-- ══ FLUXO DE CAIXA FUTURO ══ -->
@@ -3728,6 +3822,7 @@ const PAGES_CONFIG = [
   { id:'dre-grupos',        label:'DRE Grupos',          grupo:'dre'     },
   { id:'dre-demonstrativo', label:'DRE Demonstrativo',   grupo:'dre'     },
   { id:'dre-analise-cat',   label:'DRE Análise por Categoria', grupo:'dre' },
+  { id:'ppr',               label:'PPR — Participação nos Resultados', grupo:'dre' },
 ];
 
 // ══════════════════════════════════════════
@@ -4323,6 +4418,7 @@ function showPage(p) {
   if (p === 'dre-grupos')        { carregarDreGrupoClasses().then(renderDreGrupos); }
   if (p === 'dre-demonstrativo') { carregarVarEstoque().then(carregarDreGrupoClasses).then(carregarDreCatsEmprestimo).then(renderDre); }
   if (p === 'dre-analise-cat')   { popularCategoriasAnalise(); renderAnaliseCategoria(); }
+  if (p === 'ppr')               abrirPaginaPpr();
   if (p === 'usuarios')          renderUsuariosAdmin();
   if (p === 'empresas')          renderEmpresas();
   // No celular: fecha a gaveta do menu e atualiza o nome da tela no topo
@@ -4361,6 +4457,7 @@ function renderPaginaAtual() {
   if (p === 'dre-grupos')        { carregarDreGrupoClasses().then(renderDreGrupos); }
   if (p === 'dre-demonstrativo') { carregarVarEstoque().then(carregarDreGrupoClasses).then(carregarDreCatsEmprestimo).then(renderDre); }
   if (p === 'dre-analise-cat')   { popularCategoriasAnalise(); renderAnaliseCategoria(); }
+  if (p === 'ppr')               abrirPaginaPpr();
   if (p === 'usuarios')          renderUsuariosAdmin();
   if (p === 'empresas')          renderEmpresas();
   atualizarTituloMobile(p);
@@ -10516,6 +10613,7 @@ const DRE_TIPO_BADGES = {
   entrada:    '<span class="badge badge-green">Entrada (+)</span>',
   saida:      '<span class="badge badge-red">Saída (−)</span>',
   subtotal:   '<span class="badge badge-blue">Subtotal (calculado)</span>',
+  parcial:    '<span class="badge badge-blue">Resultado do Bloco (calculado)</span>',
   percentual: '<span class="badge badge-gray">Percentual (%)</span>'
 };
 function renderDreGrupos() {
@@ -11332,6 +11430,7 @@ function renderDre() {
   COLS.forEach(col => {
     let acumulado = 0;
     let valorAnterior = 0; // valor da linha imediatamente anterior, usado pelas linhas de percentual
+    let baseParcial = 0;   // acumulado no último subtotal — base das linhas "Resultado do Bloco"
     grupos.forEach(g => {
       if (g.tipo === 'entrada' || g.tipo === 'saida') {
         const bruto = valorBruto(g.id, col);
@@ -11342,6 +11441,14 @@ function renderDre() {
       } else if (g.tipo === 'subtotal') {
         linhaCalc[g.id][col] = acumulado;
         valorAnterior = acumulado;
+        baseParcial = acumulado;
+      } else if (g.tipo === 'parcial') {
+        // Resultado do Bloco: soma só as linhas desde o último subtotal
+        // (ex.: Resultado Financeiro = Receita Financeira − Despesas Financeiras)
+        const v = acumulado - baseParcial;
+        linhaCalc[g.id][col] = v;
+        valorAnterior = v;
+        baseParcial = acumulado;
       } else if (g.tipo === 'percentual') {
         const base = grupoBase ? valorBruto(grupoBase.id, col) : 0;
         linhaCalc[g.id][col] = base ? (valorAnterior / base) * 100 : 0;
@@ -11453,6 +11560,7 @@ function renderDre() {
   const linhasHtml = grupos.map(g => {
     if (g.id === varEstGrupoId && (g.tipo === 'entrada' || g.tipo === 'saida')) return mostrarVarEst ? linhaVarEstoque(g) : '';
     if (g.tipo === 'percentual') return linhaPercentual(g);
+    if (g.tipo === 'parcial') return linhaValor(g, 'dre-row-subtotal', false);
     if (g.tipo === 'subtotal') {
       if (g.id === ultimoSubtotalId) return linhaFinal(g, 'dre-row-final');
       return linhaValor(g, 'dre-row-subtotal', false);
@@ -11991,6 +12099,525 @@ function abrirDetalheDreGrupo(grupoId, mes, catId) {
   openModal('modal-dre-detalhe');
 }
 
+// ══════════════════════════════════════════════════════════════════
+// PPR — PRÊMIO DE PARTICIPAÇÃO NOS RESULTADOS
+// ------------------------------------------------------------------
+// Regra padrão: se o Resultado Operacional (%) do período for MAIOR que
+// 10% da Receita Bruta, 10% do Resultado Operacional (R$) vira o prêmio,
+// dividido entre os acionistas conforme o percentual de cada um
+// (ex.: Maicon 40%, Jakson 40%, Valmor 20%). Abaixo da meta: não paga.
+// Tudo é configurável em "Critérios" e fica gravado em config (ppr_config).
+// ══════════════════════════════════════════════════════════════════
+const PPR_CFG_KEY = 'ppr_config';
+const PPR_MESES = ['', 'Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+let pprConfig = null;
+
+function _pprEsc(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function _pprPct(v) { return (v == null || !isFinite(v)) ? '—' : v.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2}) + '%'; }
+function _pprNum(v) { const n = parseFloat(String(v).replace(',', '.')); return isFinite(n) ? n : 0; }
+
+// Linhas da DRE que podem servir de base/indicador (valores em R$)
+function pprLinhasDisponiveis() {
+  return [...db.dre_grupos]
+    .filter(g => g.tipo === 'entrada' || g.tipo === 'subtotal' || g.tipo === 'parcial')
+    .sort((a, b) => (a.ordem || 0) - (b.ordem || 0));
+}
+function _pprAcharLinha(...trechos) {
+  return pprLinhasDisponiveis().find(g => { const n = normText(g.nome || ''); return trechos.every(t => n.includes(t)); });
+}
+function pprConfigPadrao() {
+  const ro = _pprAcharLinha('resultado', 'operacional')
+          || [...pprLinhasDisponiveis()].reverse().find(g => g.tipo === 'subtotal');
+  return {
+    base: ro ? ro.id : '', indicador: ro ? ro.id : '',
+    pool: 10, meta: 10, metaTipo: 'percentual', apuracao: 'mensal',
+    acionistas: [
+      { id: 'ac1', nome: 'Maicon', pct: 40, forma: 'semestral', pag1: '15/07', pag2: '15/01' },
+      { id: 'ac2', nome: 'Jakson', pct: 40, forma: 'semestral', pag1: '15/07', pag2: '15/01' },
+      { id: 'ac3', nome: 'Valmor', pct: 20, forma: 'semestral', pag1: '15/07', pag2: '15/01' }
+    ],
+    observacoes: ''
+  };
+}
+async function carregarPprConfig() {
+  let cfg = null;
+  try {
+    const rows = await sbFetch('config', 'GET', null, `?key=eq.${PPR_CFG_KEY}&limit=1`);
+    if (rows && rows[0] && rows[0].value) cfg = JSON.parse(rows[0].value);
+  } catch (e) { cfg = null; }
+  const pad = pprConfigPadrao();
+  pprConfig = Object.assign({}, pad, cfg || {});
+  if (!Array.isArray(pprConfig.acionistas)) pprConfig.acionistas = pad.acionistas;
+  // Se a linha escolhida foi apagada da DRE, volta ao padrão
+  const ids = new Set(pprLinhasDisponiveis().map(g => g.id));
+  if (!ids.has(pprConfig.base)) pprConfig.base = pad.base;
+  if (!ids.has(pprConfig.indicador)) pprConfig.indicador = pad.indicador;
+  return pprConfig;
+}
+async function salvarPprConfig() {
+  await sbFetch('config', 'DELETE', null, `?key=eq.${PPR_CFG_KEY}`);
+  return await sbFetch('config', 'POST', { id: uid(), key: PPR_CFG_KEY, value: JSON.stringify(pprConfig) });
+}
+
+// Calcula TODAS as linhas da DRE (R$, com sinal) mês a mês — mesma regra da
+// tela DRE: competência, variação de estoque no CPV, empréstimos pelo
+// vencimento (se ligado lá) e o tipo "Resultado do Bloco".
+function calcularDreLinhasAno(ano) {
+  const grupos = [...db.dre_grupos].sort((a, b) => (a.ordem || 0) - (b.ordem || 0));
+  const gruposValor = grupos.filter(g => g.tipo === 'entrada' || g.tipo === 'saida');
+  const linhas = {}; grupos.forEach(g => linhas[g.id] = {});
+  if (!gruposValor.length) return { linhas, receitaId: null };
+  const valoresMes = {};
+  for (let m = 1; m <= 12; m++) { valoresMes[m] = {}; gruposValor.forEach(g => valoresMes[m][g.id] = 0); }
+  const receitaId = (gruposValor.find(g => g.tipo === 'entrada') || gruposValor[0]).id;
+  const somenteEl = document.getElementById('dre-somente-classificados');
+  const somente = somenteEl ? somenteEl.checked : false;
+
+  const emprestEl = document.getElementById('dre-emprest-venc');
+  const catsEmprest = (emprestEl && emprestEl.checked && typeof getCatsEmprestimoSet === 'function') ? getCatsEmprestimoSet() : new Set();
+  let parcelasEmprest = null;
+  if (catsEmprest.size) {
+    parcelasEmprest = new Map();
+    getParcelas(false).concat(getParcelas(true)).forEach(pc => {
+      if (!catsEmprest.has(pc.catId)) return;
+      if (!parcelasEmprest.has(pc.lancId)) parcelasEmprest.set(pc.lancId, []);
+      parcelasEmprest.get(pc.lancId).push(pc);
+    });
+  }
+
+  db.lancreceber.forEach(l => {
+    const dt = l.dtvenda || l.dtcompra; if (!dt) return;
+    const p = dt.split('-'); if (parseInt(p[0]) !== ano) return;
+    const m = parseInt(p[1]);
+    const prodObj = db.prodvenda.find(x => x.id === l.prod);
+    const catId = l.cat_dre || (prodObj ? prodObj.cat : null);
+    if (!catId && somente) return;
+    let gid = catId ? getDreCatGrupo(catId) : null;
+    if (!gid && !somente) gid = receitaId;
+    if (gid && valoresMes[m] && valoresMes[m][gid] !== undefined) valoresMes[m][gid] += (l.valor || 0);
+  });
+  db.lancamentos.forEach(l => {
+    if (parcelasEmprest && parcelasEmprest.has(l.id)) {
+      parcelasEmprest.get(l.id).forEach(pc => {
+        if (!pc.venc) return;
+        const pv = pc.venc.split('-'); if (parseInt(pv[0]) !== ano) return;
+        const mv = parseInt(pv[1]); const gidE = getDreCatGrupo(pc.catId);
+        if (gidE && valoresMes[mv] && valoresMes[mv][gidE] !== undefined) valoresMes[mv][gidE] += (pc.valParc || 0);
+      });
+      return;
+    }
+    const dt = l.dtcompra; if (!dt) return;
+    const p = dt.split('-'); if (parseInt(p[0]) !== ano) return;
+    const m = parseInt(p[1]);
+    const prodObj = db.produtos.find(x => x.id === l.prod);
+    const catId = l.cat_dre || (prodObj ? prodObj.cat : null);
+    const gid = catId ? getDreCatGrupo(catId) : null;
+    if (gid && valoresMes[m] && valoresMes[m][gid] !== undefined) valoresMes[m][gid] += (l.valor || 0);
+  });
+
+  const varEstId = getGrupoVarEstoqueId(), cpvId = getGrupoCpvId();
+  if (varEstId && valoresMes[1][varEstId] !== undefined) {
+    const mapaAno = (typeof dreVarEstoque !== 'undefined' && dreVarEstoque[ano]) || {};
+    for (let m = 1; m <= 12; m++) {
+      const v = parseFloat(mapaAno[m]) || 0;
+      valoresMes[m][varEstId] = 0;
+      if (cpvId && valoresMes[m][cpvId] !== undefined) valoresMes[m][cpvId] += v; else valoresMes[m][varEstId] = v;
+    }
+  }
+
+  for (let m = 1; m <= 12; m++) {
+    let acumulado = 0, baseParcial = 0;
+    grupos.forEach(g => {
+      if (g.tipo === 'entrada' || g.tipo === 'saida') {
+        const v = g.tipo === 'entrada' ? valoresMes[m][g.id] : -valoresMes[m][g.id];
+        acumulado += v; linhas[g.id][m] = v;
+      } else if (g.tipo === 'subtotal') {
+        linhas[g.id][m] = acumulado; baseParcial = acumulado;
+      } else if (g.tipo === 'parcial') {
+        linhas[g.id][m] = acumulado - baseParcial; baseParcial = acumulado;
+      }
+    });
+  }
+  return { linhas, receitaId };
+}
+
+function _pprDataPagamento(ddmm, ano, sem) {
+  const m = String(ddmm || '').match(/^(\d{1,2})\/(\d{1,2})$/);
+  if (!m) return null;
+  const d = parseInt(m[1]), mes = parseInt(m[2]);
+  if (d < 1 || d > 31 || mes < 1 || mes > 12) return null;
+  const anoPag = sem === 1 ? (mes >= 7 ? ano : ano + 1) : (mes === 12 ? ano : ano + 1);
+  return `${String(d).padStart(2,'0')}/${String(mes).padStart(2,'0')}/${anoPag}`;
+}
+
+// Motor do PPR: devolve tudo o que a tela e o PDF precisam
+function calcularPpr(ano, cfg) {
+  const { linhas, receitaId } = calcularDreLinhasAno(ano);
+  const val = (id, m) => (id && linhas[id] && linhas[id][m]) || 0;
+  const pool = _pprNum(cfg.pool) / 100, meta = _pprNum(cfg.meta);
+  const atinge = (ind, rec) => {
+    if (cfg.metaTipo === 'valor') return ind > meta;
+    return rec > 0 && (ind / rec * 100) > meta;
+  };
+  const meses = {};
+  for (let m = 1; m <= 12; m++) {
+    const rec = val(receitaId, m), base = val(cfg.base, m), ind = val(cfg.indicador, m);
+    const ok = atinge(ind, rec);
+    meses[m] = { rec, base, ind, indPct: rec ? ind / rec * 100 : null, ok,
+                 premio: cfg.apuracao === 'mensal' ? ((ok && base > 0) ? base * pool : 0) : null };
+  }
+  const sems = {};
+  [1, 2].forEach(s => {
+    const ms = s === 1 ? [1,2,3,4,5,6] : [7,8,9,10,11,12];
+    const rec = ms.reduce((a, m) => a + meses[m].rec, 0);
+    const base = ms.reduce((a, m) => a + meses[m].base, 0);
+    const ind = ms.reduce((a, m) => a + meses[m].ind, 0);
+    let premio, ok;
+    if (cfg.apuracao === 'mensal') {
+      premio = ms.reduce((a, m) => a + meses[m].premio, 0);
+      ok = ms.some(m => meses[m].premio > 0);
+    } else {
+      ok = atinge(ind, rec);
+      premio = (ok && base > 0) ? base * pool : 0;
+    }
+    sems[s] = { meses: ms, rec, base, ind, indPct: rec ? ind / rec * 100 : null, ok, premio };
+  });
+  const acionistas = (cfg.acionistas || []).map(a => {
+    const pct = _pprNum(a.pct) / 100;
+    const v1 = sems[1].premio * pct, v2 = sems[2].premio * pct;
+    const anual = a.forma === 'anual';
+    return {
+      ...a, pctNum: _pprNum(a.pct),
+      mes: m => meses[m].premio == null ? null : meses[m].premio * pct,
+      sem1: v1, sem2: v2,
+      // Anual: o 1º semestre fica acumulado e é pago junto com o 2º
+      pagar1: anual ? 0 : v1, pagar2: anual ? v1 + v2 : v2,
+      data1: anual ? null : _pprDataPagamento(a.pag1, ano, 1),
+      data2: _pprDataPagamento(a.pag2, ano, 2)
+    };
+  });
+  return { ano, receitaId, meses, sems, acionistas, total: sems[1].premio + sems[2].premio };
+}
+
+function _pprNomeLinha(id) { const g = getDreGrupo(id); return g ? g.nome : '(não definido)'; }
+function _pprTextoMeta(cfg) {
+  return cfg.metaTipo === 'valor'
+    ? `${_pprNomeLinha(cfg.indicador)} maior que ${fmtBRL(_pprNum(cfg.meta))}`
+    : `${_pprNomeLinha(cfg.indicador)} maior que ${_pprPct(_pprNum(cfg.meta))} da Receita Bruta`;
+}
+function pprExplicacaoHtml(cfg) {
+  const acs = (cfg.acionistas || []).map(a => `<b>${_pprEsc(a.nome)}</b> ${_pprPct(_pprNum(a.pct))}`).join(', ');
+  return `
+    <p style="margin-bottom:8px">O <b>PPR (Prêmio de Participação nos Resultados)</b> é uma parcela do resultado da empresa distribuída aos acionistas como reconhecimento pelo desempenho do período.</p>
+    <p style="margin-bottom:8px"><b>Quando é pago:</b> somente se o indicador <b>${_pprEsc(_pprTextoMeta(cfg))}</b>${cfg.apuracao === 'mensal' ? ', avaliado <b>mês a mês</b> (cada mês que bate a meta gera prêmio; os que não batem ficam zerados)' : ', avaliado pelo <b>total do semestre</b>'}. Abaixo da meta, <b>não há pagamento</b>.</p>
+    <p style="margin-bottom:8px"><b>Quanto é pago:</b> ${_pprPct(_pprNum(cfg.pool))} sobre <b>${_pprEsc(_pprNomeLinha(cfg.base))}</b> (em R$). Esse valor é o prêmio total, dividido assim: ${acs || '—'}.</p>
+    <p style="margin-bottom:8px"><b>Quando cada um recebe:</b> o prêmio é apurado por semestre (jan–jun e jul–dez) e pago na data definida para cada acionista. Quem está como "anual" recebe os dois semestres juntos na data do 2º semestre.</p>
+    <p style="color:#78716c;font-size:11.5px">Os valores vêm da DRE do sistema. Lançamentos incluídos, alterados ou reclassificados depois mudam o cálculo — por isso o extrato mostra a data em que foi emitido.</p>`;
+}
+
+function populatePprAnos() {
+  const el = document.getElementById('ppr-ano'); if (!el) return;
+  const anos = new Set(); const cur = new Date().getFullYear();
+  for (let y = cur - 2; y <= cur + 1; y++) anos.add(y);
+  db.lancamentos.forEach(l => { if (l.dtcompra) anos.add(parseInt(l.dtcompra.split('-')[0])); });
+  db.lancreceber.forEach(l => { const d = l.dtvenda || l.dtcompra; if (d) anos.add(parseInt(d.split('-')[0])); });
+  const val = el.value;
+  el.innerHTML = [...anos].filter(y => y > 1900).sort((a, b) => b - a).map(y => `<option value="${y}">${y}</option>`).join('');
+  el.value = val || cur;
+}
+
+async function abrirPaginaPpr() {
+  populatePprAnos();
+  const btn = document.getElementById('btn-ppr-criterios');
+  if (btn) btn.style.display = (currentUser && currentUser.role === 'admin') ? '' : 'none';
+  await Promise.all([
+    typeof carregarVarEstoque === 'function' ? carregarVarEstoque() : null,
+    typeof carregarDreCatsEmprestimo === 'function' ? carregarDreCatsEmprestimo() : null
+  ]);
+  await carregarPprConfig();
+  renderPpr();
+}
+
+function renderPpr() {
+  const wrap = document.getElementById('ppr-tabela-wrap');
+  if (!wrap || !pprConfig) return;
+  const cfg = pprConfig;
+  const ano = parseInt(document.getElementById('ppr-ano').value) || new Date().getFullYear();
+  const obsEl = document.getElementById('ppr-obs-livre');
+  if (obsEl && document.activeElement !== obsEl) obsEl.value = cfg.observacoes || '';
+  document.getElementById('ppr-explicacao').innerHTML = pprExplicacaoHtml(cfg);
+  document.getElementById('ppr-criterios-resumo').innerHTML =
+    `<b>Critério:</b> ${_pprEsc(_pprTextoMeta(cfg))} (${cfg.apuracao}) · <b>Prêmio:</b> ${_pprPct(_pprNum(cfg.pool))} de ${_pprEsc(_pprNomeLinha(cfg.base))}`;
+
+  if (!db.dre_grupos.length || !cfg.base) {
+    wrap.innerHTML = '<div class="empty-state" style="padding:28px">Cadastre os grupos da DRE e defina os critérios do PPR.</div>';
+    document.getElementById('ppr-kpis').innerHTML = ''; document.getElementById('ppr-acionistas-wrap').innerHTML = '';
+    return;
+  }
+  const r = calcularPpr(ano, cfg);
+  const somaPct = (cfg.acionistas || []).reduce((a, x) => a + _pprNum(x.pct), 0);
+
+  document.getElementById('ppr-kpis').innerHTML = `
+    <div class="card kpi"><div class="kpi-val" style="font-size:20px;color:${r.sems[1].premio > 0 ? '#16a34a' : '#a8a29e'}">${fmtBRL(r.sems[1].premio)}</div><div class="kpi-lbl">PPR 1º Semestre</div></div>
+    <div class="card kpi"><div class="kpi-val" style="font-size:20px;color:${r.sems[2].premio > 0 ? '#16a34a' : '#a8a29e'}">${fmtBRL(r.sems[2].premio)}</div><div class="kpi-lbl">PPR 2º Semestre</div></div>
+    <div class="card kpi"><div class="kpi-val" style="font-size:20px;color:#ea580c">${fmtBRL(r.total)}</div><div class="kpi-lbl">PPR Total ${ano}</div></div>
+    <div class="card kpi"><div class="kpi-val" style="font-size:20px;color:${Math.abs(somaPct - 100) < 0.01 ? '#1f2937' : '#dc2626'}">${_pprPct(somaPct)}</div><div class="kpi-lbl">Soma das participações${Math.abs(somaPct - 100) < 0.01 ? '' : ' ⚠️ deve ser 100%'}</div></div>`;
+
+  const cols = [1,2,3,4,5,6,'s1',7,8,9,10,11,12,'s2','ano'];
+  const cab = cols.map(c => c === 's1' ? '<th style="background:#fff7ed">1º Semestre</th>' : c === 's2' ? '<th style="background:#fff7ed">2º Semestre</th>' : c === 'ano' ? '<th class="dfc-col-total">Total Ano</th>' : `<th>${PPR_MESES[c]}</th>`).join('');
+  const celula = (c, fnMes, fnSem, fnAno, fmt) => {
+    const v = c === 's1' ? fnSem(1) : c === 's2' ? fnSem(2) : c === 'ano' ? fnAno() : fnMes(c);
+    const st = c === 's1' || c === 's2' ? ' style="background:#fff7ed;font-weight:700"' : c === 'ano' ? ' class="dfc-col-total" style="font-weight:700"' : '';
+    return `<td${st}>${fmt(v)}</td>`;
+  };
+  const linha = (rotulo, fnMes, fnSem, fnAno, fmt, cls) =>
+    `<tr class="${cls || ''}"><td>${rotulo}</td>${cols.map(c => celula(c, fnMes, fnSem, fnAno, fmt)).join('')}</tr>`;
+  const money = v => v == null ? '<span class="dfc-val-zero">—</span>' : (Math.abs(v) < 0.005 ? '<span class="dfc-val-zero">—</span>' : fmtBRL(v));
+  const recAno = r.sems[1].rec + r.sems[2].rec, indAno = r.sems[1].ind + r.sems[2].ind;
+  const okCell = ok => ok ? '<span class="badge badge-green">Sim</span>' : '<span class="badge badge-gray">Não</span>';
+  const mesesMostraPremio = cfg.apuracao === 'mensal';
+
+  let html = '<table class="dfc-table"><thead><tr><th>PPR</th>' + cab + '</tr></thead><tbody>';
+  html += linha('Receita Bruta (base do %)', m => r.meses[m].rec, s => r.sems[s].rec, () => recAno, money, 'dfc-row-sub');
+  html += linha(_pprEsc(_pprNomeLinha(cfg.indicador)), m => r.meses[m].ind, s => r.sems[s].ind, () => indAno, money, 'dre-row-subtotal');
+  if (cfg.metaTipo !== 'valor')
+    html += linha(_pprEsc(_pprNomeLinha(cfg.indicador)) + ' (%)', m => r.meses[m].indPct, s => r.sems[s].indPct, () => recAno ? indAno / recAno * 100 : null, _pprPct, 'dre-row-percent');
+  if (cfg.base !== cfg.indicador)
+    html += linha('Base do prêmio: ' + _pprEsc(_pprNomeLinha(cfg.base)), m => r.meses[m].base, s => r.sems[s].base, () => r.sems[1].base + r.sems[2].base, money, 'dfc-row-sub');
+  html += `<tr><td>Meta atingida?</td>${cols.map(c => {
+    if (c === 'ano') return '<td class="dfc-col-total"></td>';
+    if (c === 's1' || c === 's2') return `<td style="background:#fff7ed">${okCell(r.sems[c === 's1' ? 1 : 2].ok)}</td>`;
+    return `<td>${mesesMostraPremio ? okCell(r.meses[c].ok) : '<span class="dfc-val-zero">·</span>'}</td>`;
+  }).join('')}</tr>`;
+  r.acionistas.forEach(a => {
+    html += linha(`${_pprEsc(a.nome)} (${_pprPct(a.pctNum)})`, m => a.mes(m), s => s === 1 ? a.sem1 : a.sem2, () => a.sem1 + a.sem2, money, '');
+  });
+  html += linha('PPR — Prêmio Total', m => r.meses[m].premio, s => r.sems[s].premio, () => r.total, money, 'dre-row-final');
+  html += linha('PPR (% da Receita Bruta)', m => (r.meses[m].premio != null && r.meses[m].rec) ? r.meses[m].premio / r.meses[m].rec * 100 : null,
+    s => r.sems[s].rec ? r.sems[s].premio / r.sems[s].rec * 100 : null, () => recAno ? r.total / recAno * 100 : null, _pprPct, 'dre-row-percent');
+  html += '</tbody></table>';
+  if (!mesesMostraPremio) html += '<div style="font-size:11px;color:#a8a29e;margin-top:8px">Apuração semestral: a meta e o prêmio são calculados só no total de cada semestre.</div>';
+  wrap.innerHTML = html;
+
+  document.getElementById('ppr-acionistas-wrap').innerHTML = r.acionistas.length ? `
+    <table class="dfc-table"><thead><tr><th>Acionista</th><th>%</th><th>Recebe</th><th>1º Semestre</th><th>2º Semestre</th></tr></thead><tbody>
+    ${r.acionistas.map(a => `<tr>
+      <td><b>${_pprEsc(a.nome)}</b></td><td>${_pprPct(a.pctNum)}</td><td>${a.forma === 'anual' ? 'Anual' : 'Semestral'}</td>
+      <td>${a.forma === 'anual' ? '<span style="color:#a8a29e">acumula p/ o fim do ano</span>' : fmtBRL(a.pagar1) + `<div style="font-size:10.5px;color:#a8a29e">${a.data1 ? 'em ' + a.data1 : 'data não definida'}</div>`}</td>
+      <td>${fmtBRL(a.pagar2)}<div style="font-size:10.5px;color:#a8a29e">${a.data2 ? 'em ' + a.data2 : 'data não definida'}</div></td>
+    </tr>`).join('')}</tbody></table>` : '<div class="empty-state">Nenhum acionista cadastrado. Use "Critérios".</div>';
+}
+
+async function salvarPprObservacoes() {
+  if (!pprConfig) return;
+  pprConfig.observacoes = document.getElementById('ppr-obs-livre').value;
+  const ok = await salvarPprConfig();
+  alert(ok ? '✅ Observações salvas.' : '❌ Erro ao salvar.' + sbErroDetalhe());
+}
+
+// ── Modal de critérios ──
+function abrirPprCriterios() {
+  if (!pprConfig) return;
+  const opts = pprLinhasDisponiveis().map(g => `<option value="${g.id}">${_pprEsc(g.nome)}</option>`).join('');
+  ['ppr-cfg-base','ppr-cfg-indicador'].forEach(id => document.getElementById(id).innerHTML = opts);
+  document.getElementById('ppr-cfg-base').value = pprConfig.base;
+  document.getElementById('ppr-cfg-indicador').value = pprConfig.indicador;
+  document.getElementById('ppr-cfg-pool').value = pprConfig.pool;
+  document.getElementById('ppr-cfg-meta').value = pprConfig.meta;
+  document.getElementById('ppr-cfg-metatipo').value = pprConfig.metaTipo || 'percentual';
+  document.getElementById('ppr-cfg-apuracao').value = pprConfig.apuracao || 'mensal';
+  pprAtualizarLabelMeta();
+  _pprRenderEditorAcionistas(JSON.parse(JSON.stringify(pprConfig.acionistas || [])));
+  openModal('modal-ppr-criterios');
+}
+function pprAtualizarLabelMeta() {
+  const t = document.getElementById('ppr-cfg-metatipo').value;
+  document.getElementById('ppr-cfg-meta-lbl').textContent = t === 'valor' ? 'Meta mínima em R$ (maior que) *' : 'Meta mínima em % (maior que) *';
+}
+function _pprRenderEditorAcionistas(lista) {
+  const tb = document.getElementById('ppr-cfg-acionistas');
+  tb.innerHTML = lista.map(a => `<tr data-id="${_pprEsc(a.id)}">
+    <td><input class="ppr-ac-nome" type="text" value="${_pprEsc(a.nome)}" style="min-width:140px" /></td>
+    <td><input class="ppr-ac-pct" type="number" step="0.01" min="0" value="${_pprEsc(a.pct)}" style="width:90px" oninput="pprAtualizarSoma()" /></td>
+    <td><select class="ppr-ac-forma" style="min-width:150px"><option value="semestral"${a.forma !== 'anual' ? ' selected' : ''}>Semestral</option><option value="anual"${a.forma === 'anual' ? ' selected' : ''}>Anual (fim do ano)</option></select></td>
+    <td><input class="ppr-ac-pag1" type="text" maxlength="5" placeholder="15/07" value="${_pprEsc(a.pag1 || '')}" style="width:90px" /></td>
+    <td><input class="ppr-ac-pag2" type="text" maxlength="5" placeholder="15/01" value="${_pprEsc(a.pag2 || '')}" style="width:90px" /></td>
+    <td><button class="btn btn-danger btn-sm" onclick="this.closest('tr').remove();pprAtualizarSoma()">Remover</button></td>
+  </tr>`).join('');
+  pprAtualizarSoma();
+}
+function _pprLerEditorAcionistas() {
+  return [...document.querySelectorAll('#ppr-cfg-acionistas tr')].map(tr => ({
+    id: tr.dataset.id || uid(),
+    nome: tr.querySelector('.ppr-ac-nome').value.trim(),
+    pct: _pprNum(tr.querySelector('.ppr-ac-pct').value),
+    forma: tr.querySelector('.ppr-ac-forma').value,
+    pag1: tr.querySelector('.ppr-ac-pag1').value.trim(),
+    pag2: tr.querySelector('.ppr-ac-pag2').value.trim()
+  }));
+}
+function pprAddAcionista() {
+  const lista = _pprLerEditorAcionistas();
+  lista.push({ id: uid(), nome: '', pct: 0, forma: 'semestral', pag1: '15/07', pag2: '15/01' });
+  _pprRenderEditorAcionistas(lista);
+}
+function pprAtualizarSoma() {
+  const soma = _pprLerEditorAcionistas().reduce((a, x) => a + x.pct, 0);
+  const el = document.getElementById('ppr-cfg-soma');
+  const ok = Math.abs(soma - 100) < 0.01;
+  el.textContent = `Soma das participações: ${_pprPct(soma)}${ok ? ' ✓' : ' — precisa fechar 100%'}`;
+  el.style.color = ok ? '#16a34a' : '#dc2626';
+}
+async function salvarPprCriterios() {
+  const acionistas = _pprLerEditorAcionistas();
+  if (!acionistas.length) { alert('Cadastre pelo menos um acionista.'); return; }
+  if (acionistas.some(a => !a.nome)) { alert('Informe o nome de todos os acionistas.'); return; }
+  const soma = acionistas.reduce((a, x) => a + x.pct, 0);
+  if (Math.abs(soma - 100) >= 0.01) { alert(`A soma das participações está em ${_pprPct(soma)}. Ela precisa fechar 100%.`); return; }
+  const dataOk = s => !s || /^\d{1,2}\/\d{1,2}$/.test(s);
+  if (acionistas.some(a => !dataOk(a.pag1) || !dataOk(a.pag2))) { alert('As datas de pagamento devem estar no formato dd/mm (ex.: 15/07).'); return; }
+  const pool = _pprNum(document.getElementById('ppr-cfg-pool').value);
+  if (pool <= 0 || pool > 100) { alert('O % distribuído deve ser maior que 0 e no máximo 100.'); return; }
+  pprConfig = Object.assign({}, pprConfig, {
+    base: document.getElementById('ppr-cfg-base').value,
+    indicador: document.getElementById('ppr-cfg-indicador').value,
+    pool, meta: _pprNum(document.getElementById('ppr-cfg-meta').value),
+    metaTipo: document.getElementById('ppr-cfg-metatipo').value,
+    apuracao: document.getElementById('ppr-cfg-apuracao').value,
+    acionistas
+  });
+  const ok = await salvarPprConfig();
+  if (!ok) { alert('❌ Erro ao salvar os critérios.' + sbErroDetalhe()); return; }
+  closeModal('modal-ppr-criterios');
+  renderPpr();
+}
+
+// ── Extrato em PDF (impressão) para os sócios ──
+function gerarPdfPpr(sem) {
+  if (!pprConfig) return;
+  const cfg = pprConfig;
+  const ano = parseInt(document.getElementById('ppr-ano').value) || new Date().getFullYear();
+  const r = calcularPpr(ano, cfg);
+  const S = r.sems[sem];
+  const empresa = (typeof EMPRESA_UNICA_NOME !== 'undefined' ? EMPRESA_UNICA_NOME : '');
+  const hoje = new Date();
+  const emitido = hoje.toLocaleString('pt-BR', {day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+  const semTxt = sem === 1 ? '1º Semestre (Janeiro a Junho)' : '2º Semestre (Julho a Dezembro)';
+  const fimSem = new Date(ano, sem === 1 ? 6 : 12, 0);
+  const parcial = hoje <= fimSem;
+  const pctTxt = v => _pprPct(v);
+
+  const linhasMes = S.meses.map(m => {
+    const d = r.meses[m];
+    return `<tr><td>${PPR_MESES[m]}/${ano}</td><td>${fmtBRL(d.rec)}</td><td>${fmtBRL(d.ind)}</td>
+      <td>${cfg.metaTipo === 'valor' ? '—' : pctTxt(d.indPct)}</td>
+      <td>${cfg.apuracao === 'mensal' ? (d.ok ? 'Sim' : 'Não') : '—'}</td>
+      <td><b>${cfg.apuracao === 'mensal' ? fmtBRL(d.premio) : '—'}</b></td></tr>`;
+  }).join('');
+  const totMes = `<tr class="tot"><td>Total do semestre</td><td>${fmtBRL(S.rec)}</td><td>${fmtBRL(S.ind)}</td>
+      <td>${cfg.metaTipo === 'valor' ? '—' : pctTxt(S.indPct)}</td><td>${S.ok ? 'Sim' : 'Não'}</td><td><b>${fmtBRL(S.premio)}</b></td></tr>`;
+
+  const valorAc = a => sem === 1 ? a.pagar1 : a.pagar2;
+  const dataAc = a => sem === 1 ? a.data1 : a.data2;
+  const obsAc = a => (a.forma === 'anual' ? (sem === 1 ? 'Recebimento anual: valor acumulado para o fim do ano' : 'Recebimento anual: inclui o 1º semestre') : '');
+  const linhasAc = r.acionistas.map(a => `<tr><td>${_pprEsc(a.nome)}</td><td>${pctTxt(a.pctNum)}</td>
+      <td>${fmtBRL(sem === 1 ? a.sem1 : a.sem2)}</td><td><b>${fmtBRL(valorAc(a))}</b></td><td>${dataAc(a) || (a.forma === 'anual' && sem === 1 ? '—' : 'a definir')}</td><td style="text-align:left">${obsAc(a)}</td></tr>`).join('');
+  const totalPagar = r.acionistas.reduce((s, a) => s + valorAc(a), 0);
+
+  const obsLivre = (cfg.observacoes || '').trim()
+    ? `<div class="box"><div class="box-t">Observações</div>${_pprEsc(cfg.observacoes).replace(/\n/g, '<br>')}</div>` : '';
+  const assinaturas = r.acionistas.map(a => `<div class="ass"><div class="ass-l"></div>${_pprEsc(a.nome)}</div>`).join('');
+  const cabecalho = (titulo) => `<div class="header"><div><div class="logo">${_pprEsc(empresa)}</div><div class="titulo">${titulo}</div>
+      <div class="sub">${semTxt} de ${ano}</div></div>
+      <div class="meta"><div>Emitido em: ${emitido}</div><div>Sistema de Gestão C@P Consultoria</div></div></div>`;
+  const avisoParcial = parcial ? '<div class="aviso">⚠️ Semestre ainda em andamento: valores <b>parciais</b>, calculados com os lançamentos registrados até a emissão.</div>' : '';
+
+  let corpo = `<div class="pagina">${cabecalho('Extrato do PPR — Prêmio de Participação nos Resultados')}${avisoParcial}
+    <div class="kpis">
+      <div class="kpi"><div class="kv">${fmtBRL(S.ind)}</div><div class="kl">${_pprEsc(_pprNomeLinha(cfg.indicador))}</div></div>
+      <div class="kpi"><div class="kv">${cfg.metaTipo === 'valor' ? '—' : pctTxt(S.indPct)}</div><div class="kl">Indicador sobre a Receita</div></div>
+      <div class="kpi"><div class="kv">${S.ok ? 'Atingida' : 'Não atingida'}</div><div class="kl">Meta: ${_pprEsc(_pprTextoMeta(cfg))}</div></div>
+      <div class="kpi destaque"><div class="kv">${fmtBRL(S.premio)}</div><div class="kl">Prêmio total do semestre</div></div>
+    </div>
+    <h3>Apuração mês a mês</h3>
+    <table><thead><tr><th>Mês</th><th>Receita Bruta</th><th>${_pprEsc(_pprNomeLinha(cfg.indicador))}</th><th>%</th><th>Meta atingida</th><th>Prêmio</th></tr></thead>
+      <tbody>${linhasMes}${totMes}</tbody></table>
+    <h3>Distribuição entre os acionistas</h3>
+    <table><thead><tr><th>Acionista</th><th>Participação</th><th>Prêmio apurado</th><th>Valor a receber</th><th>Data do pagamento</th><th style="text-align:left">Obs.</th></tr></thead>
+      <tbody>${linhasAc}<tr class="tot"><td>Total</td><td></td><td>${fmtBRL(S.premio)}</td><td><b>${fmtBRL(totalPagar)}</b></td><td></td><td></td></tr></tbody></table>
+    <div class="box"><div class="box-t">Como o PPR é calculado</div>${pprExplicacaoHtml(cfg)}</div>
+    ${obsLivre}
+    <div class="assinaturas">${assinaturas}</div>
+  </div>`;
+
+  // Uma página de extrato individual por acionista
+  r.acionistas.forEach(a => {
+    corpo += `<div class="pagina quebra">${cabecalho('Extrato Individual do PPR')}${avisoParcial}
+      <div class="ind-nome">${_pprEsc(a.nome)}</div>
+      <div class="kpis">
+        <div class="kpi"><div class="kv">${pctTxt(a.pctNum)}</div><div class="kl">Participação no prêmio</div></div>
+        <div class="kpi"><div class="kv">${fmtBRL(S.premio)}</div><div class="kl">Prêmio total do semestre</div></div>
+        <div class="kpi destaque"><div class="kv">${fmtBRL(valorAc(a))}</div><div class="kl">Valor a receber</div></div>
+        <div class="kpi"><div class="kv">${dataAc(a) || '—'}</div><div class="kl">Data do pagamento</div></div>
+      </div>
+      ${obsAc(a) ? `<div class="aviso">${obsAc(a)}.</div>` : ''}
+      <h3>Composição</h3>
+      <table><thead><tr><th>Mês</th><th>${_pprEsc(_pprNomeLinha(cfg.indicador))}</th><th>Meta atingida</th><th>Sua parte</th></tr></thead><tbody>
+        ${S.meses.map(m => `<tr><td>${PPR_MESES[m]}/${ano}</td><td>${fmtBRL(r.meses[m].ind)}</td><td>${cfg.apuracao === 'mensal' ? (r.meses[m].ok ? 'Sim' : 'Não') : '—'}</td><td>${cfg.apuracao === 'mensal' ? fmtBRL(a.mes(m)) : '—'}</td></tr>`).join('')}
+        <tr class="tot"><td>Semestre</td><td>${fmtBRL(S.ind)}</td><td>${S.ok ? 'Sim' : 'Não'}</td><td><b>${fmtBRL(sem === 1 ? a.sem1 : a.sem2)}</b></td></tr>
+      </tbody></table>
+      <p class="nota">Cálculo: ${pctTxt(_pprNum(cfg.pool))} × ${_pprEsc(_pprNomeLinha(cfg.base))} do período (quando a meta é atingida) × ${pctTxt(a.pctNum)} de participação.</p>
+      ${obsLivre}
+      <div class="assinaturas"><div class="ass"><div class="ass-l"></div>${_pprEsc(a.nome)} — Acionista</div><div class="ass"><div class="ass-l"></div>${_pprEsc(empresa)}</div></div>
+    </div>`;
+  });
+
+  const css = [
+    '* { margin:0; padding:0; box-sizing:border-box; }',
+    'body { font-family:Arial,sans-serif; color:#1f2937; font-size:11px; -webkit-print-color-adjust:exact; print-color-adjust:exact; }',
+    '.pagina { padding:22px 26px; }',
+    '.quebra { page-break-before:always; }',
+    '.header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:14px; padding-bottom:10px; border-bottom:2px solid #ea580c; }',
+    '.logo { font-size:20px; font-weight:800; color:#ea580c; }',
+    '.titulo { font-size:15px; font-weight:700; margin-top:3px; }',
+    '.sub { font-size:10px; color:#78716c; margin-top:2px; }',
+    '.meta { text-align:right; font-size:9px; color:#78716c; line-height:1.6; }',
+    '.aviso { background:#fff7ed; border:1px solid #fed7aa; border-radius:6px; padding:7px 10px; margin-bottom:12px; font-size:10px; color:#9a3412; }',
+    '.kpis { display:flex; gap:10px; margin-bottom:14px; }',
+    '.kpi { flex:1; background:#faf9f7; border:1px solid #e7e5e4; border-radius:6px; padding:9px 12px; text-align:center; }',
+    '.kpi.destaque { background:#ea580c; border-color:#ea580c; color:#fff; }',
+    '.kpi.destaque .kl { color:#ffedd5; }',
+    '.kv { font-size:15px; font-weight:800; }',
+    '.kl { font-size:8px; color:#78716c; text-transform:uppercase; letter-spacing:.4px; margin-top:3px; }',
+    'h3 { font-size:11px; text-transform:uppercase; letter-spacing:.5px; color:#78716c; margin:14px 0 6px; }',
+    'table { width:100%; border-collapse:collapse; font-size:10px; }',
+    'thead th { background:#ea580c; color:#fff; padding:5px 7px; text-align:right; font-size:8.5px; text-transform:uppercase; letter-spacing:.3px; }',
+    'thead th:first-child { text-align:left; }',
+    'tbody td { padding:4px 7px; border-bottom:1px solid #f0efed; text-align:right; }',
+    'tbody td:first-child { text-align:left; font-weight:700; }',
+    '.tot td { background:#f0efed; font-weight:800; border-top:1.5px solid #d6d3d1; }',
+    '.box { background:#faf9f7; border:1px solid #e7e5e4; border-radius:6px; padding:10px 12px; margin-top:14px; font-size:10px; line-height:1.55; }',
+    '.box p { margin-bottom:5px; }',
+    '.box-t { font-weight:800; text-transform:uppercase; font-size:8.5px; letter-spacing:.5px; color:#78716c; margin-bottom:6px; }',
+    '.ind-nome { font-size:20px; font-weight:800; margin-bottom:12px; }',
+    '.nota { font-size:9.5px; color:#57534e; margin-top:8px; }',
+    '.assinaturas { display:flex; gap:30px; margin-top:44px; flex-wrap:wrap; }',
+    '.ass { flex:1; min-width:150px; text-align:center; font-size:10px; }',
+    '.ass-l { border-top:1px solid #1f2937; margin-bottom:4px; }',
+    '@page { size:A4 portrait; margin:10mm; }'
+  ].join('\n');
+
+  const html = '<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">'
+    + `<title>Extrato PPR ${sem}º Semestre ${ano} — ${_pprEsc(empresa)}</title><style>${css}</style></head><body>`
+    + corpo + '<' + 'script>window.onload=function(){window.print()}<' + '/script></body></html>';
+  const win = window.open('', '_blank', 'width=1000,height=760');
+  if (!win) { alert('Permita pop-ups para este site para gerar o PDF.'); return; }
+  win.document.write(html);
+  win.document.close();
+}
+
 function renderDreChart(grupos, gruposValor, linhaCalc, ultimoSubtotalId) {
   const labels = MESES_ABR.slice(1);
   const entradaGrupos = gruposValor.filter(g => g.tipo === 'entrada');
@@ -12477,7 +13104,15 @@ async function saveTransferencia() {
   if (!res) { alert('❌ Erro ao salvar a transferência.' + sbErroDetalhe()); return; }
   db.transferencias.push(rec);
   clearTransferencia();
+  closeModal('modal-transferencia');
   renderTransferencias(); renderBancos(); renderFluxoBancoDiario(); renderDashboard();
+}
+
+function abrirNovaTransferencia() {
+  clearTransferencia();
+  const dt = document.getElementById('transf-data');
+  if (dt) dt.value = new Date().toLocaleDateString('sv-SE'); // hoje (AAAA-MM-DD)
+  openModal('modal-transferencia');
 }
 
 function clearTransferencia() {
