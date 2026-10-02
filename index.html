@@ -173,6 +173,41 @@ tr:hover td { background:#faf9f7; }
 .badge-yellow { background:#fef3c7; color:#92400e; }
 .badge-gray { background:#faf9f7; color:#57534e; border:1px solid #e7e5e4; }
 .badge-blue { background:#dbeafe; color:#1e40af; }
+
+/* ══ APROVAÇÕES (alterações em mês já fechado) ══ */
+.nav-count { margin-left:auto; min-width:20px; height:20px; padding:0 6px; border-radius:10px; background:#ea580c; color:#fff; font-size:11px; font-weight:700; display:inline-flex; align-items:center; justify-content:center; }
+.nav-count[hidden] { display:none; }
+.aprov-comunicado { display:flex; align-items:center; gap:14px; flex-wrap:wrap; background:#fff7ed; border:1px solid #fed7aa; border-left:4px solid #ea580c; border-radius:var(--radius2); padding:12px 16px; margin-bottom:20px; font-size:13px; color:#7c2d12; }
+.aprov-comunicado b { color:#9a3412; }
+.aprov-comunicado .aprov-com-acoes { margin-left:auto; display:flex; gap:8px; }
+.aprov-comunicado.decisao { background:#f0f9ff; border-color:#bae6fd; border-left-color:#0284c7; color:#0c4a6e; }
+.aprov-comunicado.decisao b { color:#075985; }
+.aprov-tabs { display:flex; gap:4px; border-bottom:1px solid var(--border); margin-bottom:18px; }
+.aprov-tab { background:none; border:none; padding:10px 14px; font:inherit; font-size:13px; font-weight:600; color:var(--text2); cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-1px; }
+.aprov-tab[aria-selected="true"] { color:#ea580c; border-bottom-color:#ea580c; }
+.aprov-tab:focus-visible, .aprov-item button:focus-visible { outline:2px solid #ea580c; outline-offset:2px; }
+.aprov-toolbar { display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; margin-bottom:16px; }
+.aprov-toolbar .form-group { margin-bottom:0; min-width:160px; }
+.aprov-item { background:#fff; border:1px solid var(--border); border-radius:var(--radius2); margin-bottom:14px; overflow:hidden; }
+.aprov-item.despesa { border-left:4px solid #dc2626; }
+.aprov-item.receita { border-left:4px solid #16a34a; }
+.aprov-head { display:flex; align-items:flex-start; gap:12px; flex-wrap:wrap; padding:14px 18px; border-bottom:1px solid #f5f4f2; }
+.aprov-head-main { flex:1; min-width:220px; }
+.aprov-titulo { font-size:14px; font-weight:700; color:#1f2937; margin:6px 0 2px; }
+.aprov-meta { font-size:12px; color:var(--text2); }
+.aprov-acoes { display:flex; gap:8px; align-items:center; }
+.aprov-diff { width:100%; font-size:13px; }
+.aprov-diff td, .aprov-diff th { padding:8px 18px; }
+.aprov-diff th { position:static; }
+.aprov-diff .antes { color:#a8a29e; text-decoration:line-through; }
+.aprov-diff .depois { font-weight:600; color:#1f2937; }
+.aprov-nota { padding:10px 18px; font-size:12.5px; color:var(--text2); background:#faf9f7; }
+.aprov-nota.alerta { background:#fef2f2; color:#991b1b; }
+@media (max-width:860px) {
+  .aprov-diff td, .aprov-diff th { padding:8px 12px; }
+  .aprov-acoes { width:100%; }
+  .aprov-acoes .btn { flex:1; }
+}
 /* ── PRÉVIA DE IMPORTAÇÃO DE EXTRATO (cards, um por lançamento) ── */
 .import-preview-toolbar {
   display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;
@@ -1187,6 +1222,13 @@ th.ef-th { padding:8px 8px 8px 12px; }
         </div>
       </div>
 
+      <!-- Aprovações (alterações em mês já fechado) -->
+      <div class="nav-item" id="nav-item-aprovacoes" onclick="showPage('aprovacoes')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        Aprovações
+        <span class="nav-count" id="nav-aprov-count" hidden>0</span>
+      </div>
+
       <!-- Admin -->
       <div class="nav-label" id="nav-label-admin" style="display:none;margin-top:8px;">Administração</div>
       <div class="nav-item" id="nav-item-usuarios" onclick="showPage('usuarios')" style="display:none">
@@ -1204,6 +1246,7 @@ th.ef-th { padding:8px 8px 8px 12px; }
 
   <!-- MAIN -->
   <div class="main">
+    <div id="aprov-comunicado-slot"></div>
 
     <!-- ══ FORNECEDORES ══ -->
     <div class="page" id="page-fornecedores">
@@ -1484,6 +1527,31 @@ th.ef-th { padding:8px 8px 8px 12px; }
       </div>
     </div>
 
+
+    <!-- ══ APROVAÇÕES ══ -->
+    <div class="page" id="page-aprovacoes">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Aprovações</div>
+          <div class="page-sub" style="margin-bottom:0" id="aprov-sub">Alterações em lançamentos com pagamento ou recebimento de meses anteriores.</div>
+        </div>
+        <button class="btn btn-secondary btn-sm" onclick="renderAprovacoes(true)">Atualizar</button>
+      </div>
+      <div class="aprov-tabs" role="tablist">
+        <button class="aprov-tab" role="tab" id="aprov-tab-pend" aria-selected="true" onclick="aprovTrocarAba('pendentes')">Pendentes <span id="aprov-tab-pend-qtd"></span></button>
+        <button class="aprov-tab" role="tab" id="aprov-tab-hist" aria-selected="false" onclick="aprovTrocarAba('historico')">Histórico</button>
+      </div>
+      <div class="aprov-toolbar">
+        <div class="form-group"><label for="aprov-f-tipo">Tipo</label>
+          <select id="aprov-f-tipo" onchange="renderAprovacoes()">
+            <option value="">Receitas e despesas</option>
+            <option value="pagar">Só despesas</option>
+            <option value="receber">Só receitas</option>
+          </select>
+        </div>
+      </div>
+      <div id="aprov-lista"></div>
+    </div>
 
     <!-- ══ GESTÃO DE USUÁRIOS ══ -->
     <div class="page" id="page-usuarios">
@@ -3457,6 +3525,23 @@ th.ef-th { padding:8px 8px 8px 12px; }
   </div>
 </div>
 
+<!-- ══ MODAL REJEITAR SOLICITAÇÃO ══ -->
+<div class="modal-overlay" id="modal-aprov-rejeitar">
+  <div class="modal" style="width:440px;">
+    <div class="modal-title">Rejeitar alteração</div>
+    <input type="hidden" id="aprov-rej-id" />
+    <p style="font-size:13px;color:#57534e;margin-bottom:16px;">O lançamento continua como está. Quem pediu a alteração verá o motivo na tela de Aprovações.</p>
+    <div class="form-group">
+      <label for="aprov-rej-motivo">Motivo *</label>
+      <textarea id="aprov-rej-motivo" rows="3" style="white-space:normal" placeholder="Ex.: valor confere com o extrato, não alterar."></textarea>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-aprov-rejeitar')">Cancelar</button>
+      <button class="btn btn-danger" onclick="confirmarRejeicaoAprov()">Rejeitar alteração</button>
+    </div>
+  </div>
+</div>
+
 <!-- ══ MODAL DATA PAGAMENTO ══ -->
 <div class="modal-overlay" id="modal-pago">
   <div class="modal" style="width:400px;">
@@ -4356,6 +4441,9 @@ async function trackUserActivity() {
 function doLogout() {
   supabaseAuthLogout();
   currentUser = null;
+  if (typeof _aprovTimer !== 'undefined' && _aprovTimer) { clearInterval(_aprovTimer); _aprovTimer = null; }
+  _aprovPendentes = []; _aprovLista = [];
+  const _slotAprov = document.getElementById('aprov-comunicado-slot'); if (_slotAprov) _slotAprov.innerHTML = '';
   document.getElementById('login-screen').style.display = 'flex';
   document.getElementById('app').style.display = 'none';
   document.getElementById('login-error').style.display = 'none';
@@ -4385,7 +4473,7 @@ let _paginaAtual = 'dashboard';
 
 function showPage(p) {
   // Verificar permissão (exceto admin e páginas de administração)
-  if (p !== 'usuarios' && p !== 'empresas' && currentUser && currentUser.role !== 'admin') {
+  if (p !== 'usuarios' && p !== 'empresas' && p !== 'aprovacoes' && currentUser && currentUser.role !== 'admin') {
     const allowed = currentUser.pages || [];
     if (!allowed.includes(p)) { alert('Acesso não permitido para seu perfil.'); return; }
   }
@@ -4421,6 +4509,8 @@ function showPage(p) {
   if (p === 'ppr')               abrirPaginaPpr();
   if (p === 'usuarios')          renderUsuariosAdmin();
   if (p === 'empresas')          renderEmpresas();
+  if (p === 'aprovacoes')        renderAprovacoes(true);
+  else if (typeof _mostrarComunicadoAprov === 'function') _mostrarComunicadoAprov();
   // No celular: fecha a gaveta do menu e atualiza o nome da tela no topo
   aoTrocarPaginaMobile(p);
 }
@@ -4460,6 +4550,7 @@ function renderPaginaAtual() {
   if (p === 'ppr')               abrirPaginaPpr();
   if (p === 'usuarios')          renderUsuariosAdmin();
   if (p === 'empresas')          renderEmpresas();
+  if (p === 'aprovacoes')        renderAprovacoes(true);
   atualizarTituloMobile(p);
 }
 
@@ -5893,6 +5984,7 @@ function onFiltroVinculadoLanc() {
 function editLancamento(id) {
   const l = db.lancamentos.find(x=>x.id===id);
   if(!l) return;
+  if (_bloqueadoPorPendencia('pagar', id)) return;
   document.getElementById('edit-lanc-id').value = id;
   document.getElementById('edit-dtcompra').value = l.dtcompra;
   document.getElementById('edit-dtprev').value = l.dtprev||'';
@@ -5979,6 +6071,7 @@ async function updateLancamento() {
 
   const _empEdit = empresaDoForm('edit-empresa');
   if (_empEdit === null) return;
+  const _origLanc = JSON.parse(JSON.stringify(l)); // estado antes da edição
   l.empresa_id = _empEdit;
   l.dtcompra = document.getElementById('edit-dtcompra').value;
   l.dtprev = document.getElementById('edit-dtprev').value;
@@ -5995,11 +6088,8 @@ async function updateLancamento() {
   l.cat_dre  = document.getElementById('edit-catdre')   ? document.getElementById('edit-catdre').value   : (l.cat_dre||'');
   const manualDates = l.parcelas > 1 ? getManualParcelaDates('edit-parcela-dates', l.parcelas) : null;
   l.parcela_datas = l.parcelas > 1 ? buildParcelaDatasPayload('edit-parcela-dates', l.parcelas) : null;
-  // Atualização instantânea: fecha o formulário e redesenha DRE/DFC já com
-  // os dados novos; a gravação no Supabase segue logo abaixo.
-  closeModal('modal-lanc');
-  _aposEditarLancamento(l.id);
-  await sbFetch('lancamentos', 'PATCH', {
+  l.parcela_datas = _preservarBaixasParcelas(l.parcela_datas, _origLanc.parcela_datas, l.parcelas);
+  const _payloadLanc = {
     empresa_id: l.empresa_id,
     dtcompra: l.dtcompra, dtprev: l.dtprev, nf: l.nf,
     forn: l.forn, prod: l.prod, valor: l.valor,
@@ -6007,7 +6097,22 @@ async function updateLancamento() {
     pago: l.pago, tipo_pag: l.tipo_pag, banco: l.banco, obs: l.obs,
     cat_dre: l.cat_dre,
     parcela_datas: l.parcela_datas
-  }, `?id=eq.${l.id}`);
+  };
+  // Mês já fechado + usuário comum: nada é gravado; vira pedido ao master.
+  if (_precisaAprovacao('pagar', _origLanc)) {
+    Object.keys(l).forEach(k => { if (!(k in _origLanc)) delete l[k]; });
+    Object.assign(l, _origLanc);
+    closeModal('modal-lanc');
+    await _criarSolicitacaoAprov({ tipo: 'pagar', l, acao: 'editar', depois: _payloadLanc,
+      nota: irmaosFixa.length ? 'somente esta ocorrência da conta fixa' : '' });
+    renderLancamentos(); renderApagar(); renderPagas();
+    return;
+  }
+  // Atualização instantânea: fecha o formulário e redesenha DRE/DFC já com
+  // os dados novos; a gravação no Supabase segue logo abaixo.
+  closeModal('modal-lanc');
+  _aposEditarLancamento(l.id);
+  await sbFetch('lancamentos', 'PATCH', _payloadLanc, `?id=eq.${l.id}`);
 
   // ── Aplica em massa às demais ocorrências desta Conta Fixa ──
   // Replica só os dados "cadastrais" (fornecedor, produto, categoria, valor,
@@ -6018,13 +6123,16 @@ async function updateLancamento() {
       forn: l.forn, prod: l.prod, cat_dre: l.cat_dre, valor: l.valor,
       financeiro: l.financeiro, tipo_pag: l.tipo_pag, banco: l.banco, obs: l.obs
     };
-    let ok = 0, falhas = 0;
+    let ok = 0, falhas = 0, fechados = 0;
     for (const irmao of irmaosFixa) {
+      // Ocorrências com pagamento em mês já fechado ficam de fora para usuário comum.
+      if (_precisaAprovacao('pagar', irmao)) { fechados++; continue; }
       const r = await sbFetch('lancamentos', 'PATCH', camposMassa, `?id=eq.${irmao.id}`);
       if (r) { Object.assign(irmao, camposMassa); ok++; } else { falhas++; }
     }
-    if (falhas) alert(`✅ Alterações aplicadas a ${ok+1} lançamento(s) desta conta fixa. ⚠️ ${falhas} não puderam ser atualizados — tente novamente.`);
-    else alert(`✅ Alterações aplicadas a ${ok+1} lançamento(s) desta conta fixa (todas as ocorrências).`);
+    const _avisoFech = fechados ? `\n🔒 ${fechados} ocorrência(s) com pagamento em mês já fechado não foram alteradas (exigem aprovação do usuário master; edite-as individualmente para pedir).` : '';
+    if (falhas) alert(`✅ Alterações aplicadas a ${ok+1} lançamento(s) desta conta fixa. ⚠️ ${falhas} não puderam ser atualizados — tente novamente.${_avisoFech}`);
+    else alert(`✅ Alterações aplicadas a ${ok+1} lançamento(s) desta conta fixa${fechados ? '' : ' (todas as ocorrências)'}.${_avisoFech}`);
     bumpDbVer(); _rerenderDemonstrativoAtual();
   }
 
@@ -6032,6 +6140,13 @@ async function updateLancamento() {
 }
 
 async function deleteLancamento(id) {
+  const _lx = db.lancamentos.find(x=>x.id===id);
+  if (_lx && _precisaAprovacao('pagar', _lx)) {
+    if (_bloqueadoPorPendencia('pagar', id)) return;
+    if (!confirm('Este lançamento tem pagamento em mês já fechado. Pedir ao usuário master para excluí-lo?')) return;
+    await _interceptarAprovacao('pagar', _lx, 'excluir');
+    return;
+  }
   if(!confirm('Excluir este lançamento?')) return;
   await sbFetch('lancamentos', 'DELETE', null, `?id=eq.${id}`);
   db.lancamentos = db.lancamentos.filter(x=>x.id!==id);
@@ -7214,6 +7329,13 @@ async function verificarBackupAutomatico() {
 }
 
 async function estornarPago(id, parcIdx) {
+  const _lx = db.lancamentos.find(x=>x.id===id);
+  if (_lx && _precisaAprovacao('pagar', _lx)) {
+    if (_bloqueadoPorPendencia('pagar', id)) return;
+    if (!confirm('Este pagamento é de mês já fechado. Pedir ao usuário master para estorná-lo?')) return;
+    await _interceptarAprovacao('pagar', _lx, 'estornar', null, parcIdx || 1);
+    return;
+  }
   if(!confirm('Deseja desfazer o pagamento e mover esta parcela de volta para "A Pagar"?')) return;
   const l = db.lancamentos.find(x=>x.id===id);
   if(!l) return;
@@ -7250,6 +7372,12 @@ async function salvarCategoriaPago() {
   const catId = document.getElementById('ecp-categoria').value;
   const l = db.lancamentos.find(x => x.id === lancId);
   if (!l) { closeModal('modal-editar-categoria-pago'); return; }
+  if (_precisaAprovacao('pagar', l)) {
+    closeModal('modal-editar-categoria-pago');
+    if (!_bloqueadoPorPendencia('pagar', lancId))
+      await _criarSolicitacaoAprov({ tipo: 'pagar', l, acao: 'editar', depois: { cat_dre: catId } });
+    return;
+  }
   const res = await sbFetch('lancamentos', 'PATCH', { cat_dre: catId }, `?id=eq.${lancId}`);
   if (!res) { alert('❌ Erro ao salvar categoria.' + sbErroDetalhe()); return; }
   l.cat_dre = catId;
@@ -8958,7 +9086,7 @@ function applyNavPermissions() {
     const match = onclick.match(/showPage\('([\w-]+)'\)/);
     if (!match) return;
     const pg = match[1];
-    if (pg === 'usuarios' || pg === 'empresas') return;
+    if (pg === 'usuarios' || pg === 'empresas' || pg === 'aprovacoes') return;
     if (isAdmin) { item.style.display = ''; return; }
     item.style.display = allowed.includes(pg) ? '' : 'none';
   });
@@ -9504,6 +9632,7 @@ function clearLancReceberFiltros() {
 }
 function editLancReceber(id) {
   const l=db.lancreceber.find(x=>x.id===id); if(!l) return;
+  if (_bloqueadoPorPendencia('receber', id)) return;
   document.getElementById('edit-lr-id').value=id;
   document.getElementById('elr-dtvenda').value=l.dtvenda||l.dtcompra||'';
   document.getElementById('elr-dtprev').value=l.dtprev||'';
@@ -9545,6 +9674,7 @@ async function updateLancReceber() {
   if (!validarBancoObrigatorio(recebido, banco)) return;
   const _empLR = empresaDoForm('elr-empresa');
   if (_empLR === null) return;
+  const _origLR = JSON.parse(JSON.stringify(l)); // estado antes da edição
   l.empresa_id = _empLR;
   l.dtvenda=document.getElementById('elr-dtvenda').value;
   l.dtprev=document.getElementById('elr-dtprev').value;
@@ -9561,13 +9691,31 @@ async function updateLancReceber() {
   l.cat_dre = document.getElementById('elr-catdre') ? document.getElementById('elr-catdre').value : (l.cat_dre||'');
   const manualDates = l.parcelas > 1 ? getManualParcelaDates('elr-parcela-dates', l.parcelas) : null;
   l.parcela_datas = l.parcelas > 1 ? buildParcelaDatasPayload('elr-parcela-dates', l.parcelas) : null;
+  l.parcela_datas = _preservarBaixasParcelas(l.parcela_datas, _origLR.parcela_datas, l.parcelas);
+  const _payloadLR = {empresa_id:l.empresa_id,dtvenda:l.dtvenda,dtprev:l.dtprev,nf:l.nf,cliente:l.cliente,prod:l.prod,valor:l.valor,parcelas:l.parcelas,financeiro:l.financeiro,recebido:l.recebido,banco:l.banco,obs:l.obs,cat_dre:l.cat_dre,parcela_datas:l.parcela_datas};
+  // Mês já fechado + usuário comum: nada é gravado; vira pedido ao master.
+  if (_precisaAprovacao('receber', _origLR)) {
+    Object.keys(l).forEach(k => { if (!(k in _origLR)) delete l[k]; });
+    Object.assign(l, _origLR);
+    closeModal('modal-lancreceber');
+    await _criarSolicitacaoAprov({ tipo: 'receber', l, acao: 'editar', depois: _payloadLR });
+    renderLancReceber(); renderAReceber(); renderRecebido();
+    return;
+  }
   // Atualização instantânea (igual ao lado Pagar)
   closeModal('modal-lancreceber');
   _aposEditarLancamento(l.id);
-  await sbFetch('lancreceber','PATCH',{empresa_id:l.empresa_id,dtvenda:l.dtvenda,dtprev:l.dtprev,nf:l.nf,cliente:l.cliente,prod:l.prod,valor:l.valor,parcelas:l.parcelas,financeiro:l.financeiro,recebido:l.recebido,banco:l.banco,obs:l.obs,cat_dre:l.cat_dre,parcela_datas:l.parcela_datas},`?id=eq.${id}`);
+  await sbFetch('lancreceber','PATCH',_payloadLR,`?id=eq.${id}`);
   closeModal('modal-lancreceber'); renderLancReceber();
 }
 async function deleteLancReceber(id) {
+  const _lx = db.lancreceber.find(x=>x.id===id);
+  if (_lx && _precisaAprovacao('receber', _lx)) {
+    if (_bloqueadoPorPendencia('receber', id)) return;
+    if (!confirm('Este lançamento tem recebimento em mês já fechado. Pedir ao usuário master para excluí-lo?')) return;
+    await _interceptarAprovacao('receber', _lx, 'excluir');
+    return;
+  }
   if(!confirm('Excluir este lançamento?')) return;
   await sbFetch('lancreceber','DELETE',null,`?id=eq.${id}`);
   db.lancreceber=db.lancreceber.filter(x=>x.id!==id);
@@ -9812,6 +9960,13 @@ async function confirmarRecebido() {
   closeModal('modal-recebido'); _aposEditarLancamento(id); renderAReceber(); renderRecebido(); renderDashboard();
 }
 async function estornarRecebido(id, parcIdx) {
+  const _lx = db.lancreceber.find(x=>x.id===id);
+  if (_lx && _precisaAprovacao('receber', _lx)) {
+    if (_bloqueadoPorPendencia('receber', id)) return;
+    if (!confirm('Este recebimento é de mês já fechado. Pedir ao usuário master para estorná-lo?')) return;
+    await _interceptarAprovacao('receber', _lx, 'estornar', null, parcIdx || 1);
+    return;
+  }
   if(!confirm('Desfazer o recebimento desta parcela?')) return;
   const l=db.lancreceber.find(x=>x.id===id); if(!l) return;
   const n = l.parcelas || 1;
@@ -11950,6 +12105,12 @@ async function drillSetCategoria(tipo, id, catId, selEl) {
   if (!l) return;
   const anterior = l.cat_dre || '';
   if (anterior === (catId || '')) return;
+  if (_precisaAprovacao(tipo, l)) {
+    if (selEl) selEl.value = anterior;
+    if (!_bloqueadoPorPendencia(tipo, id))
+      await _criarSolicitacaoAprov({ tipo, l, acao: 'editar', depois: { cat_dre: catId || '' } });
+    return;
+  }
   // 1) Atualiza na hora (memória + tela)
   l.cat_dre = catId || '';
   bumpDbVer();
@@ -13759,6 +13920,12 @@ async function fdDetalheExcluir(tipo, id) {
   const lista = tipo === 'pagar' ? db.lancamentos : db.lancreceber;
   const l = lista.find(x => x.id === id);
   if (!l) { alert('Lançamento não encontrado — a tela pode estar desatualizada.'); return; }
+  if (_precisaAprovacao(tipo, l)) {
+    if (_bloqueadoPorPendencia(tipo, id)) return;
+    if (!confirm('Este lançamento tem baixa em mês já fechado. Pedir ao usuário master para excluí-lo?')) return;
+    await _interceptarAprovacao(tipo, l, 'excluir');
+    return;
+  }
 
   const n = l.parcelas || 1;
   const nome = tipo === 'pagar' ? getFornNome(l.forn) : getClienteNome(l.cliente);
@@ -14019,6 +14186,13 @@ async function confirmarExcluirParcela() {
     payload.recebido   = todasQuitadas ? 'sim' : 'nao';
     payload.dtrecebido = todasQuitadas ? ultimaData : '';
   }
+  if (_precisaAprovacao(tipo, l)) {
+    closeModal('modal-excluir-parcela');
+    _xpAlvo = null;
+    if (!_bloqueadoPorPendencia(tipo, id))
+      await _criarSolicitacaoAprov({ tipo, l, acao: 'editar', depois: payload, nota: `excluir parcela ${parc}` });
+    return;
+  }
 
   Object.assign(l, payload);
   bumpDbVer();
@@ -14038,6 +14212,444 @@ async function confirmarExcluirParcela() {
   if (tipo === 'pagar') { renderLancamentos(); renderApagar(); renderPagas(); }
   else                  { renderLancReceber(); renderAReceber(); renderRecebido(); }
   _fdReabrirDrill();
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// APROVAÇÕES — alterações em lançamentos de MÊS JÁ FECHADO
+// Regra: se um lançamento (despesa ou receita) tem pagamento/recebimento
+// com data de um mês ANTERIOR ao mês corrente, um usuário comum não altera,
+// estorna nem exclui sozinho. A alteração vira uma solicitação na tabela
+// `aprovacoes` e só é aplicada quando um usuário master (role = 'admin')
+// aprovar. Depois de aprovada/rejeitada, sai da aba "Pendentes".
+// ══════════════════════════════════════════════════════════════════════
+let _aprovPendentes = [];      // todas as solicitações pendentes (trava de edição)
+let _aprovLista = [];          // o que a tela mostra (pendentes + histórico)
+let _aprovAba = 'pendentes';
+let _aprovTimer = null;
+const APROV_VISTO_KEY = '477_aprov_visto_';
+
+function _ehMaster() { return !!(currentUser && currentUser.role === 'admin'); }
+
+// "YYYY-MM" do mês corrente no fuso local (today() usa UTC).
+function _mesCorrente() {
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+}
+
+// Datas de pagamento/recebimento já registradas no lançamento.
+function _datasBaixa(tipo, l) {
+  const datas = [];
+  const flag = tipo === 'pagar' ? l.pago : l.recebido;
+  const dt   = tipo === 'pagar' ? l.dtpago : l.dtrecebido;
+  if (flag === 'sim') datas.push(dt || l.dtprev || l.dtcompra || l.dtvenda || '');
+  try {
+    const { pagos, dtpagos } = _parseParcelas(l.parcela_datas);
+    pagos.forEach((pg, i) => { if (pg) datas.push(dtpagos[i] || ''); });
+  } catch (e) {}
+  return datas.filter(Boolean);
+}
+
+// true quando há baixa em mês anterior ao corrente (mês fechado).
+function _temBaixaMesAnterior(tipo, l) {
+  const mes = _mesCorrente();
+  return _datasBaixa(tipo, l).some(d => String(d).slice(0, 7) < mes);
+}
+
+function _precisaAprovacao(tipo, l) {
+  if (!currentUser || _ehMaster() || !l) return false;
+  return _temBaixaMesAnterior(tipo, l);
+}
+
+function _pendenteDoLanc(tipo, id) {
+  return _aprovPendentes.find(a => a.tipo === tipo && a.lanc_id === id);
+}
+
+// Usado ao abrir formulários: avisa se já há pedido aguardando o master.
+function _bloqueadoPorPendencia(tipo, id) {
+  if (_ehMaster()) return false;
+  const p = _pendenteDoLanc(tipo, id);
+  if (!p) return false;
+  alert(`Este lançamento já tem uma alteração aguardando aprovação (pedida por ${p.solicitante_nome || p.solicitante}).\n\nAguarde a decisão do usuário master ou cancele o pedido na tela de Aprovações.`);
+  return true;
+}
+
+function _descricaoLanc(tipo, l) {
+  const nome = tipo === 'pagar' ? getFornNome(l.forn) : getClienteNome(l.cliente);
+  const data = tipo === 'pagar' ? l.dtcompra : (l.dtvenda || l.dtcompra);
+  const partes = [nome || '—'];
+  if (l.nf) partes.push('NF ' + l.nf);
+  if (data) partes.push(fmtDate(data));
+  partes.push(fmtBRL(l.valor || 0));
+  return partes.join(' · ');
+}
+
+function _normAprov(v) {
+  if (v === null || v === undefined) return '';
+  if (typeof v === 'object') return JSON.stringify(v);
+  return String(v);
+}
+
+// Cria a solicitação. Retorna true se gravou.
+async function _criarSolicitacaoAprov({ tipo, l, acao, depois = null, parcIdx = null, nota = '' }) {
+  if (_pendenteDoLanc(tipo, l.id)) { _bloqueadoPorPendencia(tipo, l.id); return false; }
+  let antes = null;
+  if (acao === 'editar') {
+    antes = {};
+    const mudou = {};
+    Object.keys(depois || {}).forEach(k => {
+      if (_normAprov(l[k]) !== _normAprov(depois[k])) { antes[k] = l[k] ?? null; mudou[k] = depois[k]; }
+    });
+    if (!Object.keys(mudou).length) { alert('Nenhum campo foi alterado.'); return false; }
+    depois = mudou;
+  } else {
+    antes = { valor: l.valor, parcela_datas: l.parcela_datas ?? null };
+  }
+  const reg = {
+    id: uid(),
+    empresa_id: l.empresa_id || empresaAtual() || null,
+    tipo, lanc_id: l.id, acao,
+    parc_idx: parcIdx,
+    antes, depois,
+    resumo: _descricaoLanc(tipo, l) + (nota ? ' — ' + nota : ''),
+    solicitante: currentUser.user,
+    solicitante_nome: currentUser.nome,
+    solicitado_em: new Date().toISOString(),
+    status: 'pendente'
+  };
+  const res = await sbFetch('aprovacoes', 'POST', reg);
+  if (!res) { alert('❌ Não foi possível enviar a solicitação de aprovação.' + sbErroDetalhe()); return false; }
+  _aprovPendentes.push(reg);
+  _atualizarIndicadoresAprov();
+  const oque = { editar: 'A alteração', estornar: 'O estorno', excluir: 'A exclusão' }[acao];
+  alert(`🔒 Este lançamento tem ${tipo === 'pagar' ? 'pagamento' : 'recebimento'} em mês já fechado.\n\n${oque} foi enviada para aprovação do usuário master e só será aplicada depois que ele aprovar. Acompanhe na tela Aprovações.`);
+  return true;
+}
+
+// Ponto único usado pelas telas: se precisar de aprovação, cria o pedido e
+// devolve true (quem chamou deve parar ali, sem gravar nada).
+async function _interceptarAprovacao(tipo, l, acao, depois, parcIdx, nota) {
+  if (!_precisaAprovacao(tipo, l)) return false;
+  await _criarSolicitacaoAprov({ tipo, l, acao, depois, parcIdx, nota });
+  return true;
+}
+
+// Mantém pagos/dtpagos das parcelas quando o formulário de edição remonta
+// parcela_datas só com datas e valores (sem isso a edição "apagava" baixas).
+function _preservarBaixasParcelas(novoRaw, antigoRaw, n) {
+  if (!novoRaw || !antigoRaw) return novoRaw;
+  const antigo = _parseParcelas(antigoRaw);
+  if (!antigo.pagos.length) return novoRaw;
+  const novo = _parseParcelas(novoRaw);
+  return JSON.stringify({
+    datas: novo.datas, valores: novo.valores,
+    pagos: antigo.pagos.slice(0, n), dtpagos: antigo.dtpagos.slice(0, n)
+  });
+}
+
+// ── Carregamento ────────────────────────────────────────────────────
+async function carregarPendentesAprov() {
+  const rows = await sbFetch('aprovacoes', 'GET', null, '?status=eq.pendente&order=solicitado_em.asc&limit=500');
+  if (rows) _aprovPendentes = rows;
+  _atualizarIndicadoresAprov();
+  return _aprovPendentes;
+}
+
+async function carregarListaAprov() {
+  let q = '?order=solicitado_em.desc&limit=300';
+  if (!_ehMaster()) q += `&solicitante=eq.${encodeURIComponent(currentUser.user)}`;
+  const rows = await sbFetch('aprovacoes', 'GET', null, q);
+  _aprovLista = rows || [];
+  return _aprovLista;
+}
+
+function iniciarMonitorAprov() {
+  carregarPendentesAprov().then(_mostrarComunicadoAprov);
+  if (_aprovTimer) clearInterval(_aprovTimer);
+  _aprovTimer = setInterval(async () => {
+    if (!currentUser) { clearInterval(_aprovTimer); _aprovTimer = null; return; }
+    await carregarPendentesAprov();
+    _mostrarComunicadoAprov();
+    if (_paginaAtual === 'aprovacoes') renderAprovacoes(true);
+  }, 60000);
+}
+
+// ── Comunicado (master: pendências; demais: decisões novas) ─────────
+function _atualizarIndicadoresAprov() {
+  const el = document.getElementById('nav-aprov-count');
+  const meus = _ehMaster() ? _aprovPendentes : _aprovPendentes.filter(a => currentUser && a.solicitante === currentUser.user);
+  if (el) { el.textContent = meus.length; el.hidden = meus.length === 0; }
+  const tab = document.getElementById('aprov-tab-pend-qtd');
+  if (tab) tab.textContent = meus.length ? `(${meus.length})` : '';
+}
+
+async function _mostrarComunicadoAprov() {
+  const slot = document.getElementById('aprov-comunicado-slot');
+  if (!slot || !currentUser) return;
+  if (_paginaAtual === 'aprovacoes') { slot.innerHTML = ''; return; }
+  if (_ehMaster()) {
+    const n = _aprovPendentes.length;
+    if (!n) { slot.innerHTML = ''; return; }
+    const desp = _aprovPendentes.filter(a => a.tipo === 'pagar').length;
+    const rec = n - desp;
+    const det = [desp ? `${desp} de despesa` : '', rec ? `${rec} de receita` : ''].filter(Boolean).join(' e ');
+    slot.innerHTML = `<div class="aprov-comunicado" role="status">
+      <span>🔔 <b>${n} ${n === 1 ? 'alteração aguarda' : 'alterações aguardam'} sua aprovação</b> (${det}) em lançamentos de mês já fechado.</span>
+      <span class="aprov-com-acoes"><button class="btn btn-primary btn-sm" onclick="showPage('aprovacoes')">Revisar agora</button></span>
+    </div>`;
+    return;
+  }
+  // Usuário comum: avisa decisões tomadas desde a última visita à tela.
+  const visto = localStorage.getItem(APROV_VISTO_KEY + currentUser.user) || '';
+  const rows = await sbFetch('aprovacoes', 'GET', null,
+    `?solicitante=eq.${encodeURIComponent(currentUser.user)}&status=in.(aprovado,rejeitado)` +
+    (visto ? `&decidido_em=gt.${encodeURIComponent(visto)}` : '') + '&select=id,status');
+  const ap = (rows || []).filter(r => r.status === 'aprovado').length;
+  const rj = (rows || []).filter(r => r.status === 'rejeitado').length;
+  if (!ap && !rj) { slot.innerHTML = ''; return; }
+  const txt = [ap ? `${ap} aprovada${ap > 1 ? 's' : ''}` : '', rj ? `${rj} rejeitada${rj > 1 ? 's' : ''}` : ''].filter(Boolean).join(' e ');
+  slot.innerHTML = `<div class="aprov-comunicado decisao" role="status">
+    <span>📬 O usuário master respondeu suas solicitações: <b>${txt}</b>.</span>
+    <span class="aprov-com-acoes"><button class="btn btn-secondary btn-sm" onclick="aprovTrocarAba('historico');showPage('aprovacoes')">Ver respostas</button></span>
+  </div>`;
+}
+
+// ── Tela ────────────────────────────────────────────────────────────
+function aprovTrocarAba(aba) {
+  _aprovAba = aba;
+  const p = document.getElementById('aprov-tab-pend'), h = document.getElementById('aprov-tab-hist');
+  if (p) p.setAttribute('aria-selected', aba === 'pendentes');
+  if (h) h.setAttribute('aria-selected', aba === 'historico');
+  renderAprovacoes();
+}
+
+const _APROV_CAMPOS = {
+  valor: 'Valor', juros: 'Juros', dtcompra: 'Data da compra', dtvenda: 'Data da venda',
+  dtprev: 'Vencimento', nf: 'NF', forn: 'Fornecedor', cliente: 'Cliente', prod: 'Item / produto',
+  parcelas: 'Parcelas', financeiro: 'Financeiro', pago: 'Pago', recebido: 'Recebido',
+  dtpago: 'Data do pagamento', dtrecebido: 'Data do recebimento', tipo_pag: 'Forma',
+  banco: 'Banco / conta', obs: 'Observações', cat_dre: 'Categoria', parcela_datas: 'Parcelas (datas e valores)',
+  empresa_id: 'Empresa'
+};
+
+function _fmtCampoAprov(tipo, k, v) {
+  if (v === null || v === undefined || v === '') return '—';
+  try {
+    if (k === 'valor' || k === 'juros') return fmtBRL(Number(v) || 0);
+    if (['dtcompra', 'dtvenda', 'dtprev', 'dtpago', 'dtrecebido'].includes(k)) return fmtDate(v);
+    if (k === 'forn') return getFornNome(v) || v;
+    if (k === 'cliente') return getClienteNome(v) || v;
+    if (k === 'prod') return (tipo === 'pagar' ? getProdNome(v) : ((db.prodvenda.find(p => p.id === v) || {}).nome)) || v;
+    if (k === 'banco') return getBancoNome(v) || v;
+    if (k === 'cat_dre') return getDreCatNome(v) || v;
+    if (k === 'empresa_id') return empresaNome(v) || v;
+    if (['pago', 'recebido', 'financeiro'].includes(k)) return v === 'sim' ? 'Sim' : 'Não';
+    if (k === 'parcela_datas') {
+      const { datas, valores, pagos } = _parseParcelas(v);
+      const n = Math.max(datas.length, valores.length);
+      if (!n) return '—';
+      return Array.from({ length: n }, (_, i) =>
+        `${i + 1}ª ${datas[i] ? fmtDate(datas[i]) : '—'}${valores[i] != null ? ' ' + fmtBRL(valores[i]) : ''}${pagos[i] ? ' ✓' : ''}`).join('<br>');
+    }
+  } catch (e) {}
+  return escAprov(String(v));
+}
+
+function escAprov(s) {
+  return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+function _fmtQuando(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  return d.toLocaleDateString('pt-BR') + ' às ' + d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+}
+
+function _corpoAprov(a) {
+  if (a.acao === 'editar') {
+    const linhas = Object.keys(a.depois || {}).map(k => `<tr>
+      <td>${_APROV_CAMPOS[k] || k}</td>
+      <td class="antes">${_fmtCampoAprov(a.tipo, k, (a.antes || {})[k])}</td>
+      <td class="depois">${_fmtCampoAprov(a.tipo, k, a.depois[k])}</td></tr>`).join('');
+    return `<div class="table-wrap" style="overflow-x:auto"><table class="aprov-diff">
+      <thead><tr><th>Campo</th><th>Hoje</th><th>Passa a ser</th></tr></thead><tbody>${linhas}</tbody></table></div>`;
+  }
+  if (a.acao === 'estornar') {
+    return `<div class="aprov-nota">Desfazer a baixa ${a.parc_idx ? `da parcela ${a.parc_idx}` : ''} — o lançamento volta para ${a.tipo === 'pagar' ? '"A Pagar"' : '"A Receber"'} e o saldo do banco muda.</div>`;
+  }
+  return `<div class="aprov-nota alerta">Excluir o lançamento inteiro (${fmtBRL((a.antes || {}).valor || 0)}). O histórico de ${a.tipo === 'pagar' ? 'pagamento' : 'recebimento'} também é apagado.</div>`;
+}
+
+async function renderAprovacoes(recarregar) {
+  const box = document.getElementById('aprov-lista');
+  if (!box || !currentUser) return;
+  const sub = document.getElementById('aprov-sub');
+  if (sub) sub.textContent = _ehMaster()
+    ? 'Alterações pedidas em lançamentos com pagamento ou recebimento de meses anteriores. Aprove para aplicar ou rejeite para manter como está.'
+    : 'Suas alterações em lançamentos de mês já fechado. Elas só são aplicadas depois da aprovação do usuário master.';
+  if (recarregar || !_aprovLista.length) {
+    box.innerHTML = '<div class="empty-state">Carregando…</div>';
+    await Promise.all([carregarListaAprov(), carregarPendentesAprov()]);
+  }
+  if (!_ehMaster()) localStorage.setItem(APROV_VISTO_KEY + currentUser.user, new Date().toISOString());
+  const slot = document.getElementById('aprov-comunicado-slot'); if (slot) slot.innerHTML = '';
+
+  const fTipo = (document.getElementById('aprov-f-tipo') || {}).value || '';
+  const pend = _aprovAba === 'pendentes';
+  const lista = _aprovLista
+    .filter(a => pend ? a.status === 'pendente' : a.status !== 'pendente')
+    .filter(a => !fTipo || a.tipo === fTipo);
+  _atualizarIndicadoresAprov();
+
+  if (!lista.length) {
+    box.innerHTML = `<div class="card"><div class="empty-state" style="padding:24px">${pend
+      ? (_ehMaster() ? 'Nenhuma alteração aguardando aprovação.' : 'Você não tem pedidos aguardando aprovação.')
+      : 'Nenhuma decisão registrada ainda.'}</div></div>`;
+    return;
+  }
+
+  const rotAcao = { editar: 'Alteração', estornar: 'Estorno', excluir: 'Exclusão' };
+  const rotStatus = {
+    aprovado: '<span class="badge badge-green">Aprovada</span>',
+    rejeitado: '<span class="badge badge-red">Rejeitada</span>',
+    cancelado: '<span class="badge badge-gray">Cancelada</span>',
+    pendente: '<span class="badge badge-yellow">Aguardando</span>'
+  };
+
+  box.innerHTML = lista.map(a => {
+    const ehDesp = a.tipo === 'pagar';
+    let acoes = '';
+    if (a.status === 'pendente') {
+      if (_ehMaster()) acoes = `<button class="btn btn-secondary btn-sm" onclick="abrirRejeitarAprov('${a.id}')">Rejeitar</button>
+        <button class="btn btn-primary btn-sm" onclick="aprovarSolicitacao('${a.id}')">Aprovar</button>`;
+      else if (a.solicitante === currentUser.user) acoes = `<button class="btn btn-secondary btn-sm" onclick="cancelarSolicitacaoAprov('${a.id}')">Cancelar pedido</button>`;
+    }
+    const decisao = a.status !== 'pendente'
+      ? `<div class="aprov-nota">${a.status === 'cancelado' ? 'Cancelada pelo solicitante' : (a.status === 'aprovado' ? 'Aprovada' : 'Rejeitada') + ' por ' + escAprov(a.decidido_por_nome || a.decidido_por || '—')} em ${_fmtQuando(a.decidido_em)}${a.motivo ? ` — <b>${escAprov(a.motivo)}</b>` : ''}</div>` : '';
+    return `<div class="aprov-item ${ehDesp ? 'despesa' : 'receita'}">
+      <div class="aprov-head">
+        <div class="aprov-head-main">
+          <span class="badge ${ehDesp ? 'badge-red' : 'badge-green'}">${ehDesp ? 'Despesa' : 'Receita'}</span>
+          <span class="badge badge-gray">${rotAcao[a.acao] || a.acao}</span>
+          ${!pend ? rotStatus[a.status] || '' : ''}
+          <div class="aprov-titulo">${escAprov(a.resumo || '')}</div>
+          <div class="aprov-meta">Pedido por ${escAprov(a.solicitante_nome || a.solicitante)} em ${_fmtQuando(a.solicitado_em)}</div>
+        </div>
+        <div class="aprov-acoes">${acoes}</div>
+      </div>
+      ${_corpoAprov(a)}
+      ${decisao}
+    </div>`;
+  }).join('');
+}
+
+// ── Decisões ────────────────────────────────────────────────────────
+async function _marcarDecisaoAprov(a, status, motivo) {
+  const patch = {
+    status, motivo: motivo || null,
+    decidido_por: currentUser.user, decidido_por_nome: currentUser.nome,
+    decidido_em: new Date().toISOString()
+  };
+  const ok = await sbFetch('aprovacoes', 'PATCH', patch, `?id=eq.${a.id}&status=eq.pendente`);
+  if (ok) Object.assign(a, patch);
+  return ok;
+}
+
+async function aprovarSolicitacao(id) {
+  if (!_ehMaster()) return;
+  const a = _aprovLista.find(x => x.id === id);
+  if (!a || a.status !== 'pendente') return;
+  const tabela = a.tipo === 'pagar' ? 'lancamentos' : 'lancreceber';
+  const rows = await sbFetch(tabela, 'GET', null, `?id=eq.${a.lanc_id}&select=*`);
+  if (rows === null) { alert('❌ Não foi possível ler o lançamento.' + sbErroDetalhe()); return; }
+  const atual = rows[0];
+  if (!atual) {
+    if (confirm('Este lançamento não existe mais. Encerrar a solicitação como rejeitada?')) {
+      await _marcarDecisaoAprov(a, 'rejeitado', 'Lançamento não existe mais');
+      _depoisDecisaoAprov();
+    }
+    return;
+  }
+  // Se o lançamento mudou depois do pedido, mostra antes de sobrescrever.
+  if (a.acao === 'editar') {
+    const mudou = Object.keys(a.antes || {}).filter(k => _normAprov(atual[k]) !== _normAprov(a.antes[k]));
+    if (mudou.length && !confirm(`Atenção: depois do pedido, estes campos foram alterados por outra pessoa: ${mudou.map(k => _APROV_CAMPOS[k] || k).join(', ')}.\n\nAprovar mesmo assim e gravar os valores pedidos?`)) return;
+  }
+  const rotulo = { editar: 'Aplicar esta alteração', estornar: 'Estornar esta baixa', excluir: 'Excluir este lançamento' }[a.acao];
+  if (!confirm(`${rotulo}?\n\n${a.resumo}`)) return;
+
+  let ok = false, payload = null;
+  if (a.acao === 'editar') {
+    payload = { ...a.depois };
+    if (payload.parcela_datas && typeof payload.parcela_datas !== 'string') payload.parcela_datas = JSON.stringify(payload.parcela_datas);
+    ok = await sbFetch(tabela, 'PATCH', payload, `?id=eq.${a.lanc_id}`);
+  } else if (a.acao === 'estornar') {
+    payload = _payloadEstorno(a.tipo, atual, a.parc_idx || 1);
+    ok = await sbFetch(tabela, 'PATCH', payload, `?id=eq.${a.lanc_id}`);
+  } else if (a.acao === 'excluir') {
+    ok = await sbFetch(tabela, 'DELETE', null, `?id=eq.${a.lanc_id}`);
+  }
+  if (!ok) { alert('❌ Não foi possível aplicar a alteração no lançamento.' + sbErroDetalhe()); return; }
+
+  // Reflete na memória para as telas já abertas.
+  const lista = a.tipo === 'pagar' ? db.lancamentos : db.lancreceber;
+  if (a.acao === 'excluir') {
+    if (a.tipo === 'pagar') db.lancamentos = db.lancamentos.filter(x => x.id !== a.lanc_id);
+    else db.lancreceber = db.lancreceber.filter(x => x.id !== a.lanc_id);
+  } else {
+    const l = lista.find(x => x.id === a.lanc_id);
+    if (l) Object.assign(l, payload);
+  }
+  bumpDbVer();
+
+  if (!await _marcarDecisaoAprov(a, 'aprovado', null)) {
+    alert('⚠️ A alteração foi aplicada, mas não foi possível marcar a solicitação como aprovada.' + sbErroDetalhe());
+  }
+  _depoisDecisaoAprov(a.tipo);
+}
+
+function _payloadEstorno(tipo, l, parcIdx) {
+  const n = l.parcelas || 1;
+  const fl = tipo === 'pagar' ? 'pago' : 'recebido';
+  const dt = tipo === 'pagar' ? 'dtpago' : 'dtrecebido';
+  const p = { [fl]: 'nao', [dt]: '' };
+  if (n > 1) p.parcela_datas = _setParcelaPagoStatus(l, parcIdx, false, '');
+  return p;
+}
+
+function abrirRejeitarAprov(id) {
+  document.getElementById('aprov-rej-id').value = id;
+  document.getElementById('aprov-rej-motivo').value = '';
+  openModal('modal-aprov-rejeitar');
+  setTimeout(() => document.getElementById('aprov-rej-motivo').focus(), 50);
+}
+
+async function confirmarRejeicaoAprov() {
+  const id = document.getElementById('aprov-rej-id').value;
+  const motivo = document.getElementById('aprov-rej-motivo').value.trim();
+  if (!motivo) { alert('Escreva o motivo da rejeição.'); return; }
+  const a = _aprovLista.find(x => x.id === id);
+  if (!a) return;
+  if (!await _marcarDecisaoAprov(a, 'rejeitado', motivo)) { alert('❌ Não foi possível rejeitar.' + sbErroDetalhe()); return; }
+  closeModal('modal-aprov-rejeitar');
+  _depoisDecisaoAprov();
+}
+
+async function cancelarSolicitacaoAprov(id) {
+  const a = _aprovLista.find(x => x.id === id);
+  if (!a || !confirm('Cancelar este pedido de alteração?')) return;
+  const patch = { status: 'cancelado', decidido_por: currentUser.user, decidido_por_nome: currentUser.nome, decidido_em: new Date().toISOString() };
+  const ok = await sbFetch('aprovacoes', 'PATCH', patch, `?id=eq.${id}&status=eq.pendente`);
+  if (!ok) { alert('❌ Não foi possível cancelar.' + sbErroDetalhe()); return; }
+  Object.assign(a, patch);
+  _depoisDecisaoAprov();
+}
+
+function _depoisDecisaoAprov(tipo) {
+  _aprovPendentes = _aprovLista.filter(x => x.status === 'pendente');
+  renderAprovacoes();
+  if (tipo === 'pagar') { renderLancamentos(); renderApagar(); renderPagas(); }
+  if (tipo === 'receber') { renderLancReceber(); renderAReceber(); renderRecebido(); }
+  if (tipo) _rerenderDemonstrativoAtual();
 }
 
 async function initApp() {
@@ -14093,6 +14705,7 @@ async function initApp() {
   setTimeout(loadMetaInputs, 100);
   setTimeout(carregarJurosGlobal, 200);
   applyNavPermissions();
+  iniciarMonitorAprov();
   // Backup automático diário: roda em segundo plano, sem travar a tela
   // nem avisar o usuário; só baixa algo se ainda não tiver rodado hoje.
   // Restrito ao usuário admin (outros perfis não disparam o backup).
