@@ -1994,7 +1994,7 @@ th.ef-th { padding:8px 8px 8px 12px; }
     <div class="page" id="page-dfc-categorias">
       <div class="page-header">
         <div><div class="page-title">Categorias</div><div class="page-sub" style="margin-bottom:0">Gerencie as categorias usadas no Demonstrativo de Fluxo de Caixa (DFC) e na DRE. O Grupo de cada categoria é cadastrado em DRE &rarr; Grupos.</div></div>
-        <button class="btn-novo" id="btn-novo-dfccat" onclick="toggleFormPanel('form-dfccat',this)">
+        <button class="btn-novo" id="btn-novo-dfccat" onclick="novaDfcCategoria()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Novo
         </button>
       </div>
@@ -2179,7 +2179,7 @@ th.ef-th { padding:8px 8px 8px 12px; }
                 <option value="entrada">Entrada (+) — recebe lançamentos</option>
                 <option value="saida">Saída (−) — recebe lançamentos</option>
                 <option value="subtotal">Subtotal — calculado (ex: ROL, EBITDA, LAIR)</option>
-                <option value="parcial">Resultado do Bloco — calculado (soma só as linhas desde o último subtotal, ex: Resultado Financeiro)</option>
+                <option value="parcial">Resultado do Bloco — calculado (soma o bloco: as linhas desde o último subtotal ou, se ficar logo abaixo de um subtotal/%, as linhas abaixo dele — ex: Resultado Financeiro)</option>
                 <option value="percentual">Percentual (%) — calculado sobre a linha anterior</option>
               </select>
             </div>
@@ -10198,6 +10198,7 @@ async function saveDfcCategoria() {
   await sbFetch('dfc_categorias', 'POST', rec);
   db.dfc_cats.push(rec);
   clearDfcCategoria(); renderDfcCategorias(); populateDfcCatSelects(); populateDfcCatProdSelects(); popularCategoriasAnalise(); popularFiltrosGrupoCategoriaTodos();
+  fecharFormModalSeAberto('form-dfccat');
 }
 async function updateDfcCategoria(id) {
   const cat = db.dfc_cats.find(x => x.id === id);
@@ -10212,6 +10213,7 @@ async function updateDfcCategoria(id) {
   const res = await sbFetch('dfc_categorias', 'PATCH', { nome:cat.nome, grupo:cat.grupo, tipo:cat.tipo, obs:cat.obs }, `?id=eq.${id}`);
   if (!res) { alert('❌ Erro ao atualizar categoria.'); return; }
   clearDfcCategoria(); renderDfcCategorias(); populateDfcCatSelects(); populateDfcCatProdSelects(); popularCategoriasAnalise(); popularFiltrosGrupoCategoriaTodos();
+  fecharFormModalSeAberto('form-dfccat');
 }
 function editDfcCategoria(id) {
   const cat = db.dfc_cats.find(x => x.id === id);
@@ -10223,8 +10225,14 @@ function editDfcCategoria(id) {
   document.getElementById('dfc-cat-obs').value = cat.obs || '';
   document.getElementById('dfc-cat-form-title').textContent = 'Editar Categoria';
   document.getElementById('dfc-cat-btn-salvar').textContent = 'Salvar Alterações';
-  abrirFormPanel('form-dfccat', 'btn-novo-dfccat');
-  window.scrollTo({top:0, behavior:'smooth'});
+  abrirFormModal('form-dfccat', 'Editar Categoria');
+}
+// Botão "Novo" da tela Categorias: abre a janela de cadastro já limpa
+function novaDfcCategoria() {
+  clearDfcCategoria();
+  if (typeof populateDreGrupoSelects === 'function') populateDreGrupoSelects();
+  abrirFormModal('form-dfccat', 'Nova Categoria');
+  setTimeout(() => { const el = document.getElementById('dfc-cat-nome'); if (el) el.focus(); }, 50);
 }
 function clearDfcCategoria() {
   ['dfc-cat-nome','dfc-cat-obs','dfc-cat-edit-id'].forEach(id => document.getElementById(id).value = '');
@@ -10825,7 +10833,7 @@ function renderDreGrupos() {
 // ── NOMENCLATURA DA DRE (ajuste único) ─────────────────────────────
 // Os nomes das linhas da DRE são os Grupos cadastrados (tabela dre_grupos).
 // Este ajuste roda UMA vez (marcado em config: dre_nomenclatura_v2):
-//   • Resultado Operacional   → EBITDA (Resultado Operacional)
+//   • Resultado Operacional   → RESULTADO ANTES DO IR (LAJIR)
 //   • Lucro Líquido           → GERAÇÃO DE CAIXA APÓS AS DÍVIDAS
 //   • Empréstimos — Saída     → Amortização de Empréstimos
 //   • Empréstimos — Entrada   → Contratação de Empréstimos
@@ -10836,8 +10844,8 @@ function renderDreGrupos() {
 const DRE_NOMENCLATURA_FLAG = 'dre_nomenclatura_v2';
 const DRE_LAJIR_NOME = 'RESULTADO ANTES DO IR (LAJIR)';
 const DRE_RENOMEAR = {
-  'resultado operacional':   'EBITDA (Resultado Operacional)',
-  'resultado operacional %': 'EBITDA (Resultado Operacional) (%)',
+  'resultado operacional':   'RESULTADO ANTES DO IR (LAJIR)',
+  'resultado operacional %': 'RESULTADO ANTES DO IR (LAJIR) (%)',
   'lucro liquido':           'GERAÇÃO DE CAIXA APÓS AS DÍVIDAS',
   'lucro liquido %':         'GERAÇÃO DE CAIXA APÓS AS DÍVIDAS (%)',
   'emprestimos saida':       'Amortização de Empréstimos',
@@ -10897,6 +10905,162 @@ async function ajustarNomenclaturaDre() {
     if (typeof _rerenderDemonstrativoAtual === 'function') _rerenderDemonstrativoAtual();
   }
   return mudou;
+}
+
+// ── RESULTADO DO BLOCO ACIMA DAS LINHAS ─────────────────────────────
+// Uma linha "Resultado do Bloco" (tipo parcial) pode ficar em dois lugares:
+//   • DEPOIS das linhas que soma (modo antigo): soma desde o último subtotal;
+//   • ANTES delas, logo abaixo de um subtotal/percentual (ex.: Resultado
+//     Financeiro logo abaixo do EBITDA (%), seguido de Receita Financeira e
+//     Despesas Financeiras com suas categorias): soma as linhas de
+//     Entrada/Saída que vêm LOGO ABAIXO, até o próximo subtotal/bloco.
+// Devolve { parcialId: [ids das linhas somadas] } só para o 2º caso.
+function dreBlocosParciaisAcima(grupos) {
+  const out = {};
+  const valor = g => g && (g.tipo === 'entrada' || g.tipo === 'saida');
+  grupos.forEach((g, i) => {
+    if (g.tipo !== 'parcial') return;
+    let j = i - 1;
+    while (j >= 0 && grupos[j].tipo === 'percentual') j--;
+    if (j >= 0 && valor(grupos[j])) return;          // há linhas acima → modo antigo
+    const ids = [];
+    for (let k = i + 1; k < grupos.length; k++) {
+      const t = grupos[k].tipo;
+      if (t === 'percentual') continue;
+      if (t === 'entrada' || t === 'saida') { ids.push(grupos[k].id); continue; }
+      break;                                           // subtotal/parcial encerra o bloco
+    }
+    out[g.id] = ids;
+  });
+  return out;
+}
+
+// ── AJUSTES DA DRE v3 (roda UMA vez, flag em config: dre_ajustes_v3) ─────
+//   1) "Resultado Operacional" (e o seu %) → RESULTADO ANTES DO IR (LAJIR)
+//   2) "Resultado Financeiro" sobe para logo abaixo do EBITDA (%), acima de
+//      Receita Financeira / Despesas Financeiras (grupo primeiro, depois as
+//      categorias), passando a somar as linhas que vêm abaixo dele
+//   3) Cadastra as categorias da planilha em cada grupo
+const DRE_AJUSTE_V3_FLAG = 'dre_ajustes_v3';
+const DRE_CATEGORIAS_V3 = [
+  { grupo: 'Custo do Produto Vendido (CPV)', tipo: 'saida', cpv: true,
+    cats: ['Despesas Com Produto', 'Insumos De Produção', 'Manutenção (Produção)', 'Despesas Com Rh'] },
+  { grupo: 'Despesas ADM', tipo: 'saida', alias: ['despesas administrativas'],
+    cats: ['Despesas Administrativas'] },
+  { grupo: 'Impostos', tipo: 'saida',
+    cats: ['Impostos', 'Devolução'] },
+  { grupo: '(-) Amortização de Empréstimos', tipo: 'saida', alias: ['emprestimos saida'],
+    cats: ['Empréstimos (-)'] },
+  { grupo: '(-) Investimentos', tipo: 'saida',
+    cats: ['Investimentos'] },
+  { grupo: '(+) Novos Empréstimos Contratados', tipo: 'entrada', alias: ['contratacao de emprestimos', 'emprestimos entrada'],
+    cats: ['Empréstimos (+)'] }
+];
+// Chave de categoria: igual à da DRE, mas mantém + e − (Empréstimos (+) ≠ Empréstimos (-))
+function _chaveCatDre(nome) {
+  return normText(nome).replace(/[^a-z0-9%+\-]+/g, ' ').replace(/\s+/g, ' ').trim();
+}
+async function ajustarDreV3() {
+  if (!db.dre_grupos || !db.dre_grupos.length) return false;
+  let flag;
+  try { flag = await sbFetch('config', 'GET', null, `?key=eq.${DRE_AJUSTE_V3_FLAG}&limit=1`); } catch(e) { return false; }
+  if (!Array.isArray(flag) || flag.length) return false;
+
+  let falhas = 0, mudouGrupos = false, mudouCats = false;
+  const avisos = [];
+
+  // 1) Resultado Operacional → LAJIR
+  const RENOMEAR_V3 = {
+    'resultado operacional':   DRE_LAJIR_NOME,
+    'resultado operacional %': DRE_LAJIR_NOME + ' (%)'
+  };
+  for (const g of [...db.dre_grupos]) {
+    const novo = RENOMEAR_V3[_chaveNomeDre(g.nome)];
+    if (!novo) continue;
+    // Se já existir uma linha LAJIR calculada (criada automaticamente antes),
+    // ela sai — fica a que estava no lugar do Resultado Operacional.
+    const chaveNova = _chaveNomeDre(novo);
+    const duplicadas = db.dre_grupos.filter(x => x.id !== g.id && _chaveNomeDre(x.nome) === chaveNova
+      && (x.tipo === 'subtotal' || x.tipo === 'percentual'));
+    for (const d of duplicadas) {
+      const ok = await sbFetch('dre_grupos', 'DELETE', null, `?id=eq.${d.id}`);
+      if (ok) { db.dre_grupos = db.dre_grupos.filter(x => x.id !== d.id); mudouGrupos = true; } else falhas++;
+    }
+    const ok = await sbFetch('dre_grupos', 'PATCH', { nome: novo }, `?id=eq.${g.id}`);
+    if (ok) { g.nome = novo; mudouGrupos = true; } else falhas++;
+  }
+
+  // 2) Resultado Financeiro acima do bloco financeiro
+  const ord = [...db.dre_grupos].sort((a, b) => (a.ordem || 0) - (b.ordem || 0));
+  const iRF = ord.findIndex(g => g.tipo !== 'percentual' && _chaveNomeDre(g.nome) === 'resultado financeiro');
+  if (iRF > 0) {
+    let ini = iRF;
+    while (ini > 0 && (ord[ini - 1].tipo === 'entrada' || ord[ini - 1].tipo === 'saida')) ini--;
+    if (ini < iRF) {
+      const rf = ord[iRF];
+      // Precisa ser "Resultado do Bloco" para somar só o bloco financeiro
+      if (rf.tipo !== 'parcial') {
+        const ok = await sbFetch('dre_grupos', 'PATCH', { tipo: 'parcial' }, `?id=eq.${rf.id}`);
+        if (ok) rf.tipo = 'parcial'; else falhas++;
+      }
+      let fim = iRF;
+      while (fim + 1 < ord.length && ord[fim + 1].tipo === 'percentual') fim++;
+      const mover = ord.splice(iRF, fim - iRF + 1);
+      ord.splice(ini, 0, ...mover);
+      for (let i = 0; i < ord.length; i++) {
+        const ordem = i + 1;
+        if (ord[i].ordem === ordem) continue;
+        const ok = await sbFetch('dre_grupos', 'PATCH', { ordem }, `?id=eq.${ord[i].id}`);
+        if (ok) ord[i].ordem = ordem; else falhas++;
+      }
+      mudouGrupos = true;
+    }
+  }
+  db.dre_grupos.sort((a, b) => (a.ordem || 0) - (b.ordem || 0));
+
+  // 3) Categorias da planilha
+  const gruposValor = () => db.dre_grupos.filter(g => g.tipo === 'entrada' || g.tipo === 'saida');
+  for (const item of DRE_CATEGORIAS_V3) {
+    const chaves = [_chaveNomeDre(item.grupo), ...(item.alias || [])];
+    let grupo = gruposValor().find(g => chaves.includes(_chaveNomeDre(g.nome)));
+    if (!grupo && item.cpv) { const id = getGrupoCpvId(); grupo = id ? getDreGrupo(id) : null; }
+    if (!grupo) {
+      const maxOrdem = db.dre_grupos.reduce((m, g) => Math.max(m, g.ordem || 0), 0);
+      const rec = { id: uid(), nome: item.grupo, tipo: item.tipo, ordem: maxOrdem + 1, obs: '' };
+      const ok = await sbFetch('dre_grupos', 'POST', rec);
+      if (!ok) { falhas++; continue; }
+      db.dre_grupos.push(rec); grupo = rec; mudouGrupos = true;
+      avisos.push(`Grupo "${item.grupo}" não existia e foi criado no fim da DRE — ajuste a posição em DRE → Grupos.`);
+    }
+    for (const nomeCat of item.cats) {
+      const chave = _chaveCatDre(nomeCat);
+      const iguais = db.dfc_cats.filter(c => _chaveCatDre(c.nome) === chave);
+      const existente = iguais.find(c => c.grupo === grupo.id) || iguais[0];
+      if (existente) {
+        if (existente.grupo === grupo.id && existente.tipo === grupo.tipo) continue;
+        const ok = await sbFetch('dfc_categorias', 'PATCH', { grupo: grupo.id, tipo: grupo.tipo }, `?id=eq.${existente.id}`);
+        if (ok) { existente.grupo = grupo.id; existente.tipo = grupo.tipo; mudouCats = true; } else falhas++;
+      } else {
+        const rec = { id: uid(), nome: nomeCat, grupo: grupo.id, tipo: grupo.tipo, obs: '' };
+        const ok = await sbFetch('dfc_categorias', 'POST', rec);
+        if (ok) { db.dfc_cats.push(rec); mudouCats = true; } else falhas++;
+      }
+    }
+  }
+
+  if (!falhas) await sbFetch('config', 'POST', { id: uid(), key: DRE_AJUSTE_V3_FLAG, value: new Date().toISOString() });
+  else console.warn('[DRE] Ajustes v3 com ' + falhas + ' falha(s); será tentado novamente.');
+  if (avisos.length) console.warn('[DRE] ' + avisos.join(' '));
+
+  if (mudouGrupos || mudouCats) {
+    bumpDbVer();
+    const chamar = nome => { if (typeof window[nome] === 'function') { try { window[nome](); } catch(e) {} } };
+    ['renderDreGrupos', 'populateDreGrupoSelects', 'renderDfcCategorias', 'populateDfcCatSelects',
+     'populateDfcCatProdSelects', 'popularCategoriasAnalise', 'popularFiltrosGrupoCategoriaTodos',
+     '_rerenderDemonstrativoAtual'].forEach(chamar);
+  }
+  if (avisos.length) alert('Ajustes da DRE aplicados.\n\n' + avisos.join('\n'));
+  return mudouGrupos || mudouCats;
 }
 
 // Move um grupo para cima (-1) ou para baixo (+1) na sequência da DRE,
@@ -11582,6 +11746,9 @@ function renderDre() {
   const linhaCalc = {};
   grupos.forEach(g => linhaCalc[g.id] = {});
 
+  const blocosAcima = dreBlocosParciaisAcima(grupos);
+  const grupoPorId = {}; grupos.forEach(g => grupoPorId[g.id] = g);
+  const fimBlocoAcima = new Set(Object.values(blocosAcima).filter(ids => ids.length).map(ids => ids[ids.length - 1]));
   COLS.forEach(col => {
     let acumulado = 0;
     let valorAnterior = 0; // valor da linha imediatamente anterior, usado pelas linhas de percentual
@@ -11593,10 +11760,20 @@ function renderDre() {
         acumulado += assinado;
         linhaCalc[g.id][col] = assinado;
         valorAnterior = assinado;
+        if (fimBlocoAcima.has(g.id)) baseParcial = acumulado;
       } else if (g.tipo === 'subtotal') {
         linhaCalc[g.id][col] = acumulado;
         valorAnterior = acumulado;
         baseParcial = acumulado;
+      } else if (g.tipo === 'parcial' && blocosAcima[g.id]) {
+        // Resultado do Bloco ACIMA das linhas (ex.: Resultado Financeiro logo
+        // abaixo do EBITDA (%)): soma as Entradas/Saídas que vêm abaixo dele
+        const v = blocosAcima[g.id].reduce((s, id) => {
+          const b = valorBruto(id, col);
+          return s + (grupoPorId[id].tipo === 'entrada' ? b : -b);
+        }, 0);
+        linhaCalc[g.id][col] = v;
+        valorAnterior = v;
       } else if (g.tipo === 'parcial') {
         // Resultado do Bloco: soma só as linhas desde o último subtotal
         // (ex.: Resultado Financeiro = Receita Financeira − Despesas Financeiras)
@@ -12289,7 +12466,8 @@ function _pprAcharLinha(...trechos) {
   return pprLinhasDisponiveis().find(g => { const n = normText(g.nome || ''); return trechos.every(t => n.includes(t)); });
 }
 function pprConfigPadrao() {
-  const ro = _pprAcharLinha('resultado', 'operacional')
+  const ro = _pprAcharLinha('lajir')
+          || _pprAcharLinha('resultado', 'operacional')
           || [...pprLinhasDisponiveis()].reverse().find(g => g.tipo === 'subtotal');
   return {
     base: ro ? ro.id : '', indicador: ro ? ro.id : '',
@@ -12388,14 +12566,21 @@ function calcularDreLinhasAno(ano) {
     }
   }
 
+  const blocosAcima = dreBlocosParciaisAcima(grupos);
+  const fimBlocoAcima = new Set(Object.values(blocosAcima).filter(ids => ids.length).map(ids => ids[ids.length - 1]));
+  const tipoDe = {}; grupos.forEach(g => tipoDe[g.id] = g.tipo);
   for (let m = 1; m <= 12; m++) {
     let acumulado = 0, baseParcial = 0;
     grupos.forEach(g => {
       if (g.tipo === 'entrada' || g.tipo === 'saida') {
         const v = g.tipo === 'entrada' ? valoresMes[m][g.id] : -valoresMes[m][g.id];
         acumulado += v; linhas[g.id][m] = v;
+        if (fimBlocoAcima.has(g.id)) baseParcial = acumulado;
       } else if (g.tipo === 'subtotal') {
         linhas[g.id][m] = acumulado; baseParcial = acumulado;
+      } else if (g.tipo === 'parcial' && blocosAcima[g.id]) {
+        linhas[g.id][m] = blocosAcima[g.id].reduce((s, id) =>
+          s + (tipoDe[id] === 'entrada' ? (valoresMes[m][id] || 0) : -(valoresMes[m][id] || 0)), 0);
       } else if (g.tipo === 'parcial') {
         linhas[g.id][m] = acumulado - baseParcial; baseParcial = acumulado;
       }
@@ -14661,7 +14846,10 @@ async function initApp() {
   aplicarFiltrosPeriodoPadrao();
   carregarPrefsDre();
   atualizarBotoesOrientacaoDre();
-  ajustarNomenclaturaDre().catch(e => console.warn('[DRE] ajuste de nomenclatura:', e));
+  ajustarNomenclaturaDre()
+    .catch(e => console.warn('[DRE] ajuste de nomenclatura:', e))
+    .then(() => ajustarDreV3())
+    .catch(e => console.warn('[DRE] ajustes v3:', e));
   populateFornSelects();
   populateProdSelects();
   populateClienteSelects();
@@ -14821,7 +15009,8 @@ const PAINEIS_MODAL = {
   'form-forn':    'Novo Fornecedor/Despesas',
   'form-cli':     'Novo Cliente',
   'form-bnk':     'Nova Conta / Banco',
-  'form-empresa': 'Nova Empresa'
+  'form-empresa': 'Nova Empresa',
+  'form-dfccat':  'Nova Categoria'
 };
 
 let _formModalAtual = null;
@@ -17056,6 +17245,7 @@ document.querySelectorAll('.modal-overlay').forEach(ov => {
     // limpo ao fechar, senão os campos (ex.: número de parcelas) ficam
     // com os valores do último preenchimento na próxima vez que abrirem.
     if (ov.id === 'modal-novo-lr') clearLancReceber();
+    if (ov.id === 'modal-form-generico') { fecharFormModal(); return; }
     ov.classList.remove('open');
   });
 });
