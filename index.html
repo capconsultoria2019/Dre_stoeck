@@ -3097,12 +3097,15 @@ th.ef-th { padding:8px 8px 8px 12px; }
         <select id="elr-financeiro"><option value="nao">Não</option><option value="sim">Sim</option></select>
       </div>
       <div class="form-group"><label>Recebido?</label>
-        <select id="elr-recebido"><option value="nao">Não</option><option value="sim">Sim</option></select>
+        <select id="elr-recebido" onchange="toggleDataQuitacao('elr-recebido','elr-dtrecebido-wrap','elr-dtrecebido')"><option value="nao">Não</option><option value="sim">Sim</option></select>
       </div>
     </div>
     <div class="grid3">
       <div class="form-group"><label>Banco / Conta *</label>
         <select id="elr-banco"><option value="">Não informado</option></select>
+      </div>
+      <div class="form-group campo-quitacao" id="elr-dtrecebido-wrap" style="display:none"><label>Data do Recebimento *</label>
+        <input id="elr-dtrecebido" type="date" />
       </div>
     </div>
     <!-- Datas manuais de parcelas no modal -->
@@ -3408,12 +3411,15 @@ th.ef-th { padding:8px 8px 8px 12px; }
         <select id="edit-financeiro"><option value="nao">Não</option><option value="sim">Sim</option></select>
       </div>
       <div class="form-group"><label>Pago?</label>
-        <select id="edit-pago"><option value="nao">Não</option><option value="sim">Sim</option></select>
+        <select id="edit-pago" onchange="toggleDataQuitacao('edit-pago','edit-dtpago-wrap','edit-dtpago')"><option value="nao">Não</option><option value="sim">Sim</option></select>
       </div>
     </div>
     <div class="grid3">
       <div class="form-group"><label>Banco / Conta *</label>
         <select id="edit-banco"><option value="">Não informado</option></select>
+      </div>
+      <div class="form-group campo-quitacao" id="edit-dtpago-wrap" style="display:none"><label>Data do Pagamento *</label>
+        <input id="edit-dtpago" type="date" />
       </div>
     </div>
     <!-- Datas manuais de parcelas no modal -->
@@ -5639,6 +5645,33 @@ function _parcelasTodasQuitadas(raw, n, data) {
   return JSON.stringify({ datas, valores, pagos: Array(n).fill(true), dtpagos: Array(n).fill(data) });
 }
 
+// Preenche o campo de data de pagamento/recebimento nos formulários de edição.
+function _preencherDataQuitacaoEdit(l, tipo, selId, wrapId, inputId) {
+  const wrap = document.getElementById(wrapId), inp = document.getElementById(inputId);
+  if (!wrap || !inp) return;
+  const quitado = document.getElementById(selId).value === 'sim';
+  let dt = tipo === 'pagar' ? (l.dtpago || '') : (l.dtrecebido || '');
+  if (!dt && (l.parcelas || 1) > 1) {
+    const { dtpagos } = _parseParcelas(l.parcela_datas);
+    dt = (dtpagos || []).filter(Boolean).sort().slice(-1)[0] || '';
+  }
+  inp.value = quitado ? dt : '';
+  wrap.style.display = quitado ? '' : 'none';
+  wrap.classList.remove('faltando');
+}
+// Mantém o status por parcela coerente com o "Pago?/Recebido?" do formulário de edição.
+function _ajustarParcelasQuitacaoEdit(raw, n, quitado, eraQuitado, data) {
+  if ((n || 1) <= 1) return raw;
+  const { datas, valores, pagos, dtpagos } = _parseParcelas(raw);
+  const p = pagos.slice(0, n), d = dtpagos.slice(0, n);
+  while (p.length < n) p.push(false);
+  while (d.length < n) d.push('');
+  if (quitado) { for (let i = 0; i < n; i++) { if (!p[i]) { p[i] = true; d[i] = data; } else if (!d[i]) d[i] = data; } }
+  else if (eraQuitado) { for (let i = 0; i < n; i++) { p[i] = false; d[i] = ''; } }
+  else return raw;
+  return JSON.stringify({ datas, valores, pagos: p, dtpagos: d });
+}
+
 function validarBancoObrigatorio(status, banco) {
   if (status === 'sim' && !banco) {
     alert('Selecione o banco/conta antes de salvar: todo lançamento marcado como pago/recebido precisa ter um banco vinculado.');
@@ -5724,10 +5757,25 @@ async function saveLancamento() {
     const meses = _mesesEntreVigencia(vigInicio, vigFim);
     if (meses.length > 60) { alert('Vigência muito longa (máximo 60 meses). Reduza o período.'); return; }
     const fixoGrupo = uid();
+    // Vencimento de cada mês: usa a "Previsão de Pagamento" informada (mantendo
+    // a mesma distância em meses e o mesmo dia); sem previsão, vence no próprio
+    // dia da compra. Antes ia vazio e os meses ficavam "Sem data".
+    const dtprevForm = document.getElementById('l-dtprev').value;
+    let offMeses = 0, diaVenc = dia;
+    if (dtprevForm) {
+      const [ac, mc] = dtcompra.split('-').map(Number);
+      const [ap, mp, dp] = dtprevForm.split('-').map(Number);
+      offMeses = (ap - ac) * 12 + (mp - mc);
+      diaVenc = dp || dia;
+    }
+    const vencDoMes = (ano, mes) => {
+      const d = new Date(ano, mes - 1 + offMeses, 1);
+      return _dataComDiaFixo(d.getFullYear(), d.getMonth() + 1, diaVenc);
+    };
     const novos = meses.map(({ano, mes}) => ({
       id: uid(),
       dtcompra: _dataComDiaFixo(ano, mes, dia),
-      dtprev: '',
+      dtprev: vencDoMes(ano, mes),
       ...baseRec,
       parcelas: 1,
       parcela_datas: null,
@@ -5739,13 +5787,29 @@ async function saveLancamento() {
     // "Pago = Sim" vale para a 1ª ocorrência; os meses seguintes ficam em aberto
     // (não faz sentido marcar meses futuros como pagos na mesma data).
     novos.forEach((l, i) => { if (i > 0) { l.pago = 'nao'; l.dtpago = ''; } });
-    for (const l of novos) {
-      const ok = await sbFetch('lancamentos', 'POST', l);
-      if (!ok) { alert(`❌ Erro ao salvar a conta fixa (parou em ${fmtDate(l.dtcompra)}).` + sbErroDetalhe()); return; }
-      db.lancamentos.push(l);
+    // Grava todos os meses de uma vez (um único POST). Se o banco ainda não tiver
+    // as colunas da conta fixa (fixo, fixo_grupo, vigencia_*), grava sem elas
+    // para que TODOS os meses sejam criados mesmo assim.
+    let semColunasFixa = false;
+    let ok = await sbFetch('lancamentos', 'POST', novos);
+    if (!ok) {
+      const det = (window.SB_ULTIMO_ERRO && window.SB_ULTIMO_ERRO.detalhe || '').toLowerCase();
+      if (/fixo|vigencia|column|schema/.test(det)) {
+        const enxutos = novos.map(({fixo, fixo_grupo, vigencia_inicio, vigencia_fim, ...resto}) =>
+          ({ ...resto, obs: ((resto.obs || '') + ' [Conta fixa ' + vigInicio + ' a ' + vigFim + ']').trim() }));
+        ok = await sbFetch('lancamentos', 'POST', enxutos);
+        if (ok) { semColunasFixa = true; novos.forEach((l, i) => { l.obs = enxutos[i].obs; }); }
+      }
     }
-    clearLancamento(); closeModal('modal-novo-lanc'); renderLancamentos(); renderApagar(); renderPagas(); populateYearSelects();
-    alert(`✅ Conta fixa criada: ${novos.length} lançamento(s), de ${vigInicio} até ${vigFim}.`);
+    if (!ok) { alert('❌ Erro ao salvar a conta fixa. Nenhum mês foi gravado.' + sbErroDetalhe()); return; }
+    novos.forEach(l => db.lancamentos.push(l));
+    bumpDbVer();
+    // Os filtros da tela vêm no mês atual; libera mês/ano para mostrar todos os meses criados.
+    ['lf-mes','lf-ano','af-mes','af-ano'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+    clearLancamento(); closeModal('modal-novo-lanc'); populateYearSelects(); renderLancamentos(); renderApagar(); renderPagas();
+    const lbl = m => { const [a, x] = m.split('-'); return `${x}/${a}`; };
+    alert(`✅ Conta fixa criada: ${novos.length} lançamento(s), de ${lbl(vigInicio)} até ${lbl(vigFim)}.\n\nOs filtros de Mês/Ano foram liberados para mostrar todos os meses.`
+      + (semColunasFixa ? '\n\n⚠️ O banco não tem as colunas da conta fixa (fixo, fixo_grupo, vigencia_inicio, vigencia_fim). Os meses foram criados como lançamentos avulsos; para poder editar/estender a série depois, crie essas colunas na tabela "lancamentos" do Supabase.' : ''));
     return;
   }
 
@@ -5993,6 +6057,7 @@ function editLancamento(id) {
   document.getElementById('edit-parcelas').value = l.parcelas;
   document.getElementById('edit-financeiro').value = l.financeiro;
   document.getElementById('edit-pago').value = l.pago;
+  _preencherDataQuitacaoEdit(l, 'pagar', 'edit-pago', 'edit-dtpago-wrap', 'edit-dtpago');
   document.getElementById('edit-obs').value = l.obs||'';
   const eb = document.getElementById('edit-banco');
   if (eb) eb.value = l.banco || '';
@@ -6055,6 +6120,8 @@ async function updateLancamento() {
   if(!l) return;
   const pago = document.getElementById('edit-pago').value;
   const banco = document.getElementById('edit-banco') ? document.getElementById('edit-banco').value : (l.banco||'');
+  const _dtQuitEdit = validarDataQuitacao(pago, 'edit-dtpago-wrap', 'edit-dtpago', 'data do pagamento');
+  if (_dtQuitEdit === null) return;
   if (!validarBancoObrigatorio(pago, banco)) return;
 
   // Conta Fixa em massa: descobre os "irmãos" (mesma fixo_grupo) ANTES de
@@ -6089,7 +6156,10 @@ async function updateLancamento() {
   const manualDates = l.parcelas > 1 ? getManualParcelaDates('edit-parcela-dates', l.parcelas) : null;
   l.parcela_datas = l.parcelas > 1 ? buildParcelaDatasPayload('edit-parcela-dates', l.parcelas) : null;
   l.parcela_datas = _preservarBaixasParcelas(l.parcela_datas, _origLanc.parcela_datas, l.parcelas);
+  l.dtpago = (pago === 'sim') ? _dtQuitEdit : '';
+  l.parcela_datas = _ajustarParcelasQuitacaoEdit(l.parcela_datas, l.parcelas, pago === 'sim', _origLanc.pago === 'sim', _dtQuitEdit);
   const _payloadLanc = {
+    dtpago: l.dtpago,
     empresa_id: l.empresa_id,
     dtcompra: l.dtcompra, dtprev: l.dtprev, nf: l.nf,
     forn: l.forn, prod: l.prod, valor: l.valor,
@@ -9641,6 +9711,7 @@ function editLancReceber(id) {
   document.getElementById('elr-parcelas').value=l.parcelas;
   document.getElementById('elr-financeiro').value=l.financeiro;
   document.getElementById('elr-recebido').value=l.recebido;
+  _preencherDataQuitacaoEdit(l, 'receber', 'elr-recebido', 'elr-dtrecebido-wrap', 'elr-dtrecebido');
   document.getElementById('elr-obs').value=l.obs||'';
   document.getElementById('elr-juros').value=l.juros||'';
   const elrBanco = document.getElementById('elr-banco');
@@ -9671,6 +9742,8 @@ async function updateLancReceber() {
   const l=db.lancreceber.find(x=>x.id===id); if(!l) return;
   const recebido=document.getElementById('elr-recebido').value;
   const banco = document.getElementById('elr-banco') ? document.getElementById('elr-banco').value : (l.banco||'');
+  const _dtQuitEditR = validarDataQuitacao(recebido, 'elr-dtrecebido-wrap', 'elr-dtrecebido', 'data do recebimento');
+  if (_dtQuitEditR === null) return;
   if (!validarBancoObrigatorio(recebido, banco)) return;
   const _empLR = empresaDoForm('elr-empresa');
   if (_empLR === null) return;
@@ -9692,7 +9765,9 @@ async function updateLancReceber() {
   const manualDates = l.parcelas > 1 ? getManualParcelaDates('elr-parcela-dates', l.parcelas) : null;
   l.parcela_datas = l.parcelas > 1 ? buildParcelaDatasPayload('elr-parcela-dates', l.parcelas) : null;
   l.parcela_datas = _preservarBaixasParcelas(l.parcela_datas, _origLR.parcela_datas, l.parcelas);
-  const _payloadLR = {empresa_id:l.empresa_id,dtvenda:l.dtvenda,dtprev:l.dtprev,nf:l.nf,cliente:l.cliente,prod:l.prod,valor:l.valor,parcelas:l.parcelas,financeiro:l.financeiro,recebido:l.recebido,banco:l.banco,obs:l.obs,cat_dre:l.cat_dre,parcela_datas:l.parcela_datas};
+  l.dtrecebido = (recebido === 'sim') ? _dtQuitEditR : '';
+  l.parcela_datas = _ajustarParcelasQuitacaoEdit(l.parcela_datas, l.parcelas, recebido === 'sim', _origLR.recebido === 'sim', _dtQuitEditR);
+  const _payloadLR = {dtrecebido:l.dtrecebido,empresa_id:l.empresa_id,dtvenda:l.dtvenda,dtprev:l.dtprev,nf:l.nf,cliente:l.cliente,prod:l.prod,valor:l.valor,parcelas:l.parcelas,financeiro:l.financeiro,recebido:l.recebido,banco:l.banco,obs:l.obs,cat_dre:l.cat_dre,parcela_datas:l.parcela_datas};
   // Mês já fechado + usuário comum: nada é gravado; vira pedido ao master.
   if (_precisaAprovacao('receber', _origLR)) {
     Object.keys(l).forEach(k => { if (!(k in _origLR)) delete l[k]; });
