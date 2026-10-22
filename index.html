@@ -170,6 +170,26 @@ tr:hover td { background:#faf9f7; }
 .badge { display:inline-flex; align-items:center; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:600; }
 .badge-green { background:#dcfce7; color:#166534; }
 .badge-red { background:#fee2e2; color:#991b1b; }
+/* ── Cheques / várias formas ── */
+.comp-resumo { background:#faf9f7; border:1px solid #e7e5e4; border-radius:10px; padding:10px 14px; font-size:13px; color:#44403c; margin-bottom:14px; line-height:1.6; }
+.comp-sec { border:1px solid #e7e5e4; border-radius:10px; padding:12px 14px; margin-bottom:12px; }
+.comp-sec-head { display:flex; justify-content:space-between; align-items:flex-end; gap:12px; flex-wrap:wrap; margin-bottom:10px; }
+.comp-sec-tit { font-weight:700; font-size:13.5px; color:#1f2937; }
+.comp-custodia { display:flex; gap:8px; align-items:flex-end; flex-wrap:wrap; }
+.comp-custodia label { font-size:11px; color:#57534e; display:block; margin-bottom:3px; }
+.comp-custodia select { min-width:200px; }
+.comp-tab { width:100%; border-collapse:collapse; margin-bottom:8px; }
+.comp-tab th { font-size:11px; text-transform:uppercase; letter-spacing:.03em; color:#78716c; text-align:left; padding:4px 6px; font-weight:600; }
+.comp-tab td { padding:4px 6px; vertical-align:middle; font-size:13px; }
+.comp-tab input, .comp-tab select { width:100%; min-width:90px; }
+.comp-tab tr.comp-sel td { background:#fff7ed; }
+.comp-chq-scroll { max-height:260px; overflow-y:auto; border:1px solid #f5f4f2; border-radius:8px; }
+.comp-totais { display:flex; flex-wrap:wrap; gap:10px; align-items:stretch; background:#fafaf9; border:1px solid #e7e5e4; border-radius:10px; padding:10px 12px; }
+.comp-tot-item { min-width:110px; }
+.comp-tot-item .lbl { font-size:11px; color:#78716c; }
+.comp-tot-item .val { font-family:'DM Mono',monospace; font-weight:700; font-size:15px; color:#1f2937; }
+.comp-status { flex-basis:100%; font-size:13px; font-weight:600; }
+.comp-ok { color:#166534; } .comp-falta { color:#dc2626; } .comp-exc { color:#c2410c; }
 .badge-yellow { background:#fef3c7; color:#92400e; }
 .badge-gray { background:#faf9f7; color:#57534e; border:1px solid #e7e5e4; }
 .badge-blue { background:#dbeafe; color:#1e40af; }
@@ -1119,7 +1139,7 @@ th.ef-th { padding:8px 8px 8px 12px; }
         <span>📦 Contas a Pagar</span>
         <span class="nav-group-arrow">▶</span>
       </div>
-      <div class="nav-group-items" id="grp-pagar" style="max-height:400px">
+      <div class="nav-group-items" id="grp-pagar" style="max-height:600px">
         <div class="nav-sub-item" onclick="showPage('bancos')" id="nav-bancos">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
           Bancos / Caixas
@@ -1148,6 +1168,10 @@ th.ef-th { padding:8px 8px 8px 12px; }
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
           Contas Pagas
         </div>
+        <div class="nav-sub-item" onclick="showPage('creditos-fornecedores')" id="nav-creditos-fornecedores">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="4"/><path d="M2 21v-1a6 6 0 0 1 12 0v1"/><line x1="16" y1="11" x2="22" y2="11"/><line x1="19" y1="8" x2="19" y2="14"/></svg>
+          Créditos com Fornecedores
+        </div>
       </div>
 
       <!-- GRUPO: Contas a Receber -->
@@ -1155,7 +1179,7 @@ th.ef-th { padding:8px 8px 8px 12px; }
         <span>💰 Contas a Receber</span>
         <span class="nav-group-arrow">▶</span>
       </div>
-      <div class="nav-group-items" id="grp-receber" style="max-height:400px">
+      <div class="nav-group-items" id="grp-receber" style="max-height:700px">
         <div class="nav-sub-item" onclick="showPage('clientes')" id="nav-clientes">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
           Clientes
@@ -1175,6 +1199,18 @@ th.ef-th { padding:8px 8px 8px 12px; }
         <div class="nav-sub-item" onclick="showPage('recebido')" id="nav-recebido">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
           Contas Recebidas
+        </div>
+        <div class="nav-sub-item" onclick="showPage('cheques')" id="nav-cheques">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"/><line x1="6" y1="14" x2="13" y2="14"/><line x1="16" y1="10" x2="18" y2="10"/></svg>
+          Controle de Cheques
+        </div>
+        <div class="nav-sub-item" onclick="showPage('cheques-compensados')" id="nav-cheques-compensados">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"/><polyline points="8 12 11 15 16 9"/></svg>
+          Cheques Compensados
+        </div>
+        <div class="nav-sub-item" onclick="showPage('debitos-clientes')" id="nav-debitos-clientes">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="4"/><path d="M2 21v-1a6 6 0 0 1 12 0v1"/><line x1="16" y1="11" x2="22" y2="11"/><line x1="19" y1="8" x2="19" y2="14"/></svg>
+          Débitos com Clientes
         </div>
         <div class="nav-sub-item" onclick="showPage('pedidoscancelados')" id="nav-pedidoscancelados">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
@@ -2433,6 +2469,88 @@ th.ef-th { padding:8px 8px 8px 12px; }
         <div class="table-scroll"><table><thead><tr id="th-transferencias-row">
           <th>Data</th><th>Conta de Origem</th><th>Conta de Destino</th><th>Valor</th><th>Observação</th><th>Ações</th>
         </tr></thead><tbody id="tb-transferencias"><tr><td colspan="6" class="empty-state">Nenhuma transferência registrada.</td></tr></tbody></table></div>
+      </div>
+    </div>
+
+    <!-- ══ CONTROLE DE CHEQUES (carteira) ══ -->
+    <div class="page" id="page-cheques">
+      <div class="page-header">
+        <div><div class="page-title">Controle de Cheques</div><div class="page-sub" style="margin-bottom:0">Cheques de terceiros em posse da Stoeck — entram ao receber uma venda com cheque e saem quando são depositados ou usados num pagamento</div></div>
+        <button class="btn-novo" onclick="abrirCompensarSelecionados()">✓ Compensar selecionados</button>
+      </div>
+      <div id="chq-aviso"></div>
+      <div class="grid4" id="chq-kpis" style="margin-bottom:16px;margin-top:16px"></div>
+      <div class="card">
+        <div class="filter-bar" style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin-bottom:12px">
+          <div class="form-group" style="margin:0;min-width:220px;flex:1"><label>Buscar</label><input id="chq-f-busca" type="text" placeholder="Nº, emitente, cliente ou banco" oninput="renderCheques()" /></div>
+          <div class="form-group" style="margin:0"><label>Situação</label>
+            <select id="chq-f-sit" onchange="renderCheques()"><option value="">Todos</option><option value="vencidos">Já podem ser depositados</option><option value="ok">Sem devolução</option><option value="devolvido">Devolvidos</option></select></div>
+          <div class="form-group" style="margin:0"><label>Bom para — de</label><input id="chq-f-de" type="date" onchange="renderCheques()" /></div>
+          <div class="form-group" style="margin:0"><label>até</label><input id="chq-f-ate" type="date" onchange="renderCheques()" /></div>
+          <button class="btn btn-secondary btn-sm" onclick="clearChequesFiltros()">Limpar</button>
+        </div>
+        <div class="table-scroll"><table><thead><tr>
+          <th style="width:34px"><input type="checkbox" id="chq-sel-todos" style="width:16px;height:16px;accent-color:#ea580c" onchange="chqSelTodos(this.checked)" /></th>
+          <th>Data de entrada</th><th>Nº do cheque</th><th>Valor</th><th>Recebido de (cliente)</th><th>Emitente</th><th>Bom para</th><th>Guardado em</th><th>Situação</th><th>Ações</th>
+        </tr></thead><tbody id="tb-cheques"><tr><td colspan="10" class="empty-state">Nenhum cheque em carteira.</td></tr></tbody></table></div>
+      </div>
+    </div>
+
+    <!-- ══ CHEQUES COMPENSADOS ══ -->
+    <div class="page" id="page-cheques-compensados">
+      <div class="page-header">
+        <div><div class="page-title">Cheques Compensados</div><div class="page-sub" style="margin-bottom:0">Cheques que já saíram da carteira (depositados, resgatados ou usados em pagamentos). Use "Estornar" quando um cheque voltar.</div></div>
+      </div>
+      <div id="chqcomp-aviso"></div>
+      <div class="grid4" id="chqcomp-kpis" style="margin-bottom:16px;margin-top:16px"></div>
+      <div class="card">
+        <div class="filter-bar" style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin-bottom:12px">
+          <div class="form-group" style="margin:0;min-width:220px;flex:1"><label>Buscar</label><input id="chqcomp-f-busca" type="text" placeholder="Nº, emitente, cliente, fornecedor" oninput="renderChequesCompensados()" /></div>
+          <div class="form-group" style="margin:0"><label>Destino</label>
+            <select id="chqcomp-f-destino" onchange="renderChequesCompensados()"><option value="">Todos</option><option value="deposito">Depósito</option><option value="pagamento">Pagamento a fornecedor</option><option value="resgate">Resgatado pelo cliente</option><option value="outro">Outro</option></select></div>
+          <div class="form-group" style="margin:0"><label>Compensado de</label><input id="chqcomp-f-de" type="date" onchange="renderChequesCompensados()" /></div>
+          <div class="form-group" style="margin:0"><label>até</label><input id="chqcomp-f-ate" type="date" onchange="renderChequesCompensados()" /></div>
+          <button class="btn btn-secondary btn-sm" onclick="clearChequesCompFiltros()">Limpar</button>
+        </div>
+        <div class="table-scroll"><table><thead><tr>
+          <th>Compensado em</th><th>Nº do cheque</th><th>Valor</th><th>Recebido de</th><th>Emitente</th><th>Bom para</th><th>Entrada</th><th>Destino</th><th>Ações</th>
+        </tr></thead><tbody id="tb-cheques-compensados"><tr><td colspan="9" class="empty-state">Nenhum cheque compensado.</td></tr></tbody></table></div>
+      </div>
+    </div>
+
+    <!-- ══ DÉBITOS COM CLIENTES ══ -->
+    <div class="page" id="page-debitos-clientes">
+      <div class="page-header">
+        <div><div class="page-title">Débitos com Clientes</div><div class="page-sub" style="margin-bottom:0">Valores que a Stoeck deve a clientes (ex.: cliente pagou a mais com cheque). Podem ser devolvidos ou abatidos numa próxima venda.</div></div>
+        <button class="btn-novo" onclick="abrirMovTerceiro('cliente','')">+ Movimentar</button>
+      </div>
+      <div id="tcli-aviso"></div>
+      <div id="tcli-kpis" style="margin-bottom:16px;margin-top:16px;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px"></div>
+      <div class="card">
+        <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:12px">
+          <div class="form-group" style="margin:0;min-width:220px;flex:1"><label>Buscar cliente</label><input id="tcli-busca" type="text" oninput="renderSaldosTerceiros('cliente')" /></div>
+          <label style="display:flex;gap:6px;align-items:center;font-size:13px;white-space:nowrap;margin:0 0 10px"><input type="checkbox" style="width:16px;height:16px;accent-color:#ea580c" id="tcli-zerados" onchange="renderSaldosTerceiros('cliente')" /> Mostrar saldos zerados</label>
+        </div>
+        <div class="table-scroll"><table><thead><tr><th>Cliente</th><th>Saldo</th><th>Movimentos</th><th>Último movimento</th><th>Ações</th></tr></thead>
+        <tbody id="tcli-tb"><tr><td colspan="5" class="empty-state">Nenhum saldo em aberto.</td></tr></tbody></table></div>
+      </div>
+    </div>
+
+    <!-- ══ CRÉDITOS COM FORNECEDORES ══ -->
+    <div class="page" id="page-creditos-fornecedores">
+      <div class="page-header">
+        <div><div class="page-title">Créditos com Fornecedores</div><div class="page-sub" style="margin-bottom:0">Valores pagos a mais a fornecedores (ex.: cheque maior que a conta). O crédito pode ser usado num próximo pagamento.</div></div>
+        <button class="btn-novo" onclick="abrirMovTerceiro('fornecedor','')">+ Movimentar</button>
+      </div>
+      <div id="tfor-aviso"></div>
+      <div id="tfor-kpis" style="margin-bottom:16px;margin-top:16px;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px"></div>
+      <div class="card">
+        <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:12px">
+          <div class="form-group" style="margin:0;min-width:220px;flex:1"><label>Buscar fornecedor</label><input id="tfor-busca" type="text" oninput="renderSaldosTerceiros('fornecedor')" /></div>
+          <label style="display:flex;gap:6px;align-items:center;font-size:13px;white-space:nowrap;margin:0 0 10px"><input type="checkbox" style="width:16px;height:16px;accent-color:#ea580c" id="tfor-zerados" onchange="renderSaldosTerceiros('fornecedor')" /> Mostrar saldos zerados</label>
+        </div>
+        <div class="table-scroll"><table><thead><tr><th>Fornecedor</th><th>Saldo</th><th>Movimentos</th><th>Último movimento</th><th>Ações</th></tr></thead>
+        <tbody id="tfor-tb"><tr><td colspan="5" class="empty-state">Nenhum saldo em aberto.</td></tr></tbody></table></div>
       </div>
     </div>
 
@@ -3870,6 +3988,145 @@ th.ef-th { padding:8px 8px 8px 12px; }
   </div>
 </div>
 
+<!-- ══ MODAIS: CHEQUES / VÁRIAS FORMAS / SALDOS COM TERCEIROS ══ -->
+<datalist id="chq-emitentes"></datalist>
+<datalist id="chq-bancos-lista"></datalist>
+
+<div class="modal-overlay" id="modal-comp" style="z-index:250">
+  <div class="modal" style="width:900px">
+    <div class="modal-title" id="comp-titulo">Cheques / várias formas</div>
+    <div class="comp-resumo" id="comp-resumo"></div>
+    <div class="grid3" style="margin-bottom:6px">
+      <div class="form-group"><label id="comp-data-lbl">Data *</label><input id="comp-data" type="date" /></div>
+    </div>
+    <div class="comp-sec" id="comp-sec-cheques"></div>
+    <div class="comp-sec" id="comp-sec-formas"></div>
+    <div class="comp-sec" id="comp-sec-saldo" style="display:none"></div>
+    <div class="comp-sec">
+      <div class="form-group" style="margin:0;max-width:260px"><label id="comp-desconto-lbl">Desconto (R$)</label>
+        <input id="comp-desconto" type="number" step="0.01" min="0" placeholder="0,00" oninput="_comp.desconto=_r2(this.value);_compAtualizarTotais()" /></div>
+    </div>
+    <div class="comp-totais" id="comp-totais"></div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="_compCancelar()">Cancelar</button>
+      <button class="btn btn-primary" id="comp-btn-ok" onclick="_compConfirmar()">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-chq-compensar" style="z-index:250">
+  <div class="modal">
+    <div class="modal-title">Compensar cheque(s)</div>
+    <div class="comp-resumo" id="chqc-resumo"></div>
+    <div class="grid2">
+      <div class="form-group"><label>Data *</label><input id="chqc-data" type="date" /></div>
+      <div class="form-group"><label>Destino *</label>
+        <select id="chqc-destino" onchange="chqcAtualizarDestino()">
+          <option value="deposito">Depósito em conta</option>
+          <option value="resgate">Resgatado pelo cliente (trocou por dinheiro/PIX)</option>
+          <option value="outro">Outro (sem movimentar saldo)</option>
+        </select></div>
+    </div>
+    <div class="form-group" id="chqc-banco-wrap"><label id="chqc-banco-lbl">Conta *</label><select id="chqc-banco"></select></div>
+    <div style="font-size:12px;color:#57534e;margin:-4px 0 12px" id="chqc-dica"></div>
+    <div class="form-group"><label>Observação</label><input id="chqc-obs" type="text" /></div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-chq-compensar')">Cancelar</button>
+      <button class="btn btn-primary" onclick="confirmarCompensarCheques()">Compensar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-chq-estorno" style="z-index:250">
+  <div class="modal">
+    <div class="modal-title">↩ Estornar cheque</div>
+    <input type="hidden" id="chqe-id" />
+    <div class="comp-resumo" id="chqe-resumo"></div>
+    <div class="form-group"><label>Motivo do estorno *</label>
+      <select id="chqe-motivo" onchange="onMotivoEstornoChqChange(this)"></select></div>
+    <div class="grid2">
+      <div class="form-group"><label>Data do estorno *</label><input id="chqe-data" type="date" /></div>
+      <div class="form-group"><label>Observação</label><input id="chqe-obs" type="text" placeholder="Detalhes (opcional)" /></div>
+    </div>
+    <div class="aprov-comunicado" style="margin-bottom:0" id="chqe-efeito"></div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-chq-estorno')">Cancelar</button>
+      <button class="btn btn-danger" onclick="confirmarEstornoCheque()">Estornar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-chq-novo-motivo" style="z-index:260">
+  <div class="modal" style="width:440px">
+    <div class="modal-title">Novo motivo de estorno</div>
+    <div class="form-group"><label>Motivo *</label><input id="chqm-nome" type="text" placeholder="Ex.: Cheque rasurado" onkeydown="if(event.key==='Enter')salvarNovoMotivoEstornoChq()" /></div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-chq-novo-motivo')">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarNovoMotivoEstornoChq()">Salvar motivo</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-chq-editar" style="z-index:250">
+  <div class="modal">
+    <div class="modal-title">Editar cheque <span id="chqed-valor" style="font-family:'DM Mono',monospace;color:#ea580c;font-size:15px"></span></div>
+    <input type="hidden" id="chqed-id" />
+    <div class="grid2">
+      <div class="form-group"><label>Nº do cheque *</label><input id="chqed-numero" type="text" /></div>
+      <div class="form-group"><label>Banco do cheque</label><input id="chqed-banco" type="text" list="chq-bancos-lista" /></div>
+      <div class="form-group"><label>Emitente (de quem é)</label><input id="chqed-emitente" type="text" list="chq-emitentes" /></div>
+      <div class="form-group"><label>Bom para</label><input id="chqed-bompara" type="date" /></div>
+    </div>
+    <div class="form-group"><label>Observação</label><input id="chqed-obs" type="text" /></div>
+    <div style="font-size:12px;color:#a8a29e">O valor não pode ser alterado aqui: ele faz parte do recebimento. Para corrigir, estorne o recebimento na tela Contas Recebidas e lance de novo.</div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-chq-editar')">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarEdicaoCheque()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-chq-hist" style="z-index:250">
+  <div class="modal" style="width:560px">
+    <div class="modal-title" id="chqh-titulo">Histórico do cheque</div>
+    <div id="chqh-corpo"></div>
+    <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('modal-chq-hist')">Fechar</button></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-terc-extrato" style="z-index:250">
+  <div class="modal" style="width:760px">
+    <div class="modal-title" id="tx-titulo">Extrato</div>
+    <div class="table-scroll"><table><thead><tr><th>Data</th><th style="text-align:left">Descrição</th><th>Movimento</th><th>Saldo</th><th></th></tr></thead>
+      <tbody id="tx-tb"></tbody></table></div>
+    <div style="margin-top:12px;font-size:14px" id="tx-saldo"></div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-terc-extrato')">Fechar</button>
+      <button class="btn btn-primary" id="tx-btn-mov">Movimentar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-terc-mov" style="z-index:250">
+  <div class="modal">
+    <div class="modal-title" id="tm-titulo">Movimentar</div>
+    <input type="hidden" id="tm-tipo" />
+    <div class="form-group"><label id="tm-pessoa-lbl">Pessoa *</label><select id="tm-pessoa" onchange="tmAtualizar()"></select></div>
+    <div style="font-size:13px;color:#57534e;margin:-4px 0 12px" id="tm-saldo"></div>
+    <div class="form-group"><label>Operação *</label><select id="tm-op" onchange="tmAtualizar()"></select></div>
+    <div class="grid2">
+      <div class="form-group"><label>Valor (R$) *</label><input id="tm-valor" type="number" step="0.01" min="0" placeholder="0,00" /></div>
+      <div class="form-group"><label>Data *</label><input id="tm-data" type="date" /></div>
+    </div>
+    <div class="form-group" id="tm-banco-wrap"><label>Conta *</label><select id="tm-banco"></select></div>
+    <div class="form-group"><label>Descrição</label><input id="tm-desc" type="text" placeholder="Opcional" /></div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-terc-mov')">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarMovTerceiro()">Salvar</button>
+    </div>
+  </div>
+</div>
+
 <script>
 // ══════════════════════════════════════════
 // MARCA: logo C@P Consultoria (embutida em base64)
@@ -3900,11 +4157,15 @@ const PAGES_CONFIG = [
   { id:'lancamentos',       label:'Lançamentos (Compra)',grupo:'pagar'   },
   { id:'apagar',            label:'Contas a Pagar',      grupo:'pagar'   },
   { id:'pagas',             label:'Contas Pagas',        grupo:'pagar'   },
+  { id:'creditos-fornecedores', label:'Créditos com Fornecedores', grupo:'pagar' },
   { id:'clientes',          label:'Clientes',            grupo:'receber' },
   { id:'prodvenda',         label:'Produtos de Venda',   grupo:'receber' },
   { id:'lancreceber',       label:'Lançamentos (Venda)', grupo:'receber' },
   { id:'areceber',          label:'Contas a Receber',    grupo:'receber' },
   { id:'recebido',          label:'Contas Recebidas',    grupo:'receber' },
+  { id:'cheques',           label:'Controle de Cheques', grupo:'receber' },
+  { id:'cheques-compensados', label:'Cheques Compensados', grupo:'receber' },
+  { id:'debitos-clientes',  label:'Débitos com Clientes', grupo:'receber' },
   { id:'pedidoscancelados', label:'Pedidos Cancelados',  grupo:'receber' },
   { id:'reposicao',         label:'Reposição',           grupo:'receber' },
   { id:'dfc-categorias',    label:'DFC Categorias',      grupo:'dfc'     },
@@ -4287,6 +4548,7 @@ async function loadAllData() {
     db.reposicoes = val(16) || [];
     db.empresas = val(17) || [];
     await garantirEmpresaUnica();
+    try { await carregarDadosCheques(); } catch (e) { console.error('cheques:', e); window._chqTabelasOk = false; }
     const dreGruposRes = val(12);
     db.dre_grupos    = dreGruposRes || [];
     window._dreGruposError = (dreGruposRes === null || dreGruposRes === undefined);
@@ -4504,6 +4766,10 @@ function showPage(p) {
   if (p === 'lancreceber')    renderLancReceber();
   if (p === 'areceber')       renderAReceber();
   if (p === 'recebido')       renderRecebido();
+  if (p === 'cheques')             renderCheques();
+  if (p === 'cheques-compensados') renderChequesCompensados();
+  if (p === 'debitos-clientes')    renderSaldosTerceiros('cliente');
+  if (p === 'creditos-fornecedores') renderSaldosTerceiros('fornecedor');
   if (p === 'pedidoscancelados') renderPedidosCancelados();
   if (p === 'reposicao')         renderReposicoes();
   if (p === 'dfc-categorias')    renderDfcCategorias();
@@ -4545,6 +4811,10 @@ function renderPaginaAtual() {
   if (p === 'lancreceber')    renderLancReceber();
   if (p === 'areceber')       renderAReceber();
   if (p === 'recebido')       renderRecebido();
+  if (p === 'cheques')             renderCheques();
+  if (p === 'cheques-compensados') renderChequesCompensados();
+  if (p === 'debitos-clientes')    renderSaldosTerceiros('cliente');
+  if (p === 'creditos-fornecedores') renderSaldosTerceiros('fornecedor');
   if (p === 'pedidoscancelados') renderPedidosCancelados();
   if (p === 'reposicao')         renderReposicoes();
   if (p === 'dfc-categorias')    renderDfcCategorias();
@@ -5723,10 +5993,15 @@ async function saveLancamento() {
   const prod = document.getElementById('l-prod').value;
   const valor = parseFloat(document.getElementById('l-valor').value);
   if(!dtcompra || !valor) { alert('Preencha data da compra e valor.'); return; }
+  // Pagamento com cheques / várias formas: a composição é confirmada antes
+  // (modal-comp) e aplicada logo depois de gravar o lançamento.
+  const _tpSel = document.getElementById('l-tipo-pag').value;
+  const _pend = _compPendenteValida('pagar', valor, _tpSel);
+  if (!_pend && (_tpSel === 'Cheque' || _tpSel === FORMA_COMPOSTA)) { _abrirCompPeloSelect('pagar', document.getElementById('l-tipo-pag')); return; }
   // Fornecedor e produto são opcionais: nem toda despesa tem um fornecedor
   // cadastrado (ex.: tarifas bancárias, impostos, taxas avulsas).
-  const pago = document.getElementById('l-pago').value;
-  const banco = document.getElementById('l-banco').value;
+  const pago = _pend ? 'nao' : document.getElementById('l-pago').value;
+  const banco = _pend ? '' : document.getElementById('l-banco').value;
   const dtpago = validarDataQuitacao(pago, 'l-dtpago-wrap', 'l-dtpago', 'data do pagamento');
   if (dtpago === null) return;
   if (!validarBancoObrigatorio(pago, banco)) return;
@@ -5740,7 +6015,7 @@ async function saveLancamento() {
     financeiro: document.getElementById('l-financeiro').value,
     pago,
     dtpago,
-    tipo_pag: document.getElementById('l-tipo-pag').value,
+    tipo_pag: _pend ? '' : _tpSel,
     banco,
     cat_dre: document.getElementById('l-catdre') ? document.getElementById('l-catdre').value : '',
     obs: document.getElementById('l-obs').value
@@ -5825,7 +6100,9 @@ async function saveLancamento() {
   if (parcelas > 1 && pago === 'sim') lanc.parcela_datas = _parcelasTodasQuitadas(lanc.parcela_datas, parcelas, dtpago);
   const rL = await sbFetch('lancamentos', 'POST', lanc);
   if(!rL) { alert('❌ Erro ao salvar lançamento.' + sbErroDetalhe()); return; }
+  _compPendente = null;
   db.lancamentos.push(lanc);
+  if (_pend) await aplicarComposicao('pagar', lanc, Array.from({ length: parcelas }, (_, i) => i + 1), _pend);
   clearLancamento(); closeModal('modal-novo-lanc'); renderLancamentos(); renderApagar(); renderPagas(); populateYearSelects();
 }
 
@@ -5841,6 +6118,8 @@ function clearLancamento() {
   document.getElementById('l-financeiro').value='nao';
   document.getElementById('l-pago').value='nao';
   toggleDataQuitacao('l-pago', 'l-dtpago-wrap', 'l-dtpago');
+  if (document.getElementById('l-tipo-pag')) document.getElementById('l-tipo-pag').value='';
+  if (_compPendente && _compPendente.tipo === 'pagar') _compPendente = null;
   // Reset parcela dates
   const container = document.getElementById('l-parcela-dates');
   const grid = document.getElementById('l-parcela-dates-grid');
@@ -6217,7 +6496,8 @@ async function deleteLancamento(id) {
     await _interceptarAprovacao('pagar', _lx, 'excluir');
     return;
   }
-  if(!confirm('Excluir este lançamento?')) return;
+  if(!confirm('Excluir este lançamento?' + (_compsDoLanc('pagar', id).length ? '\n\nO pagamento com cheques/várias formas também é desfeito (cheques voltam para a carteira).' : ''))) return;
+  if (!(await _desfazerComposicoesDoLanc('pagar', id))) return;
   await sbFetch('lancamentos', 'DELETE', null, `?id=eq.${id}`);
   db.lancamentos = db.lancamentos.filter(x=>x.id!==id);
   renderLancamentos();
@@ -7327,7 +7607,8 @@ async function backupLancamentos() {
 async function buscarDadosCompletos() {
   const nomes = ['empresas','fornecedores','produtos','lancamentos','faturamento','recebimentos',
     'metas','clientes','prodvenda','lancreceber','dfc_categorias','dfc_lancamentos',
-    'bancos','dre_grupos','transferencias','pedidos_cancelados','reposicoes'];
+    'bancos','dre_grupos','transferencias','pedidos_cancelados','reposicoes',
+    'cheques','conta_terceiros','pagamentos_compostos'];
   const results = await Promise.allSettled(nomes.map(t => fetchAll(t)));
   const dados = {};
   let algumaFalha = false;
@@ -7406,6 +7687,7 @@ async function estornarPago(id, parcIdx) {
     await _interceptarAprovacao('pagar', _lx, 'estornar', null, parcIdx || 1);
     return;
   }
+  if (await _estornoViaComposicao('pagar', id, parcIdx || 1)) return;
   if(!confirm('Deseja desfazer o pagamento e mover esta parcela de volta para "A Pagar"?')) return;
   const l = db.lancamentos.find(x=>x.id===id);
   if(!l) return;
@@ -9564,10 +9846,14 @@ async function saveLancReceber() {
   const cliente=document.getElementById('lr-cliente').value;
   const valor=parseFloat(document.getElementById('lr-valor').value);
   if(!dtvenda||!valor){ alert('Preencha data e valor.'); return; }
+  // Recebimento com cheques / várias formas (ver aplicarComposicao)
+  const _tpSel = document.getElementById('lr-tipo-pag').value;
+  const _pend = _compPendenteValida('receber', valor, _tpSel);
+  if (!_pend && (_tpSel === 'Cheque' || _tpSel === FORMA_COMPOSTA)) { _abrirCompPeloSelect('receber', document.getElementById('lr-tipo-pag')); return; }
   // Cliente é opcional: nem todo recebimento tem um cliente cadastrado
   // (ex.: vendas avulsas, receitas diversas).
-  const recebido=document.getElementById('lr-recebido').value;
-  const banco=document.getElementById('lr-banco').value;
+  const recebido=_pend ? 'nao' : document.getElementById('lr-recebido').value;
+  const banco=_pend ? '' : document.getElementById('lr-banco').value;
   const dtrecebido = validarDataQuitacao(recebido, 'lr-dtrecebido-wrap', 'lr-dtrecebido', 'data do recebimento');
   if (dtrecebido === null) return;
   if (!validarBancoObrigatorio(recebido, banco)) return;
@@ -9582,7 +9868,7 @@ async function saveLancReceber() {
     financeiro:document.getElementById('lr-financeiro').value,
     recebido,
     dtrecebido,
-    tipo_pag:document.getElementById('lr-tipo-pag').value,
+    tipo_pag: _pend ? '' : _tpSel,
     banco,
     cat_dre: document.getElementById('lr-catdre') ? document.getElementById('lr-catdre').value : '',
     juros:parseFloat(document.getElementById('lr-juros').value)||null,
@@ -9591,7 +9877,9 @@ async function saveLancReceber() {
   if (parcelas > 1 && recebido === 'sim') lanc.parcela_datas = _parcelasTodasQuitadas(lanc.parcela_datas, parcelas, dtrecebido);
   const rLR = await sbFetch('lancreceber','POST',lanc);
   if(!rLR) { alert('❌ Erro ao salvar lançamento.' + sbErroDetalhe()); return; }
+  _compPendente = null;
   db.lancreceber.push(lanc);
+  if (_pend) await aplicarComposicao('receber', lanc, Array.from({ length: parcelas }, (_, i) => i + 1), _pend);
   clearLancReceber(); closeModal('modal-novo-lr'); renderLancReceber(); renderAReceber(); renderRecebido();
   populateYearSelectsReceber(); renderDashboard();
 }
@@ -9608,6 +9896,7 @@ function clearLancReceber() {
   document.getElementById('lr-recebido').value='nao';
   toggleDataQuitacao('lr-recebido', 'lr-dtrecebido-wrap', 'lr-dtrecebido');
   document.getElementById('lr-tipo-pag').value='';
+  if (_compPendente && _compPendente.tipo === 'receber') _compPendente = null;
   document.getElementById('lr-banco').value='';
   document.getElementById('lr-juros').value='';
   // Reset parcela dates
@@ -9791,7 +10080,8 @@ async function deleteLancReceber(id) {
     await _interceptarAprovacao('receber', _lx, 'excluir');
     return;
   }
-  if(!confirm('Excluir este lançamento?')) return;
+  if(!confirm('Excluir este lançamento?' + (_compsDoLanc('receber', id).length ? '\n\nO recebimento com cheques/várias formas também é desfeito (os cheques saem da carteira).' : ''))) return;
+  if (!(await _desfazerComposicoesDoLanc('receber', id))) return;
   await sbFetch('lancreceber','DELETE',null,`?id=eq.${id}`);
   db.lancreceber=db.lancreceber.filter(x=>x.id!==id);
   renderLancReceber(); renderAReceber(); renderRecebido(); renderDashboard();
@@ -10042,6 +10332,7 @@ async function estornarRecebido(id, parcIdx) {
     await _interceptarAprovacao('receber', _lx, 'estornar', null, parcIdx || 1);
     return;
   }
+  if (await _estornoViaComposicao('receber', id, parcIdx || 1)) return;
   if(!confirm('Desfazer o recebimento desta parcela?')) return;
   const l=db.lancreceber.find(x=>x.id===id); if(!l) return;
   const n = l.parcelas || 1;
@@ -13114,6 +13405,7 @@ function populateBancoSelects() {
 // ══════════════════════════════════════════════════════════════════
 const FORMAS_PADRAO = ['Dinheiro','PIX','Cartão de Débito','Cartão de Crédito','Boleto','Transferência','Cheque'];
 const FORMA_NOVA = '__nova_forma__';
+const FORMA_COMPOSTA = '__composto__'; // abre a tela de cheques / várias formas
 var formasPagExtra = [];
 var formasRecebExtra = [];
 var motivosCancelExtra = [];
@@ -13122,12 +13414,13 @@ var motivosRepoExtra = [];
 function getFormasPagamento()   { return FORMAS_PADRAO.concat(formasPagExtra); }
 function getFormasRecebimento() { return FORMAS_PADRAO.concat(formasRecebExtra); }
 
-function _montarOptsFormas(lista, valorAtual, rotuloNovo) {
+function _montarOptsFormas(lista, valorAtual, rotuloNovo, comComposto) {
   // Mantém o valor já gravado no lançamento mesmo que ele não esteja mais na
   // lista (ex.: forma antiga renomeada) — assim nada some da tela.
   const extras = (valorAtual && !lista.includes(valorAtual)) ? [valorAtual] : [];
   return '<option value="">Não informado</option>' +
     lista.concat(extras).map(f => `<option value="${f}">${f}</option>`).join('') +
+    (comComposto ? `<option value="${FORMA_COMPOSTA}">⇄ Várias formas / cheques…</option>` : '') +
     `<option value="${FORMA_NOVA}">${rotuloNovo}</option>`;
 }
 
@@ -13135,8 +13428,8 @@ function populateFormasPagSelects() {
   ['l-tipo-pag','edit-tipo-pag','modal-pago-tipo-pag'].forEach(id => {
     const el = document.getElementById(id);
     if (!el) return;
-    const val = (el.value === FORMA_NOVA) ? '' : el.value;
-    el.innerHTML = _montarOptsFormas(getFormasPagamento(), val, '+ Cadastrar nova forma de pagamento...');
+    const val = (el.value === FORMA_NOVA || el.value === FORMA_COMPOSTA) ? '' : el.value;
+    el.innerHTML = _montarOptsFormas(getFormasPagamento(), val, '+ Cadastrar nova forma de pagamento...', id !== 'edit-tipo-pag');
     el.value = val;
   });
 }
@@ -13145,8 +13438,8 @@ function populateFormasRecebSelects() {
   ['lr-tipo-pag','elr-tipo-pag','modal-recebido-tipo-pag'].forEach(id => {
     const el = document.getElementById(id);
     if (!el) return;
-    const val = (el.value === FORMA_NOVA) ? '' : el.value;
-    el.innerHTML = _montarOptsFormas(getFormasRecebimento(), val, '+ Cadastrar nova forma de recebimento...');
+    const val = (el.value === FORMA_NOVA || el.value === FORMA_COMPOSTA) ? '' : el.value;
+    el.innerHTML = _montarOptsFormas(getFormasRecebimento(), val, '+ Cadastrar nova forma de recebimento...', id !== 'elr-tipo-pag');
     el.value = val;
   });
 }
@@ -13169,7 +13462,9 @@ function populateFormasFiltroSelects() {
 // Guarda qual select disparou o cadastro, para já selecionar a forma nova nele
 var _formaSelectOrigem = null;
 
+const _SEL_COMP = ['l-tipo-pag','lr-tipo-pag','modal-pago-tipo-pag','modal-recebido-tipo-pag'];
 function onTipoPagChange(sel) {
+  if (_SEL_COMP.includes(sel.id) && (sel.value === 'Cheque' || sel.value === FORMA_COMPOSTA)) { _abrirCompPeloSelect('pagar', sel); return; }
   if (sel.value !== FORMA_NOVA) return;
   sel.value = '';
   _formaSelectOrigem = sel.id;
@@ -13179,6 +13474,7 @@ function onTipoPagChange(sel) {
 }
 
 function onTipoRecebChange(sel) {
+  if (_SEL_COMP.includes(sel.id) && (sel.value === 'Cheque' || sel.value === FORMA_COMPOSTA)) { _abrirCompPeloSelect('receber', sel); return; }
   if (sel.value !== FORMA_NOVA) return;
   sel.value = '';
   _formaSelectOrigem = sel.id;
@@ -13251,6 +13547,11 @@ function getBancoSaldo(banco) {
   (db.transferencias || []).forEach(t => {
     if (t.origem === banco.id) saldo -= (t.valor||0);
     if (t.destino === banco.id) saldo += (t.valor||0);
+  });
+  // Saldos com clientes/fornecedores que movimentaram dinheiro (excedente de
+  // cheques, débito abatido, devolução etc.)
+  (db.conta_terceiros || []).forEach(e => {
+    if (e.banco === banco.id && e.caixa) saldo += (Number(e.caixa) || 0);
   });
   return saldo;
 }
@@ -13341,6 +13642,10 @@ function renderFluxoBancoDiario() {
     if (bancoIds.includes(t.origem)) saldoAcum -= (t.valor || 0);
     if (bancoIds.includes(t.destino)) saldoAcum += (t.valor || 0);
   });
+  (db.conta_terceiros || []).forEach(e => {
+    if (!e.caixa || !e.data || e.data >= primeiroDiaMes || !bancoIds.includes(e.banco)) return;
+    saldoAcum += (Number(e.caixa) || 0);
+  });
 
   // Movimentação real (paga/recebida) de cada dia do mês selecionado
   const porDia = {};
@@ -13368,6 +13673,14 @@ function renderFluxoBancoDiario() {
     if (!porDia[d]) return;
     if (bancoIds.includes(t.origem)) porDia[d].saida += (t.valor || 0);
     if (bancoIds.includes(t.destino)) porDia[d].entrada += (t.valor || 0);
+  });
+  (db.conta_terceiros || []).forEach(e => {
+    if (!e.caixa || !e.data || !bancoIds.includes(e.banco)) return;
+    const parts = e.data.split('-');
+    if (parseInt(parts[0]) !== ano || parseInt(parts[1]) !== mes) return;
+    const d = parseInt(parts[2]);
+    if (!porDia[d]) return;
+    if (e.caixa > 0) porDia[d].entrada += Number(e.caixa); else porDia[d].saida += -Number(e.caixa);
   });
 
   const todayStr = today();
@@ -14198,6 +14511,7 @@ async function fdDetalheExcluir(tipo, id) {
   if (jaBaixado) msg += `\n\nEste lançamento já tem ${tipo === 'pagar' ? 'pagamento' : 'recebimento'} registrado — excluí-lo altera o saldo da conta vinculada.`;
   msg += '\n\nEsta ação não pode ser desfeita.';
   if (!confirm(msg)) return;
+  if (!(await _desfazerComposicoesDoLanc(tipo, id))) return;
 
   const tabela = tipo === 'pagar' ? 'lancamentos' : 'lancreceber';
   const ok = await sbFetch(tabela, 'DELETE', null, `?id=eq.${id}`);
@@ -14837,6 +15151,17 @@ async function aprovarSolicitacao(id) {
   const rotulo = { editar: 'Aplicar esta alteração', estornar: 'Estornar esta baixa', excluir: 'Excluir este lançamento' }[a.acao];
   if (!confirm(`${rotulo}?\n\n${a.resumo}`)) return;
 
+  // Baixas feitas com cheques / várias formas são desfeitas por inteiro
+  if (a.acao === 'estornar') {
+    const _cp = _compDaParcela(a.tipo, a.lanc_id, a.parc_idx || 1);
+    if (_cp) {
+      if (!(await desfazerComposicao(_cp))) return;
+      if (!await _marcarDecisaoAprov(a, 'aprovado', null)) alert('⚠️ O estorno foi aplicado, mas não foi possível marcar a solicitação como aprovada.' + sbErroDetalhe());
+      _depoisDecisaoAprov(a.tipo);
+      return;
+    }
+  }
+  if (a.acao === 'excluir' && !(await _desfazerComposicoesDoLanc(a.tipo, a.lanc_id))) return;
   let ok = false, payload = null;
   if (a.acao === 'editar') {
     payload = { ...a.depois };
@@ -16806,6 +17131,7 @@ async function confirmarCancelamento() {
   if (!motivo) { alert('Selecione o motivo do cancelamento.'); return; }
   const l = db.lancreceber.find(x => x.id === id);
   if (!l) { alert('Lançamento não encontrado.'); return; }
+  if (!(await _desfazerComposicoesDoLanc('receber', id))) return;
 
   const registro = {
     id: uid(),
@@ -17090,6 +17416,7 @@ async function confirmarReposicao() {
   if (!motivo) { alert('Selecione o motivo da reposição.'); return; }
   const l = db.lancreceber.find(x => x.id === id);
   if (!l) { alert('Lançamento não encontrado.'); return; }
+  if (!(await _desfazerComposicoesDoLanc('receber', id))) return;
 
   const registro = {
     id: uid(),
@@ -17321,9 +17648,1195 @@ document.querySelectorAll('.modal-overlay').forEach(ov => {
     // com os valores do último preenchimento na próxima vez que abrirem.
     if (ov.id === 'modal-novo-lr') clearLancReceber();
     if (ov.id === 'modal-form-generico') { fecharFormModal(); return; }
+    if (ov.id === 'modal-comp') { _compCancelar(); return; }
     ov.classList.remove('open');
   });
 });
+</script>
+<script>
+// ═══════════════════════════════════════════════════════════════════
+// CHEQUES · PAGAMENTO/RECEBIMENTO COMPOSTO · SALDOS COM TERCEIROS
+// -------------------------------------------------------------------
+// • Recebimento com cheque (ou várias formas ao mesmo tempo): os cheques
+//   entram em "Controle de Cheques" (carteira). Valor acima da conta vira
+//   débito da Stoeck com o cliente; desconto reduz o valor da parcela.
+// • Pagamento com cheques de terceiros (ou várias formas): os cheques saem
+//   da carteira. Valor acima da conta vira crédito com o fornecedor.
+// • Depósito/resgate tira o cheque da carteira (Cheques Compensados). O
+//   estorno pede o motivo e devolve o cheque para a carteira.
+// Movimento de dinheiro entre contas é feito com transferências (as mesmas
+// da tela "Transferência entre Contas"), para os saldos fecharem.
+// Tabelas no Supabase: cheques, conta_terceiros, pagamentos_compostos.
+// ═══════════════════════════════════════════════════════════════════
+db.cheques = db.cheques || [];
+db.conta_terceiros = db.conta_terceiros || [];
+db.composicoes = db.composicoes || [];
+window._chqTabelasOk = true;
+let _comp = null;          // estado do modal de composição aberto
+let _compPendente = null;  // composição confirmada no "Novo Lançamento", aguardando o salvamento
+
+const MOTIVOS_ESTORNO_CHQ_PADRAO = [
+  'Sem fundos — 1ª apresentação (alínea 11)',
+  'Sem fundos — 2ª apresentação (alínea 12)',
+  'Conta encerrada (alínea 13)',
+  'Sustação / contra-ordem (alínea 21)',
+  'Divergência ou falta de assinatura (alínea 22)',
+  'Erro de preenchimento',
+  'Cheque prescrito',
+  'Devolvido pelo fornecedor',
+  'Lançado por engano'
+];
+var motivosEstornoChqExtra = [];
+const MOTIVO_CHQ_NOVO = '__novo_motivo_chq__';
+
+const _r2 = v => Math.round(((Number(v) || 0) + Number.EPSILON) * 100) / 100;
+const _e = s => escAprov(s == null ? '' : String(s));
+function _arr(v) {
+  if (Array.isArray(v)) return v;
+  if (typeof v === 'string') { try { const j = JSON.parse(v); return Array.isArray(j) ? j : []; } catch (e) { return []; } }
+  return [];
+}
+function _obj(v) {
+  if (v && typeof v === 'object') return v;
+  if (typeof v === 'string') { try { return JSON.parse(v) || null; } catch (e) { return null; } }
+  return null;
+}
+function _quem() { return currentUser ? (currentUser.nome || currentUser.user) : ''; }
+
+// ── Carga dos dados ───────────────────────────────────────────────
+async function _carregarTabelaOpcional(tabela, ordem) {
+  const todos = []; const lim = 1000; let off = 0;
+  while (true) {
+    const r = await sbFetch(tabela, 'GET', null, `?order=${ordem}&limit=${lim}&offset=${off}`);
+    if (r === null) return null;
+    todos.push(...r);
+    if (r.length < lim) break;
+    off += lim;
+  }
+  return todos;
+}
+async function carregarDadosCheques() {
+  const [chq, ter, comp, cfg] = await Promise.all([
+    _carregarTabelaOpcional('cheques', 'dt_entrada'),
+    _carregarTabelaOpcional('conta_terceiros', 'data'),
+    _carregarTabelaOpcional('pagamentos_compostos', 'data'),
+    sbFetch('config', 'GET', null, '?key=eq.motivos_estorno_cheque')
+  ]);
+  window._chqTabelasOk = chq !== null && ter !== null && comp !== null;
+  db.cheques = (chq || []).map(c => ({ ...c, valor: Number(c.valor) || 0, historico: _arr(c.historico) }));
+  db.conta_terceiros = (ter || []).map(e => ({ ...e, valor: Number(e.valor) || 0, caixa: Number(e.caixa) || 0 }));
+  db.composicoes = (comp || []).map(c => ({
+    ...c,
+    parcelas: _arr(c.parcelas).map(Number), linhas: _arr(c.linhas),
+    transf_ids: _arr(c.transf_ids), ledger_ids: _arr(c.ledger_ids), cheque_ids: _arr(c.cheque_ids),
+    ajuste: _obj(c.ajuste),
+    valor_conta: Number(c.valor_conta) || 0, total: Number(c.total) || 0, desconto: Number(c.desconto) || 0,
+    excedente: Number(c.excedente) || 0, saldo_usado: Number(c.saldo_usado) || 0
+  }));
+  motivosEstornoChqExtra = [];
+  try { if (cfg && cfg[0]) motivosEstornoChqExtra = JSON.parse(cfg[0].value) || []; } catch (e) {}
+}
+function _chqExigeTabelas() {
+  if (window._chqTabelasOk) return true;
+  alert('As tabelas de cheques ainda não existem no banco de dados.\n\nRode o script "cheques_supabase.sql" no SQL Editor do Supabase e recarregue o sistema (F5).');
+  return false;
+}
+function _avisoTabelasChqHtml() {
+  return window._chqTabelasOk ? '' :
+    `<div class="aprov-comunicado" style="margin-bottom:16px">⚠️ <span><b>Tabelas de cheques não encontradas no banco.</b> Rode o script <b>cheques_supabase.sql</b> no SQL Editor do Supabase e recarregue a página.</span></div>`;
+}
+
+// ── Saldos com terceiros ──────────────────────────────────────────
+// cliente   → valor positivo = a Stoeck DEVE ao cliente
+// fornecedor→ valor positivo = o fornecedor DEVE à Stoeck (crédito)
+// "caixa" = efeito em dinheiro na conta "banco" (soma no saldo da conta)
+function _tipoPessoa(tipo) { return tipo === 'pagar' ? 'fornecedor' : 'cliente'; }
+function _nomePessoa(tp, id) { return id ? (tp === 'fornecedor' ? getFornNome(id) : getClienteNome(id)) : '—'; }
+function saldoTerceiro(tp, pessoa) {
+  if (!pessoa) return 0;
+  return _r2(db.conta_terceiros.filter(e => e.tipo === tp && e.pessoa === pessoa).reduce((s, e) => s + (Number(e.valor) || 0), 0));
+}
+function _compDaParcela(tipo, lancId, parc) {
+  return db.composicoes.find(c => c.tipo === tipo && c.lanc_id === lancId && c.parcelas.includes(Number(parc))) || null;
+}
+function _compsDoLanc(tipo, lancId) { return db.composicoes.filter(c => c.tipo === tipo && c.lanc_id === lancId); }
+function _descLancComp(tipo, l) {
+  const nome = tipo === 'pagar' ? getFornNome(l.forn) : getClienteNome(l.cliente);
+  return [nome || '(sem ' + (tipo === 'pagar' ? 'fornecedor' : 'cliente') + ')', l.nf ? 'NF ' + l.nf : '', fmtBRL(l.valor || 0)].filter(Boolean).join(' · ');
+}
+
+// ══════════════════════════════════════════════════════════════════
+// MODAL DE COMPOSIÇÃO (cheques + várias formas + saldo + desconto)
+// ══════════════════════════════════════════════════════════════════
+function _resetSelForma(id) { const el = document.getElementById(id); if (el) el.value = ''; }
+function _bancoCustodiaPadrao(pref) {
+  const c = db.bancos.find(b => /cheque/i.test(b.nome || ''));
+  return c ? c.id : (pref || '');
+}
+
+// Chamado pelos selects de forma (Cheque ou "Várias formas…")
+function _abrirCompPeloSelect(tipo, sel) {
+  if (sel.id === 'l-tipo-pag' || sel.id === 'lr-tipo-pag') {
+    if (!abrirComposicaoNovo(tipo)) sel.value = '';
+    return;
+  }
+  if (sel.id === 'modal-pago-tipo-pag' || sel.id === 'modal-recebido-tipo-pag') {
+    const pre = tipo === 'pagar' ? 'modal-pago' : 'modal-recebido';
+    const id = document.getElementById(pre + '-id').value;
+    const parc = parseInt(document.getElementById(pre + '-parc').value) || 1;
+    const data = document.getElementById(pre + '-data').value || today();
+    sel.value = '';
+    closeModal(pre);
+    abrirComposicaoParcela(tipo, id, parc, data);
+    return;
+  }
+  sel.value = '';
+}
+
+function abrirComposicaoNovo(tipo) {
+  if (!_chqExigeTabelas()) return false;
+  const pre = tipo === 'pagar' ? 'l' : 'lr';
+  const valor = parseFloat(document.getElementById(pre + '-valor').value) || 0;
+  const dt = document.getElementById(tipo === 'pagar' ? 'l-dtcompra' : 'lr-dtvenda').value;
+  if (!dt || !valor) {
+    alert(`Preencha a data e o valor do lançamento antes de escolher cheque / várias formas.`);
+    return false;
+  }
+  if (tipo === 'pagar' && document.getElementById('l-fixa') && document.getElementById('l-fixa').checked) {
+    alert('Conta Fixa não pode ser paga com cheques/várias formas no cadastro. Crie a conta fixa normalmente e dê baixa mês a mês em Contas a Pagar.');
+    return false;
+  }
+  const pessoa = document.getElementById(tipo === 'pagar' ? 'l-forn' : 'lr-cliente').value;
+  const n = parseInt(document.getElementById(pre + '-parcelas').value) || 1;
+  _abrirComp({
+    tipo, ctx: 'novo', lancId: null, selId: pre + '-tipo-pag',
+    parcelas: Array.from({ length: n }, (_, i) => i + 1),
+    valorConta: _r2(valor), pessoa, data: dt,
+    bancoPadrao: document.getElementById(pre + '-banco').value
+  });
+  return true;
+}
+
+function abrirComposicaoParcela(tipo, lancId, parcIdx, data) {
+  if (!_chqExigeTabelas()) return;
+  const lista = tipo === 'pagar' ? db.lancamentos : db.lancreceber;
+  const l = lista.find(x => x.id === lancId);
+  if (!l) { alert('Lançamento não encontrado.'); return; }
+  const p = (tipo === 'pagar' ? getParcelas(false) : getParcelasReceber(false)).find(x => x.lancId === lancId && x.parcIdx === parcIdx);
+  if (!p) { alert('Parcela não encontrada ou já quitada.'); return; }
+  _abrirComp({
+    tipo, ctx: 'parcela', lancId, selId: null, parcelas: [parcIdx],
+    valorConta: _r2(p.valParc), pessoa: tipo === 'pagar' ? l.forn : l.cliente,
+    data: data || today(), bancoPadrao: l.banco || ''
+  });
+}
+
+function _abrirComp(st) {
+  _comp = Object.assign({ cheques: [], formas: [], sel: new Set(), saldoUsar: 0, desconto: 0, busca: '' }, st);
+  _comp.custodia = _bancoCustodiaPadrao(st.bancoPadrao);
+  if (st.tipo === 'receber') { const q = _novoChqLinha(); q.valor = st.valorConta; _comp.cheques.push(q); }
+  // listas de apoio (emitentes e bancos)
+  const dlE = document.getElementById('chq-emitentes');
+  if (dlE) {
+    const nomes = new Set();
+    db.clientes.forEach(c => c.nome && nomes.add(c.nome));
+    db.fornecedores.forEach(f => f.nome && nomes.add(f.nome));
+    db.cheques.forEach(c => c.emitente && nomes.add(c.emitente));
+    dlE.innerHTML = [...nomes].sort().map(n => `<option value="${_e(n)}">`).join('');
+  }
+  const dlB = document.getElementById('chq-bancos-lista');
+  if (dlB) {
+    const bancos = new Set(['Banco do Brasil', 'Caixa Econômica Federal', 'Bradesco', 'Itaú', 'Santander', 'Sicoob', 'Sicredi', 'Ailos / Viacredi', 'Banrisul', 'BRDE', 'Inter', 'Nubank', 'C6 Bank']);
+    db.cheques.forEach(c => c.banco_cheque && bancos.add(c.banco_cheque));
+    dlB.innerHTML = [...bancos].sort().map(n => `<option value="${_e(n)}">`).join('');
+  }
+  _renderComp();
+  openModal('modal-comp');
+}
+function _novoChqLinha() {
+  const c = _comp;
+  return { id: uid(), numero: '', banco_cheque: '', emitente: c && c.pessoa ? getClienteNome(c.pessoa) : '', bom_para: (c && c.data) || today(), valor: '' };
+}
+function _compCancelar() {
+  if (_comp && _comp.ctx === 'novo' && _comp.selId) _resetSelForma(_comp.selId);
+  closeModal('modal-comp');
+  _comp = null;
+}
+
+function _renderComp() {
+  const c = _comp; if (!c) return;
+  const ehRec = c.tipo === 'receber'; const tp = _tipoPessoa(c.tipo);
+  document.getElementById('comp-titulo').textContent = ehRec ? '💳 Recebimento com cheques / várias formas' : '💳 Pagamento com cheques / várias formas';
+  const parcTxt = c.parcelas.length > 1 ? `${c.parcelas.length} parcelas` : (c.ctx === 'novo' ? 'parcela única' : `parcela ${c.parcelas[0]}`);
+  document.getElementById('comp-resumo').innerHTML =
+    `<b>${ehRec ? 'Cliente' : 'Fornecedor'}:</b> ${_e(_nomePessoa(tp, c.pessoa))} &nbsp;·&nbsp; ${parcTxt} &nbsp;·&nbsp; ` +
+    `Valor a ${ehRec ? 'receber' : 'pagar'}: <b>${fmtBRL(c.valorConta)}</b>`;
+  document.getElementById('comp-data').value = c.data;
+  document.getElementById('comp-data-lbl').textContent = ehRec ? 'Data do recebimento *' : 'Data do pagamento *';
+  document.getElementById('comp-desconto-lbl').textContent = ehRec ? 'Desconto concedido ao cliente (R$)' : 'Desconto obtido do fornecedor (R$)';
+  _renderCompCheques(); _renderCompFormas(); _renderCompSaldo();
+  document.getElementById('comp-desconto').value = c.desconto || '';
+  _compAtualizarTotais();
+}
+
+function _renderCompCheques() {
+  const c = _comp, box = document.getElementById('comp-sec-cheques');
+  if (c.tipo === 'receber') {
+    const optsB = db.bancos.map(b => `<option value="${b.id}" ${b.id === c.custodia ? 'selected' : ''}>${_e(b.nome)}</option>`).join('');
+    const temCustodia = db.bancos.some(b => /cheque/i.test(b.nome || ''));
+    const linhas = c.cheques.map((q, i) => `<tr>
+        <td><input value="${_e(q.numero)}" placeholder="000123" oninput="_compSetChq(${i},'numero',this.value)" /></td>
+        <td><input value="${_e(q.banco_cheque)}" list="chq-bancos-lista" placeholder="Banco" oninput="_compSetChq(${i},'banco_cheque',this.value)" /></td>
+        <td><input value="${_e(q.emitente)}" list="chq-emitentes" placeholder="Titular do cheque" oninput="_compSetChq(${i},'emitente',this.value)" /></td>
+        <td><input type="date" value="${_e(q.bom_para)}" onchange="_compSetChq(${i},'bom_para',this.value)" /></td>
+        <td><input type="number" step="0.01" min="0" value="${q.valor === '' ? '' : q.valor}" placeholder="0,00" oninput="_compSetChq(${i},'valor',this.value)" /></td>
+        <td style="width:40px"><button type="button" class="btn btn-danger btn-sm" title="Remover" onclick="_compRemChq(${i})">✕</button></td>
+      </tr>`).join('');
+    box.innerHTML = `
+      <div class="comp-sec-head">
+        <div class="comp-sec-tit">🧾 Cheques recebidos</div>
+        <div class="comp-custodia">
+          <div><label>Guardar os cheques na conta</label>
+          <select onchange="_comp.custodia=this.value"><option value="">Selecione...</option>${optsB}</select></div>
+          ${temCustodia ? '' : `<button type="button" class="btn btn-secondary btn-sm" onclick="_compCriarContaCustodia()">+ Criar conta "Cheques em Carteira"</button>`}
+        </div>
+      </div>
+      <div style="overflow-x:auto"><table class="comp-tab">
+        <thead><tr><th>Nº do cheque</th><th>Banco</th><th>De quem é (emitente)</th><th>Bom para</th><th>Valor (R$)</th><th></th></tr></thead>
+        <tbody>${linhas || '<tr><td colspan="6" class="empty-state" style="padding:12px">Nenhum cheque — use "+ Adicionar cheque" ou só as outras formas abaixo.</td></tr>'}</tbody>
+      </table></div>
+      <button type="button" class="btn btn-secondary btn-sm" onclick="_compAddChq()">+ Adicionar cheque</button>`;
+  } else {
+    box.innerHTML = `
+      <div class="comp-sec-head">
+        <div class="comp-sec-tit">🧾 Cheques de terceiros em carteira</div>
+        <input type="text" placeholder="🔍 Buscar nº, emitente ou cliente" value="${_e(c.busca)}"
+          oninput="_comp.busca=this.value;_renderCompChqLista()" style="max-width:280px" />
+      </div>
+      <div id="comp-chq-lista"></div>`;
+    _renderCompChqLista();
+  }
+}
+function _renderCompChqLista() {
+  const c = _comp, box = document.getElementById('comp-chq-lista'); if (!c || !box) return;
+  const t = normText(c.busca);
+  const lista = db.cheques
+    .filter(q => q.status === 'carteira' || c.sel.has(q.id))
+    .filter(q => !t || normText(`${q.numero} ${q.emitente} ${getClienteNome(q.cliente)} ${q.banco_cheque}`).includes(t))
+    .sort((a, b) => (a.bom_para || '').localeCompare(b.bom_para || ''));
+  if (!lista.length) {
+    box.innerHTML = '<div class="empty-state" style="padding:16px">Nenhum cheque em carteira. Os cheques entram aqui quando uma venda é recebida com cheque.</div>';
+    return;
+  }
+  box.innerHTML = `<div class="comp-chq-scroll"><table class="comp-tab">
+    <thead><tr><th style="width:34px"></th><th>Nº</th><th>Bom para</th><th>Emitente</th><th>Recebido de</th><th style="text-align:right">Valor</th></tr></thead>
+    <tbody>${lista.map(q => `<tr class="${c.sel.has(q.id) ? 'comp-sel' : ''}">
+      <td><input type="checkbox" style="width:16px;height:16px;accent-color:#ea580c" ${c.sel.has(q.id) ? 'checked' : ''}
+        onchange="_compToggleChq('${q.id}',this.checked,this)" /></td>
+      <td><b>${_e(q.numero)}</b> <span style="color:#a8a29e;font-size:11px">${_e(q.banco_cheque || '')}</span>
+        ${q.devolvido ? ' <span class="badge badge-red" title="' + _e(q.motivo_devolucao || '') + '">devolvido</span>' : ''}</td>
+      <td>${_chqBomParaHtml(q)}</td>
+      <td>${_e(q.emitente || '—')}</td>
+      <td>${_e(getClienteNome(q.cliente) || '—')}</td>
+      <td style="text-align:right;font-family:'DM Mono',monospace;font-weight:700">${fmtBRL(q.valor)}</td>
+    </tr>`).join('')}</tbody></table></div>`;
+}
+
+function _formasComp() {
+  return (_comp.tipo === 'pagar' ? getFormasPagamento() : getFormasRecebimento()).filter(f => f !== 'Cheque');
+}
+function _renderCompFormas() {
+  const c = _comp, box = document.getElementById('comp-sec-formas');
+  const formas = _formasComp();
+  const linhas = c.formas.map((f, i) => `<tr>
+      <td><select onchange="_compSetForma(${i},'forma',this.value)"><option value="">Selecione...</option>
+        ${formas.map(x => `<option value="${_e(x)}" ${x === f.forma ? 'selected' : ''}>${_e(x)}</option>`).join('')}</select></td>
+      <td><select onchange="_compSetForma(${i},'banco',this.value)"><option value="">Conta...</option>
+        ${db.bancos.map(b => `<option value="${b.id}" ${b.id === f.banco ? 'selected' : ''}>${_e(b.nome)}</option>`).join('')}</select></td>
+      <td><input type="number" step="0.01" min="0" value="${f.valor === '' ? '' : f.valor}" placeholder="0,00" oninput="_compSetForma(${i},'valor',this.value)" /></td>
+      <td style="width:40px"><button type="button" class="btn btn-danger btn-sm" title="Remover" onclick="_compRemForma(${i})">✕</button></td>
+    </tr>`).join('');
+  box.innerHTML = `
+    <div class="comp-sec-head"><div class="comp-sec-tit">💵 Outras formas (dinheiro, PIX, transferência, boleto…)</div></div>
+    ${c.formas.length ? `<div style="overflow-x:auto"><table class="comp-tab">
+      <thead><tr><th>Forma</th><th>${c.tipo === 'receber' ? 'Entrou na conta' : 'Saiu da conta'}</th><th>Valor (R$)</th><th></th></tr></thead>
+      <tbody>${linhas}</tbody></table></div>` : ''}
+    <button type="button" class="btn btn-secondary btn-sm" onclick="_compAddForma()">+ Adicionar forma</button>`;
+}
+function _renderCompSaldo() {
+  const c = _comp, box = document.getElementById('comp-sec-saldo');
+  const tp = _tipoPessoa(c.tipo); const s = saldoTerceiro(tp, c.pessoa);
+  if (!c.pessoa || s <= 0.004) { box.innerHTML = ''; box.style.display = 'none'; c.saldoUsar = 0; return; }
+  box.style.display = '';
+  const txt = c.tipo === 'receber'
+    ? `A Stoeck deve <b>${fmtBRL(s)}</b> a este cliente (troco/excedente de recebimentos anteriores). Você pode abater esse valor agora.`
+    : `Este fornecedor tem <b>${fmtBRL(s)}</b> de crédito com a Stoeck. Você pode usar esse crédito neste pagamento.`;
+  box.innerHTML = `
+    <div class="comp-sec-tit" style="margin-bottom:6px">${c.tipo === 'receber' ? '🤝 Abater débito da Stoeck com o cliente' : '🤝 Usar crédito com o fornecedor'}</div>
+    <div style="font-size:12.5px;color:#57534e;margin-bottom:8px">${txt}</div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <input id="comp-saldo-inp" type="number" step="0.01" min="0" max="${s}" value="${c.saldoUsar || ''}" placeholder="0,00"
+        oninput="_comp.saldoUsar=_r2(this.value);_compAtualizarTotais()" style="max-width:170px" />
+      <button type="button" class="btn btn-secondary btn-sm" onclick="_compUsarSaldoNecessario()">Usar o necessário</button>
+    </div>`;
+}
+
+function _compCalc() {
+  const c = _comp;
+  const chqs = c.tipo === 'receber' ? c.cheques.filter(q => _r2(q.valor) > 0) : db.cheques.filter(q => c.sel.has(q.id));
+  const vChq = _r2(chqs.reduce((s, q) => s + _r2(q.valor), 0));
+  const vFor = _r2(c.formas.reduce((s, f) => s + _r2(f.valor), 0));
+  const vSal = _r2(c.saldoUsar), vDes = _r2(c.desconto);
+  const total = _r2(vChq + vFor + vSal + vDes);
+  const dif = _r2(total - c.valorConta);
+  return { chqs, vChq, vFor, vSal, vDes, total, dif };
+}
+function _compAtualizarTotais() {
+  const c = _comp; if (!c) return;
+  const k = _compCalc(), box = document.getElementById('comp-totais');
+  let status;
+  if (Math.abs(k.dif) < 0.005) status = `<span class="comp-ok">✓ Valor fechado</span>`;
+  else if (k.dif < 0) status = `<span class="comp-falta">Faltam ${fmtBRL(-k.dif)} — adicione outra forma ou um desconto</span>`;
+  else status = `<span class="comp-exc">Excedente de ${fmtBRL(k.dif)} → ${c.tipo === 'receber'
+      ? 'fica como débito da Stoeck com o cliente (tela "Débitos com Clientes")'
+      : 'fica como crédito com o fornecedor (tela "Créditos com Fornecedores")'}</span>`;
+  const item = (lbl, v, cor) => `<div class="comp-tot-item"><div class="lbl">${lbl}</div><div class="val" style="${cor ? 'color:' + cor : ''}">${fmtBRL(v)}</div></div>`;
+  box.innerHTML =
+    item('Valor da conta', c.valorConta) +
+    item(`Cheques (${k.chqs.length})`, k.vChq) +
+    item('Outras formas', k.vFor) +
+    (k.vSal ? item(c.tipo === 'receber' ? 'Débito abatido' : 'Crédito usado', k.vSal) : '') +
+    (k.vDes ? item('Desconto', k.vDes) : '') +
+    item('Total informado', k.total, Math.abs(k.dif) < 0.005 ? '#166534' : (k.dif < 0 ? '#dc2626' : '#c2410c')) +
+    `<div class="comp-status">${status}</div>`;
+}
+
+function _compAddChq() { _comp.cheques.push(_novoChqLinha()); _renderCompCheques(); _compAtualizarTotais(); }
+function _compRemChq(i) { _comp.cheques.splice(i, 1); _renderCompCheques(); _compAtualizarTotais(); }
+function _compSetChq(i, k, v) {
+  const q = _comp.cheques[i]; if (!q) return;
+  q[k] = (k === 'valor') ? v : v;
+  if (k === 'valor') _compAtualizarTotais();
+}
+function _compToggleChq(id, on, el) {
+  if (on) _comp.sel.add(id); else _comp.sel.delete(id);
+  if (el) { const tr = el.closest('tr'); if (tr) tr.classList.toggle('comp-sel', on); }
+  _compAtualizarTotais();
+}
+function _compAddForma() {
+  const k = _compCalc();
+  const falta = Math.max(0, _r2(-k.dif));
+  _comp.formas.push({ forma: '', banco: _comp.bancoPadrao || '', valor: falta || '' });
+  _renderCompFormas(); _compAtualizarTotais();
+}
+function _compRemForma(i) { _comp.formas.splice(i, 1); _renderCompFormas(); _compAtualizarTotais(); }
+function _compSetForma(i, k, v) {
+  const f = _comp.formas[i]; if (!f) return;
+  f[k] = v;
+  if (k === 'valor') _compAtualizarTotais();
+}
+function _compUsarSaldoNecessario() {
+  const c = _comp; const s = saldoTerceiro(_tipoPessoa(c.tipo), c.pessoa);
+  const atual = _compCalc();
+  const semSaldo = _r2(atual.total - atual.vSal);
+  c.saldoUsar = _r2(Math.max(0, Math.min(s, c.valorConta - semSaldo)));
+  _renderCompSaldo(); _compAtualizarTotais();
+}
+async function _compCriarContaCustodia() {
+  const rec = { id: uid(), nome: 'Cheques em Carteira', tipo: 'Caixa Física', banco: '', agencia: '', conta: '', saldo_inicial: 0, obs: 'Conta de custódia dos cheques recebidos de clientes' };
+  const ok = await sbFetch('bancos', 'POST', rec);
+  if (!ok) { alert('❌ Não foi possível criar a conta.' + sbErroDetalhe()); return; }
+  db.bancos.push(rec);
+  populateBancoSelects();
+  _comp.custodia = rec.id;
+  _renderCompCheques();
+}
+
+async function _compConfirmar() {
+  const c = _comp; if (!c) return;
+  c.data = document.getElementById('comp-data').value;
+  c.desconto = _r2(document.getElementById('comp-desconto').value);
+  if (!c.data) { alert('Informe a data.'); return; }
+  const k = _compCalc(); const ehRec = c.tipo === 'receber'; const tp = _tipoPessoa(c.tipo);
+  const linhas = [];
+
+  if (ehRec) {
+    const preench = c.cheques.filter(q => String(q.numero || '').trim() || _r2(q.valor) > 0);
+    for (let i = 0; i < preench.length; i++) {
+      const q = preench[i];
+      if (!String(q.numero || '').trim()) { alert(`Informe o número do cheque ${i + 1}.`); return; }
+      if (_r2(q.valor) <= 0) { alert(`Informe o valor do cheque nº ${q.numero}.`); return; }
+      if (!q.bom_para) { alert(`Informe a data "bom para" do cheque nº ${q.numero}.`); return; }
+      const dup = db.cheques.find(x => x.status === 'carteira' && normText(x.numero) === normText(q.numero) && normText(x.banco_cheque) === normText(q.banco_cheque || ''));
+      if (dup && !confirm(`Já existe em carteira um cheque nº ${q.numero}${q.banco_cheque ? ' do ' + q.banco_cheque : ''} (${fmtBRL(dup.valor)}). Continuar mesmo assim?`)) return;
+    }
+    if (preench.length && !c.custodia) { alert('Escolha a conta onde os cheques ficam guardados.'); return; }
+    preench.forEach(q => linhas.push({
+      tipo: 'cheque', id: q.id, numero: String(q.numero).trim(), banco_cheque: (q.banco_cheque || '').trim(),
+      emitente: (q.emitente || '').trim(), bom_para: q.bom_para, valor: _r2(q.valor), banco: c.custodia
+    }));
+  } else {
+    for (const q of k.chqs) {
+      const atual = db.cheques.find(x => x.id === q.id);
+      if (!atual || atual.status !== 'carteira') { alert(`O cheque nº ${q.numero} não está mais em carteira.`); return; }
+      linhas.push({ tipo: 'cheque', id: q.id, numero: q.numero, valor: _r2(q.valor), banco: q.banco_custodia || '' });
+    }
+  }
+  for (const f of c.formas.filter(f => _r2(f.valor) > 0)) {
+    if (!f.forma) { alert('Escolha a forma de cada valor informado em "Outras formas".'); return; }
+    if (!f.banco) { alert(`Escolha a conta da forma "${f.forma}".`); return; }
+    linhas.push({ tipo: 'forma', forma: f.forma, banco: f.banco, valor: _r2(f.valor) });
+  }
+  if (k.vSal > 0) {
+    const disp = saldoTerceiro(tp, c.pessoa);
+    if (k.vSal > disp + 0.004) { alert(`O saldo disponível é ${fmtBRL(disp)}.`); return; }
+    if (k.vSal > _r2(c.valorConta - k.vDes) + 0.004) { alert('O saldo usado não pode ser maior que o valor a quitar.'); return; }
+    linhas.push({ tipo: 'saldo', valor: k.vSal });
+  }
+  if (k.vDes > 0) {
+    if (k.vDes > c.valorConta + 0.004) { alert('O desconto não pode ser maior que o valor da conta.'); return; }
+    linhas.push({ tipo: 'desconto', valor: k.vDes });
+  }
+  if (!linhas.length || k.total <= 0) { alert('Informe ao menos um cheque ou uma forma.'); return; }
+  if (k.dif < -0.004) { alert(`Faltam ${fmtBRL(-k.dif)} para fechar o valor. Adicione outra forma ou um desconto.`); return; }
+  if (k.dif > 0.004) {
+    if (!c.pessoa) {
+      alert(`O total passa ${fmtBRL(k.dif)} do valor da conta. Para registrar esse excedente como ${ehRec ? 'débito com o cliente' : 'crédito com o fornecedor'}, selecione o ${ehRec ? 'cliente' : 'fornecedor'} no lançamento.`);
+      return;
+    }
+    const msg = ehRec
+      ? `O cliente entregou ${fmtBRL(k.dif)} a mais. Esse valor fica registrado como DÉBITO da Stoeck com ${_nomePessoa(tp, c.pessoa)}, para devolver ou abater numa próxima venda.\n\nContinuar?`
+      : `Você está entregando ${fmtBRL(k.dif)} a mais. Esse valor fica registrado como CRÉDITO da Stoeck com ${_nomePessoa(tp, c.pessoa)}, para usar num próximo pagamento.\n\nContinuar?`;
+    if (!confirm(msg)) return;
+  }
+  const C = {
+    tipo: c.tipo, data: c.data, linhas, valorConta: c.valorConta, total: k.total,
+    desconto: k.vDes, saldoUsar: k.vSal, excedente: Math.max(0, k.dif), bancoPadrao: c.bancoPadrao,
+    pessoa: c.pessoa || ''
+  };
+  if (c.ctx === 'novo') {
+    _compPendente = C;
+    closeModal('modal-comp'); _comp = null;
+    if (C.tipo === 'pagar') await saveLancamento(); else await saveLancReceber();
+    return;
+  }
+  const lista = c.tipo === 'pagar' ? db.lancamentos : db.lancreceber;
+  const l = lista.find(x => x.id === c.lancId);
+  if (!l) { alert('Lançamento não encontrado.'); return; }
+  const btn = document.getElementById('comp-btn-ok'); if (btn) btn.disabled = true;
+  const ok = await aplicarComposicao(c.tipo, l, c.parcelas, C);
+  if (btn) btn.disabled = false;
+  if (ok) { closeModal('modal-comp'); _comp = null; }
+}
+
+// A composição confirmada no "Novo Lançamento" só vale se o formulário não
+// mudou depois (mesmo valor, mesma pessoa e a forma ainda é Cheque/Várias).
+function _compPendenteValida(tipo, valor, formaSel) {
+  const C = _compPendente;
+  if (!C || C.tipo !== tipo) return null;
+  const pessoa = document.getElementById(tipo === 'pagar' ? 'l-forn' : 'lr-cliente').value || '';
+  if (Math.abs(_r2(valor) - C.valorConta) > 0.004 || pessoa !== C.pessoa ||
+      !(formaSel === 'Cheque' || formaSel === FORMA_COMPOSTA)) { _compPendente = null; return null; }
+  return C;
+}
+
+// ── Grava a composição: quita as parcelas, move cheques, gera saldos e transferências
+function _rotuloFormasComp(tipo, linhas) {
+  const r = [];
+  linhas.forEach(x => {
+    const nome = x.tipo === 'cheque' ? 'Cheque' : x.tipo === 'forma' ? x.forma
+      : x.tipo === 'saldo' ? (tipo === 'receber' ? 'Saldo do cliente' : 'Crédito do fornecedor') : 'Desconto';
+    if (!r.includes(nome)) r.push(nome);
+  });
+  return r.join(' + ');
+}
+function _patchQuitarComp(tipo, l, parcelas, data, desconto, banco, forma) {
+  const n = l.parcelas || 1;
+  const fl = tipo === 'pagar' ? 'pago' : 'recebido';
+  const dtk = tipo === 'pagar' ? 'dtpago' : 'dtrecebido';
+  const patch = { banco, tipo_pag: forma };
+  if (n <= 1) {
+    patch[fl] = 'sim'; patch[dtk] = data;
+    if (desconto > 0) patch.valor = _r2((l.valor || 0) - desconto);
+    return patch;
+  }
+  const snap = _fdSnapshotParcelas(tipo, l);
+  parcelas.forEach(i => { snap.pagos[i - 1] = true; snap.dtpagos[i - 1] = data; });
+  if (desconto > 0) {
+    let resto = desconto;
+    for (const i of [...parcelas].reverse()) {
+      const tira = Math.min(resto, snap.valores[i - 1] || 0);
+      snap.valores[i - 1] = _r2((snap.valores[i - 1] || 0) - tira);
+      resto = _r2(resto - tira);
+      if (resto <= 0) break;
+    }
+    patch.valor = _r2(snap.valores.reduce((a, b) => a + (Number(b) || 0), 0));
+  }
+  patch.parcela_datas = JSON.stringify(snap);
+  const todas = snap.pagos.slice(0, n).every(x => x === true);
+  patch[fl] = todas ? 'sim' : 'nao';
+  patch[dtk] = todas ? (snap.dtpagos.filter(Boolean).sort().slice(-1)[0] || data) : '';
+  return patch;
+}
+
+async function aplicarComposicao(tipo, l, parcelas, C) {
+  if (!_chqExigeTabelas()) return false;
+  const ehRec = tipo === 'receber';
+  const tp = _tipoPessoa(tipo);
+  const pessoa = ehRec ? l.cliente : l.forn;
+  const compId = uid();
+  const desc = _descLancComp(tipo, l);
+  const formaL = C.linhas.find(x => x.tipo === 'forma');
+  const chqL = C.linhas.find(x => x.tipo === 'cheque');
+  const principal = (formaL && formaL.banco) || (chqL && chqL.banco) || C.bancoPadrao || l.banco || (db.bancos[0] ? db.bancos[0].id : '');
+
+  // Transferências: o lançamento fica registrado na conta principal; o que
+  // entrou/saiu por outra conta é acertado com uma transferência.
+  const porBanco = {};
+  C.linhas.filter(x => (x.tipo === 'cheque' || x.tipo === 'forma') && x.banco && x.banco !== principal)
+    .forEach(x => { porBanco[x.banco] = _r2((porBanco[x.banco] || 0) + x.valor); });
+  const transfs = Object.keys(porBanco).map(b => ({
+    id: uid(), data: C.data,
+    origem: ehRec ? principal : b, destino: ehRec ? b : principal,
+    valor: porBanco[b],
+    obs: `${ehRec ? 'Recebimento' : 'Pagamento'} com várias formas — ${desc}`
+  }));
+
+  const ledger = [];
+  if (C.saldoUsar > 0) ledger.push({
+    id: uid(), tipo: tp, pessoa, data: C.data, valor: -C.saldoUsar,
+    caixa: ehRec ? -C.saldoUsar : C.saldoUsar, banco: principal,
+    descricao: ehRec ? `Débito abatido no recebimento — ${desc}` : `Crédito usado no pagamento — ${desc}`,
+    origem: 'uso', comp_id: compId, cheque_id: null, usuario: _quem()
+  });
+  if (C.excedente > 0) ledger.push({
+    id: uid(), tipo: tp, pessoa, data: C.data, valor: C.excedente,
+    caixa: ehRec ? C.excedente : -C.excedente, banco: principal,
+    descricao: ehRec ? `Excedente entregue pelo cliente (troco a devolver) — ${desc}` : `Valor pago a mais ao fornecedor — ${desc}`,
+    origem: 'excedente', comp_id: compId, cheque_id: null, usuario: _quem()
+  });
+
+  const chequesNovos = [];
+  const chequesUsados = [];
+  C.linhas.filter(x => x.tipo === 'cheque').forEach(x => {
+    if (ehRec) {
+      chequesNovos.push({
+        id: x.id, empresa_id: l.empresa_id || empresaAtual() || null,
+        numero: x.numero, banco_cheque: x.banco_cheque, emitente: x.emitente,
+        cliente: l.cliente || null, valor: x.valor, bom_para: x.bom_para,
+        dt_entrada: C.data, banco_custodia: x.banco, status: 'carteira',
+        comp_receber_id: compId, lanc_receber_id: l.id, devolvido: false,
+        historico: [{ data: C.data, evento: 'Entrada na carteira', detalhe: `Recebido de ${getClienteNome(l.cliente) || '—'} — ${desc}`, usuario: _quem() }],
+        obs: ''
+      });
+    } else {
+      const q = db.cheques.find(z => z.id === x.id);
+      if (q) chequesUsados.push(q);
+    }
+  });
+
+  const ajuste = { valor: l.valor };
+  if (C.desconto > 0 && (l.parcelas || 1) > 1) ajuste.valores = _fdSnapshotParcelas(tipo, l).valores;
+  const patchLanc = _patchQuitarComp(tipo, l, parcelas, C.data, C.desconto, principal, _rotuloFormasComp(tipo, C.linhas));
+
+  const comp = {
+    id: compId, empresa_id: l.empresa_id || empresaAtual() || null, tipo, lanc_id: l.id,
+    parcelas, data: C.data, valor_conta: C.valorConta, total: C.total, desconto: C.desconto,
+    excedente: C.excedente, saldo_usado: C.saldoUsar, banco_principal: principal,
+    linhas: C.linhas, transf_ids: transfs.map(t => t.id), ledger_ids: ledger.map(e => e.id),
+    cheque_ids: C.linhas.filter(x => x.tipo === 'cheque').map(x => x.id), ajuste, usuario: _quem()
+  };
+
+  // 1) registro da composição (se falhar aqui, nada foi alterado)
+  if (!(await sbFetch('pagamentos_compostos', 'POST', comp))) {
+    alert('❌ Não foi possível registrar o ' + (ehRec ? 'recebimento' : 'pagamento') + '. Nada foi alterado.' + sbErroDetalhe());
+    return false;
+  }
+  db.composicoes.push(comp);
+  const falhas = [];
+  // 2) cheques
+  if (chequesNovos.length) {
+    if (await sbFetch('cheques', 'POST', chequesNovos)) db.cheques.push(...chequesNovos);
+    else falhas.push('cadastro dos cheques');
+  }
+  for (const q of chequesUsados) {
+    const hist = q.historico.concat([{ data: C.data, evento: 'Usado em pagamento', detalhe: `Entregue a ${getFornNome(l.forn) || '—'} — ${desc}`, usuario: _quem() }]);
+    const patch = { status: 'compensado', destino_tipo: 'pagamento', destino_banco: null, destino_forn: l.forn || null, destino_lanc: l.id, dt_compensacao: C.data, comp_pagar_id: compId, transf_id: null, historico: hist };
+    if (await sbFetch('cheques', 'PATCH', patch, `?id=eq.${q.id}`)) Object.assign(q, patch);
+    else falhas.push('cheque nº ' + q.numero);
+  }
+  // 3) saldos com terceiros
+  if (ledger.length) {
+    if (await sbFetch('conta_terceiros', 'POST', ledger)) db.conta_terceiros.push(...ledger);
+    else falhas.push('saldo com o ' + (ehRec ? 'cliente' : 'fornecedor'));
+  }
+  // 4) transferências entre contas
+  if (transfs.length) {
+    if (await sbFetch('transferencias', 'POST', transfs)) db.transferencias.push(...transfs);
+    else falhas.push('transferências entre contas');
+  }
+  // 5) quita as parcelas
+  if (await sbFetch(tipo === 'pagar' ? 'lancamentos' : 'lancreceber', 'PATCH', patchLanc, `?id=eq.${l.id}`)) Object.assign(l, patchLanc);
+  else falhas.push('baixa do lançamento');
+
+  _chqPosAlteracao(tipo, l.id);
+  if (falhas.length) alert('⚠️ O ' + (ehRec ? 'recebimento' : 'pagamento') + ' foi registrado, mas houve falha em: ' + falhas.join(', ') + '. Verifique a conexão e confira os dados.');
+  return true;
+}
+
+// ── Desfaz uma composição (usado no estorno e na exclusão do lançamento)
+function _patchDesfazerComp(tipo, l, comp) {
+  const n = l.parcelas || 1;
+  const fl = tipo === 'pagar' ? 'pago' : 'recebido';
+  const dtk = tipo === 'pagar' ? 'dtpago' : 'dtrecebido';
+  const patch = {};
+  if (n <= 1) {
+    patch[fl] = 'nao'; patch[dtk] = '';
+    if (comp.desconto > 0 && comp.ajuste && comp.ajuste.valor != null) patch.valor = comp.ajuste.valor;
+    return patch;
+  }
+  const snap = _fdSnapshotParcelas(tipo, l);
+  comp.parcelas.forEach(i => { snap.pagos[i - 1] = false; snap.dtpagos[i - 1] = ''; });
+  if (comp.desconto > 0 && comp.ajuste && Array.isArray(comp.ajuste.valores)) {
+    comp.parcelas.forEach(i => { if (comp.ajuste.valores[i - 1] != null) snap.valores[i - 1] = comp.ajuste.valores[i - 1]; });
+    patch.valor = _r2(snap.valores.reduce((a, b) => a + (Number(b) || 0), 0));
+  }
+  patch.parcela_datas = JSON.stringify(snap);
+  patch[fl] = 'nao'; patch[dtk] = '';
+  return patch;
+}
+
+async function desfazerComposicao(comp) {
+  const ehRec = comp.tipo === 'receber';
+  const lista = ehRec ? db.lancreceber : db.lancamentos;
+  const l = lista.find(x => x.id === comp.lanc_id);
+  if (ehRec) {
+    const fora = db.cheques.filter(q => comp.cheque_ids.includes(q.id) && q.status !== 'carteira');
+    if (fora.length) {
+      alert(`Não é possível desfazer: ${fora.length} cheque(s) deste recebimento já saíram da carteira (nº ${fora.map(q => q.numero).join(', ')}).\n\nEstorne-os primeiro em "Cheques Compensados".`);
+      return false;
+    }
+  }
+  const falhas = [];
+  // saldos com terceiros ligados a esta composição (inclui estornos de cheques devolvidos)
+  const ledIds = db.conta_terceiros.filter(e => e.comp_id === comp.id || comp.ledger_ids.includes(e.id)).map(e => e.id);
+  if (ledIds.length) {
+    const r = await sbDeleteMany('conta_terceiros', ledIds);
+    const ok = new Set(r.sucesso);
+    db.conta_terceiros = db.conta_terceiros.filter(e => !ok.has(e.id));
+    if (r.falha.length) falhas.push('saldos com terceiros');
+  }
+  if (comp.transf_ids.length) {
+    const r = await sbDeleteMany('transferencias', comp.transf_ids);
+    const ok = new Set(r.sucesso);
+    db.transferencias = db.transferencias.filter(t => !ok.has(t.id));
+    if (r.falha.length) falhas.push('transferências');
+  }
+  if (ehRec) {
+    const ids = db.cheques.filter(q => comp.cheque_ids.includes(q.id)).map(q => q.id);
+    if (ids.length) {
+      const r = await sbDeleteMany('cheques', ids);
+      const ok = new Set(r.sucesso);
+      db.cheques = db.cheques.filter(q => !ok.has(q.id));
+      if (r.falha.length) falhas.push('cheques');
+    }
+  } else {
+    for (const q of db.cheques.filter(q => q.comp_pagar_id === comp.id)) {
+      // Cheque que já foi estornado (devolvido) e seguiu outro caminho: só solta o vínculo
+      if (!(q.status === 'compensado' && q.destino_tipo === 'pagamento')) {
+        if (await sbFetch('cheques', 'PATCH', { comp_pagar_id: null, estorno_ledger_id: null }, `?id=eq.${q.id}`)) { q.comp_pagar_id = null; q.estorno_ledger_id = null; }
+        continue;
+      }
+      const hist = q.historico.concat([{ data: today(), evento: 'Voltou para a carteira', detalhe: 'Pagamento estornado/excluído', usuario: _quem() }]);
+      const patch = { status: 'carteira', destino_tipo: null, destino_forn: null, destino_lanc: null, destino_banco: null, dt_compensacao: null, comp_pagar_id: null, estorno_ledger_id: null, historico: hist };
+      if (await sbFetch('cheques', 'PATCH', patch, `?id=eq.${q.id}`)) Object.assign(q, patch);
+      else falhas.push('cheque nº ' + q.numero);
+    }
+  }
+  if (l) {
+    const patch = _patchDesfazerComp(comp.tipo, l, comp);
+    if (await sbFetch(ehRec ? 'lancreceber' : 'lancamentos', 'PATCH', patch, `?id=eq.${l.id}`)) Object.assign(l, patch);
+    else falhas.push('lançamento');
+  }
+  if (await sbFetch('pagamentos_compostos', 'DELETE', null, `?id=eq.${comp.id}`)) db.composicoes = db.composicoes.filter(c => c.id !== comp.id);
+  else falhas.push('registro da composição');
+  _chqPosAlteracao(comp.tipo, comp.lanc_id);
+  if (falhas.length) { alert('⚠️ Estorno parcial — falha em: ' + falhas.join(', ') + '. Verifique a conexão.'); return false; }
+  return true;
+}
+
+// Estorno de UMA parcela que foi quitada por composição. Devolve true se tratou.
+async function _estornoViaComposicao(tipo, id, parcIdx) {
+  const comp = _compDaParcela(tipo, id, parcIdx || 1);
+  if (!comp) return false;
+  const ehRec = tipo === 'receber';
+  const juntas = comp.parcelas.length > 1 ? `\nEste ${ehRec ? 'recebimento' : 'pagamento'} quitou junto as parcelas ${comp.parcelas.join(', ')} — todas voltam para em aberto.` : '';
+  const efeitos = ehRec
+    ? '\n\nOs cheques recebidos saem da carteira e os saldos/transferências gerados são removidos.'
+    : '\n\nOs cheques usados voltam para a carteira e os saldos/transferências gerados são removidos.';
+  let aviso = '';
+  if (comp.excedente > 0 && saldoTerceiro(_tipoPessoa(tipo), ehRec ? (db.lancreceber.find(x => x.id === id) || {}).cliente : (db.lancamentos.find(x => x.id === id) || {}).forn) < comp.excedente - 0.004)
+    aviso = `\n\n⚠️ O ${ehRec ? 'débito com o cliente' : 'crédito com o fornecedor'} de ${fmtBRL(comp.excedente)} gerado aqui já foi usado em parte — o saldo dele ficará negativo.`;
+  if (!confirm(`Desfazer o ${ehRec ? 'recebimento' : 'pagamento'} feito com várias formas (${fmtBRL(comp.total)} em ${fmtDate(comp.data)})?${juntas}${efeitos}${aviso}`)) return true;
+  await desfazerComposicao(comp);
+  return true;
+}
+// Antes de excluir um lançamento: desfaz todas as composições dele. false = bloqueado.
+async function _desfazerComposicoesDoLanc(tipo, id) {
+  const comps = _compsDoLanc(tipo, id);
+  for (const c of comps) { if (!(await desfazerComposicao(c))) return false; }
+  return true;
+}
+
+function _chqPosAlteracao(tipo, lancId) {
+  try { _chqPosAlteracaoRender(tipo, lancId); } catch (e) { console.error('Atualização das telas:', e); }
+}
+function _chqPosAlteracaoRender(tipo, lancId) {
+  bumpDbVer();
+  if (tipo === 'pagar') { renderLancamentos(); renderApagar(); renderPagas(); }
+  else { renderLancReceber(); renderAReceber(); renderRecebido(); }
+  renderCheques(); renderChequesCompensados();
+  renderSaldosTerceiros('cliente'); renderSaldosTerceiros('fornecedor');
+  renderDashboard();
+  if (paginaVisivel('bancos')) { renderBancos(); renderFluxoBancoDiario(); }
+  if (paginaVisivel('transferencias')) renderTransferencias();
+  if (lancId) _aposEditarLancamento(lancId);
+}
+
+// ══════════════════════════════════════════════════════════════════
+// TELAS: CONTROLE DE CHEQUES (carteira) e CHEQUES COMPENSADOS
+// ══════════════════════════════════════════════════════════════════
+function _chqBomParaHtml(q) {
+  if (!q.bom_para) return '—';
+  const dias = diffDias(today(), q.bom_para);
+  let tag = '';
+  if (q.status === 'carteira') {
+    if (dias < 0) tag = `<span class="badge badge-green" style="font-size:10px">pode depositar</span>`;
+    else if (dias === 0) tag = `<span class="badge badge-green" style="font-size:10px">hoje</span>`;
+    else if (dias <= 7) tag = `<span class="badge badge-yellow" style="font-size:10px">em ${dias}d</span>`;
+    else tag = `<span class="badge badge-gray" style="font-size:10px">em ${dias}d</span>`;
+  }
+  return `${fmtDate(q.bom_para)} ${tag}`;
+}
+function _chqDestinoTxt(q) {
+  if (q.destino_tipo === 'pagamento') return `Pagamento a <b>${_e(getFornNome(q.destino_forn) || '—')}</b>`;
+  if (q.destino_tipo === 'deposito') return `Depósito em <b>${_e(getBancoNome(q.destino_banco))}</b>`;
+  if (q.destino_tipo === 'resgate') return `Resgatado pelo cliente → <b>${_e(getBancoNome(q.destino_banco))}</b>`;
+  return 'Outro (sem movimentar saldo)';
+}
+
+function renderCheques() {
+  if (!paginaVisivel('cheques')) return;
+  document.getElementById('chq-aviso').innerHTML = _avisoTabelasChqHtml();
+  const busca = normText(document.getElementById('chq-f-busca').value);
+  const sit = document.getElementById('chq-f-sit').value;
+  const de = document.getElementById('chq-f-de').value;
+  const ate = document.getElementById('chq-f-ate').value;
+  const carteira = db.cheques.filter(q => q.status === 'carteira');
+  let list = carteira.filter(q => {
+    if (busca && !normText(`${q.numero} ${q.emitente} ${getClienteNome(q.cliente)} ${q.banco_cheque}`).includes(busca)) return false;
+    if (sit === 'ok' && q.devolvido) return false;
+    if (sit === 'devolvido' && !q.devolvido) return false;
+    if (sit === 'vencidos' && !(q.bom_para && q.bom_para <= today())) return false;
+    if (de && (q.bom_para || '') < de) return false;
+    if (ate && (q.bom_para || '') > ate) return false;
+    return true;
+  }).sort((a, b) => (a.bom_para || '').localeCompare(b.bom_para || ''));
+
+  const tot = _r2(carteira.reduce((s, q) => s + q.valor, 0));
+  const prontos = carteira.filter(q => q.bom_para && q.bom_para <= today());
+  const sem7 = carteira.filter(q => q.bom_para && q.bom_para > today() && diffDias(today(), q.bom_para) <= 7);
+  const dev = carteira.filter(q => q.devolvido);
+  document.getElementById('chq-kpis').innerHTML = `
+    <div class="card kpi"><div class="kpi-val" style="color:#ea580c">${fmtBRL(tot)}</div><div class="kpi-lbl">${carteira.length} cheque(s) em carteira</div></div>
+    <div class="card kpi"><div class="kpi-val" style="color:#166534">${fmtBRL(prontos.reduce((s, q) => s + q.valor, 0))}</div><div class="kpi-lbl">${prontos.length} já podem ser depositados</div></div>
+    <div class="card kpi"><div class="kpi-val" style="color:#d97706">${fmtBRL(sem7.reduce((s, q) => s + q.valor, 0))}</div><div class="kpi-lbl">${sem7.length} vencem em até 7 dias</div></div>
+    <div class="card kpi"><div class="kpi-val" style="color:#dc2626">${fmtBRL(dev.reduce((s, q) => s + q.valor, 0))}</div><div class="kpi-lbl">${dev.length} devolvido(s)</div></div>`;
+
+  const tb = document.getElementById('tb-cheques');
+  const todos = document.getElementById('chq-sel-todos'); if (todos) todos.checked = false;
+  if (!list.length) { tb.innerHTML = `<tr><td colspan="11" class="empty-state">${carteira.length ? 'Nenhum cheque com esses filtros.' : 'Nenhum cheque em carteira. Eles entram aqui quando uma venda é recebida com cheque.'}</td></tr>`; return; }
+  tb.innerHTML = list.map(q => `<tr>
+    <td><input type="checkbox" class="chq-sel" value="${q.id}" style="width:16px;height:16px;accent-color:#ea580c" /></td>
+    <td>${fmtDate(q.dt_entrada)}</td>
+    <td><b>${_e(q.numero)}</b><div style="font-size:11px;color:#a8a29e">${_e(q.banco_cheque || '')}</div></td>
+    <td style="font-family:'DM Mono',monospace;font-weight:700">${fmtBRL(q.valor)}</td>
+    <td>${_e(getClienteNome(q.cliente) || '—')}</td>
+    <td>${_e(q.emitente || '—')}</td>
+    <td>${_chqBomParaHtml(q)}</td>
+    <td style="font-size:12px">${_e(getBancoNome(q.banco_custodia))}</td>
+    <td>${q.devolvido ? `<span class="badge badge-red" title="${_e(q.motivo_devolucao || '')}">Devolvido</span><div style="font-size:11px;color:#991b1b;margin-top:2px">${_e(q.motivo_devolucao || '')}</div>` : '<span class="badge badge-green">Em carteira</span>'}</td>
+    <td class="actions">
+      <button class="btn btn-primary btn-sm" onclick="abrirCompensarCheques(['${q.id}'])">Compensar</button>
+      <button class="btn btn-secondary btn-sm" onclick="abrirEditarCheque('${q.id}')">Editar</button>
+      <button class="btn btn-secondary btn-sm" onclick="abrirHistoricoCheque('${q.id}')" title="Histórico">🕓</button>
+    </td></tr>`).join('');
+}
+function clearChequesFiltros() {
+  ['chq-f-busca', 'chq-f-de', 'chq-f-ate'].forEach(id => { document.getElementById(id).value = ''; });
+  document.getElementById('chq-f-sit').value = '';
+  renderCheques();
+}
+function chqSelTodos(on) { document.querySelectorAll('.chq-sel').forEach(cb => { cb.checked = on; }); }
+function abrirCompensarSelecionados() {
+  const ids = [...document.querySelectorAll('.chq-sel:checked')].map(cb => cb.value);
+  if (!ids.length) { alert('Marque os cheques que deseja compensar.'); return; }
+  abrirCompensarCheques(ids);
+}
+
+// ── Compensar (depósito / resgate / outro) ────────────────────────
+let _chqCompIds = [];
+function abrirCompensarCheques(ids) {
+  if (!_chqExigeTabelas()) return;
+  _chqCompIds = ids.filter(id => { const q = db.cheques.find(x => x.id === id); return q && q.status === 'carteira'; });
+  if (!_chqCompIds.length) return;
+  const qs = _chqCompIds.map(id => db.cheques.find(x => x.id === id));
+  const tot = _r2(qs.reduce((s, q) => s + q.valor, 0));
+  document.getElementById('chqc-resumo').innerHTML =
+    qs.map(q => `<div style="display:flex;justify-content:space-between;gap:10px;padding:2px 0"><span>Nº <b>${_e(q.numero)}</b> · ${_e(q.emitente || getClienteNome(q.cliente) || '')} · bom para ${fmtDate(q.bom_para)}</span><span style="font-family:'DM Mono',monospace">${fmtBRL(q.valor)}</span></div>`).join('') +
+    `<div style="border-top:1px solid #e7e5e4;margin-top:6px;padding-top:6px;display:flex;justify-content:space-between"><b>Total</b><b style="font-family:'DM Mono',monospace">${fmtBRL(tot)}</b></div>`;
+  document.getElementById('chqc-data').value = today();
+  document.getElementById('chqc-destino').value = 'deposito';
+  const sel = document.getElementById('chqc-banco');
+  sel.innerHTML = '<option value="">Selecione...</option>' + db.bancos.filter(b => !/cheque/i.test(b.nome || '')).map(b => `<option value="${b.id}">${_e(b.nome)}</option>`).join('');
+  document.getElementById('chqc-obs').value = '';
+  chqcAtualizarDestino();
+  openModal('modal-chq-compensar');
+}
+function chqcAtualizarDestino() {
+  const d = document.getElementById('chqc-destino').value;
+  document.getElementById('chqc-banco-wrap').style.display = d === 'outro' ? 'none' : '';
+  document.getElementById('chqc-banco-lbl').textContent = d === 'resgate' ? 'Conta onde entrou o dinheiro do cliente *' : 'Conta do depósito *';
+  document.getElementById('chqc-dica').textContent = d === 'deposito'
+    ? 'O valor sai da conta de custódia dos cheques e entra na conta escolhida (transferência automática).'
+    : d === 'resgate' ? 'O cliente trocou o cheque por dinheiro/PIX: o valor sai da custódia e entra na conta escolhida.'
+    : 'O cheque sai da carteira sem movimentar o saldo das contas.';
+}
+async function confirmarCompensarCheques() {
+  const data = document.getElementById('chqc-data').value;
+  const destino = document.getElementById('chqc-destino').value;
+  const banco = document.getElementById('chqc-banco').value;
+  const obs = document.getElementById('chqc-obs').value.trim();
+  if (!data) { alert('Informe a data.'); return; }
+  if (destino !== 'outro' && !banco) { alert('Escolha a conta.'); return; }
+  const qs = _chqCompIds.map(id => db.cheques.find(x => x.id === id)).filter(Boolean);
+  const pre = qs.filter(q => q.bom_para && q.bom_para > data);
+  if (destino === 'deposito' && pre.length && !confirm(`${pre.length} cheque(s) são pré-datados (bom para depois de ${fmtDate(data)}). Depositar mesmo assim?`)) return;
+  const rotulo = destino === 'deposito' ? 'Depositado' : destino === 'resgate' ? 'Resgatado pelo cliente' : 'Baixado (outro)';
+  let falhas = 0;
+  for (const q of qs) {
+    let transfId = null;
+    if (destino !== 'outro' && q.banco_custodia && q.banco_custodia !== banco) {
+      const t = { id: uid(), data, origem: q.banco_custodia, destino: banco, valor: q.valor, obs: `${rotulo} — cheque nº ${q.numero}${obs ? ' · ' + obs : ''}` };
+      if (await sbFetch('transferencias', 'POST', t)) { db.transferencias.push(t); transfId = t.id; } else { falhas++; continue; }
+    }
+    const hist = q.historico.concat([{ data, evento: rotulo, detalhe: (destino === 'outro' ? '' : getBancoNome(banco)) + (obs ? ' · ' + obs : ''), usuario: _quem() }]);
+    const patch = { status: 'compensado', destino_tipo: destino, destino_banco: destino === 'outro' ? null : banco, destino_forn: null, destino_lanc: null, dt_compensacao: data, transf_id: transfId, historico: hist };
+    if (await sbFetch('cheques', 'PATCH', patch, `?id=eq.${q.id}`)) Object.assign(q, patch);
+    else falhas++;
+  }
+  closeModal('modal-chq-compensar');
+  _chqPosAlteracao(null, null);
+  if (falhas) alert(`⚠️ ${falhas} cheque(s) não puderam ser compensados. Verifique a conexão.`);
+}
+
+function renderChequesCompensados() {
+  if (!paginaVisivel('cheques-compensados')) return;
+  document.getElementById('chqcomp-aviso').innerHTML = _avisoTabelasChqHtml();
+  const busca = normText(document.getElementById('chqcomp-f-busca').value);
+  const dest = document.getElementById('chqcomp-f-destino').value;
+  const de = document.getElementById('chqcomp-f-de').value;
+  const ate = document.getElementById('chqcomp-f-ate').value;
+  const comp = db.cheques.filter(q => q.status === 'compensado');
+  const list = comp.filter(q => {
+    if (busca && !normText(`${q.numero} ${q.emitente} ${getClienteNome(q.cliente)} ${getFornNome(q.destino_forn)} ${q.banco_cheque}`).includes(busca)) return false;
+    if (dest && q.destino_tipo !== dest) return false;
+    if (de && (q.dt_compensacao || '') < de) return false;
+    if (ate && (q.dt_compensacao || '') > ate) return false;
+    return true;
+  }).sort((a, b) => (b.dt_compensacao || '').localeCompare(a.dt_compensacao || ''));
+  const soma = t => _r2(list.filter(q => !t || q.destino_tipo === t).reduce((s, q) => s + q.valor, 0));
+  document.getElementById('chqcomp-kpis').innerHTML = `
+    <div class="card kpi"><div class="kpi-val">${fmtBRL(soma())}</div><div class="kpi-lbl">${list.length} cheque(s) (filtro)</div></div>
+    <div class="card kpi"><div class="kpi-val" style="color:#166534">${fmtBRL(soma('deposito'))}</div><div class="kpi-lbl">Depositados</div></div>
+    <div class="card kpi"><div class="kpi-val" style="color:#2563eb">${fmtBRL(soma('pagamento'))}</div><div class="kpi-lbl">Usados em pagamentos</div></div>
+    <div class="card kpi"><div class="kpi-val" style="color:#57534e">${fmtBRL(_r2(soma('resgate') + soma('outro')))}</div><div class="kpi-lbl">Resgatados / outros</div></div>`;
+  const tb = document.getElementById('tb-cheques-compensados');
+  if (!list.length) { tb.innerHTML = '<tr><td colspan="9" class="empty-state">Nenhum cheque compensado.</td></tr>'; return; }
+  tb.innerHTML = list.map(q => `<tr>
+    <td>${fmtDate(q.dt_compensacao)}</td>
+    <td><b>${_e(q.numero)}</b><div style="font-size:11px;color:#a8a29e">${_e(q.banco_cheque || '')}</div></td>
+    <td style="font-family:'DM Mono',monospace;font-weight:700">${fmtBRL(q.valor)}</td>
+    <td>${_e(getClienteNome(q.cliente) || '—')}</td>
+    <td>${_e(q.emitente || '—')}</td>
+    <td>${fmtDate(q.bom_para)}</td>
+    <td>${fmtDate(q.dt_entrada)}</td>
+    <td style="font-size:12.5px">${_chqDestinoTxt(q)}</td>
+    <td class="actions">
+      <button class="btn btn-danger btn-sm" onclick="abrirEstornoCheque('${q.id}')">↩ Estornar</button>
+      <button class="btn btn-secondary btn-sm" onclick="abrirHistoricoCheque('${q.id}')" title="Histórico">🕓</button>
+    </td></tr>`).join('');
+}
+function clearChequesCompFiltros() {
+  ['chqcomp-f-busca', 'chqcomp-f-destino', 'chqcomp-f-de', 'chqcomp-f-ate'].forEach(id => { document.getElementById(id).value = ''; });
+  renderChequesCompensados();
+}
+
+// ── Estorno com motivo ────────────────────────────────────────────
+function getMotivosEstornoChq() {
+  const r = MOTIVOS_ESTORNO_CHQ_PADRAO.slice();
+  (motivosEstornoChqExtra || []).forEach(m => { if (!r.includes(m)) r.push(m); });
+  return r;
+}
+function _popularMotivosEstornoChq(valor) {
+  const sel = document.getElementById('chqe-motivo');
+  sel.innerHTML = '<option value="">Selecione...</option>' +
+    getMotivosEstornoChq().map(m => `<option value="${_e(m)}">${_e(m)}</option>`).join('') +
+    `<option value="${MOTIVO_CHQ_NOVO}">+ Cadastrar novo motivo...</option>`;
+  sel.value = valor || '';
+}
+function abrirEstornoCheque(id) {
+  const q = db.cheques.find(x => x.id === id); if (!q) return;
+  document.getElementById('chqe-id').value = id;
+  document.getElementById('chqe-resumo').innerHTML =
+    `Cheque nº <b>${_e(q.numero)}</b> ${q.banco_cheque ? '(' + _e(q.banco_cheque) + ')' : ''} · <b>${fmtBRL(q.valor)}</b><br>` +
+    `Emitente: ${_e(q.emitente || '—')} · Recebido de ${_e(getClienteNome(q.cliente) || '—')}<br>Destino: ${_chqDestinoTxt(q)} em ${fmtDate(q.dt_compensacao)}`;
+  document.getElementById('chqe-efeito').innerHTML = q.destino_tipo === 'pagamento'
+    ? `O cheque volta para a carteira. Como ele foi usado para pagar <b>${_e(getFornNome(q.destino_forn) || 'o fornecedor')}</b>, fica registrado em "Créditos com Fornecedores" que a Stoeck ainda deve <b>${fmtBRL(q.valor)}</b> a ele.`
+    : (q.destino_tipo === 'deposito' || q.destino_tipo === 'resgate')
+      ? `O cheque volta para a carteira e o valor sai da conta <b>${_e(getBancoNome(q.destino_banco))}</b> (a transferência do depósito é desfeita).`
+      : 'O cheque volta para a carteira.';
+  _popularMotivosEstornoChq('');
+  document.getElementById('chqe-data').value = today();
+  document.getElementById('chqe-obs').value = '';
+  openModal('modal-chq-estorno');
+}
+function onMotivoEstornoChqChange(sel) {
+  if (sel.value !== MOTIVO_CHQ_NOVO) return;
+  sel.value = '';
+  document.getElementById('chqm-nome').value = '';
+  openModal('modal-chq-novo-motivo');
+  setTimeout(() => document.getElementById('chqm-nome').focus(), 50);
+}
+async function salvarNovoMotivoEstornoChq() {
+  const nome = document.getElementById('chqm-nome').value.trim();
+  if (!nome) { alert('Informe o motivo.'); return; }
+  if (getMotivosEstornoChq().some(m => m.toLowerCase() === nome.toLowerCase())) { alert('Esse motivo já existe.'); return; }
+  const nova = (motivosEstornoChqExtra || []).concat([nome]);
+  const ok = await _salvarFormasConfig('motivos_estorno_cheque', nova);
+  if (!ok) { alert('Erro ao salvar o motivo.'); return; }
+  motivosEstornoChqExtra = nova;
+  _popularMotivosEstornoChq(nome);
+  closeModal('modal-chq-novo-motivo');
+}
+async function confirmarEstornoCheque() {
+  const id = document.getElementById('chqe-id').value;
+  const motivo = document.getElementById('chqe-motivo').value;
+  const data = document.getElementById('chqe-data').value || today();
+  const obs = document.getElementById('chqe-obs').value.trim();
+  if (!motivo) { alert('Escolha o motivo do estorno.'); return; }
+  const q = db.cheques.find(x => x.id === id); if (!q) return;
+  let ledgerId = null;
+  if (q.transf_id) {
+    if (await sbFetch('transferencias', 'DELETE', null, `?id=eq.${q.transf_id}`)) db.transferencias = db.transferencias.filter(t => t.id !== q.transf_id);
+    else { alert('❌ Não foi possível desfazer a transferência do depósito.' + sbErroDetalhe()); return; }
+  }
+  if (q.destino_tipo === 'pagamento' && q.destino_forn) {
+    const e = {
+      id: uid(), tipo: 'fornecedor', pessoa: q.destino_forn, data, valor: -q.valor, caixa: q.valor, banco: q.banco_custodia || null,
+      descricao: `Cheque nº ${q.numero} devolvido (${motivo}) — pagamento a refazer`, origem: 'estorno_cheque',
+      comp_id: q.comp_pagar_id || null, cheque_id: q.id, usuario: _quem()
+    };
+    if (await sbFetch('conta_terceiros', 'POST', e)) { db.conta_terceiros.push(e); ledgerId = e.id; }
+    else { alert('❌ Não foi possível registrar o débito com o fornecedor.' + sbErroDetalhe()); return; }
+  }
+  const hist = q.historico.concat([{ data, evento: 'Estornado — voltou à carteira', detalhe: motivo + (obs ? ' · ' + obs : ''), usuario: _quem() }]);
+  const patch = {
+    status: 'carteira', devolvido: true, motivo_devolucao: motivo, destino_tipo: null, destino_banco: null,
+    destino_forn: null, destino_lanc: null, dt_compensacao: null, transf_id: null,
+    estorno_ledger_id: ledgerId, historico: hist
+  };
+  if (await sbFetch('cheques', 'PATCH', patch, `?id=eq.${id}`)) Object.assign(q, patch);
+  else { alert('❌ Erro ao estornar o cheque.' + sbErroDetalhe()); return; }
+  closeModal('modal-chq-estorno');
+  _chqPosAlteracao(null, null);
+}
+
+// ── Editar / histórico ────────────────────────────────────────────
+function abrirEditarCheque(id) {
+  const q = db.cheques.find(x => x.id === id); if (!q) return;
+  document.getElementById('chqed-id').value = id;
+  document.getElementById('chqed-numero').value = q.numero || '';
+  document.getElementById('chqed-banco').value = q.banco_cheque || '';
+  document.getElementById('chqed-emitente').value = q.emitente || '';
+  document.getElementById('chqed-bompara').value = q.bom_para || '';
+  document.getElementById('chqed-obs').value = q.obs || '';
+  document.getElementById('chqed-valor').textContent = fmtBRL(q.valor);
+  openModal('modal-chq-editar');
+}
+async function salvarEdicaoCheque() {
+  const id = document.getElementById('chqed-id').value;
+  const q = db.cheques.find(x => x.id === id); if (!q) return;
+  const patch = {
+    numero: document.getElementById('chqed-numero').value.trim(),
+    banco_cheque: document.getElementById('chqed-banco').value.trim(),
+    emitente: document.getElementById('chqed-emitente').value.trim(),
+    bom_para: document.getElementById('chqed-bompara').value || null,
+    obs: document.getElementById('chqed-obs').value.trim()
+  };
+  if (!patch.numero) { alert('Informe o número do cheque.'); return; }
+  if (await sbFetch('cheques', 'PATCH', patch, `?id=eq.${id}`)) Object.assign(q, patch);
+  else { alert('❌ Erro ao salvar.' + sbErroDetalhe()); return; }
+  closeModal('modal-chq-editar');
+  renderCheques(); renderChequesCompensados();
+}
+function abrirHistoricoCheque(id) {
+  const q = db.cheques.find(x => x.id === id); if (!q) return;
+  document.getElementById('chqh-titulo').textContent = `Cheque nº ${q.numero} — ${fmtBRL(q.valor)}`;
+  const h = q.historico || [];
+  document.getElementById('chqh-corpo').innerHTML = (h.length ? h : [{ data: q.dt_entrada, evento: 'Entrada na carteira', detalhe: '' }])
+    .map(x => `<div style="display:flex;gap:12px;padding:8px 0;border-bottom:1px solid #f5f4f2">
+      <div style="min-width:86px;font-family:'DM Mono',monospace;font-size:12px;color:#57534e">${fmtDate(x.data)}</div>
+      <div><b>${_e(x.evento)}</b>${x.detalhe ? `<div style="font-size:12px;color:#57534e">${_e(x.detalhe)}</div>` : ''}${x.usuario ? `<div style="font-size:11px;color:#a8a29e">${_e(x.usuario)}</div>` : ''}</div>
+    </div>`).join('') + (q.obs ? `<div style="margin-top:10px;font-size:12px;color:#57534e"><b>Obs.:</b> ${_e(q.obs)}</div>` : '');
+  openModal('modal-chq-hist');
+}
+
+// ══════════════════════════════════════════════════════════════════
+// TELAS: DÉBITOS COM CLIENTES e CRÉDITOS COM FORNECEDORES
+// ══════════════════════════════════════════════════════════════════
+const _TERC = {
+  cliente: { page: 'debitos-clientes', pref: 'tcli', nome: 'Cliente', saldoLbl: 'A Stoeck deve',
+    positivo: 'Stoeck deve ao cliente', negativo: 'Cliente deve à Stoeck' },
+  fornecedor: { page: 'creditos-fornecedores', pref: 'tfor', nome: 'Fornecedor', saldoLbl: 'Crédito da Stoeck',
+    positivo: 'Fornecedor deve à Stoeck', negativo: 'Stoeck deve ao fornecedor' }
+};
+const _TERC_ORIGEM = {
+  excedente: 'Excedente', uso: 'Usado em lançamento', estorno_cheque: 'Cheque devolvido',
+  devolucao: 'Devolução em dinheiro', recebimento: 'Recebido do fornecedor', baixa: 'Baixa sem caixa', manual: 'Manual'
+};
+function renderSaldosTerceiros(tp) {
+  const cfg = _TERC[tp]; if (!cfg || !paginaVisivel(cfg.page)) return;
+  document.getElementById(cfg.pref + '-aviso').innerHTML = _avisoTabelasChqHtml();
+  const busca = normText(document.getElementById(cfg.pref + '-busca').value);
+  const zerados = document.getElementById(cfg.pref + '-zerados').checked;
+  const porPessoa = {};
+  db.conta_terceiros.filter(e => e.tipo === tp).forEach(e => {
+    const p = porPessoa[e.pessoa] || (porPessoa[e.pessoa] = { saldo: 0, qtd: 0, ultimo: '' });
+    p.saldo = _r2(p.saldo + e.valor); p.qtd++;
+    if ((e.data || '') > p.ultimo) p.ultimo = e.data || '';
+  });
+  let linhas = Object.keys(porPessoa).map(id => ({ id, nome: _nomePessoa(tp, id), ...porPessoa[id] }))
+    .filter(x => zerados || Math.abs(x.saldo) >= 0.005)
+    .filter(x => !busca || normText(x.nome).includes(busca))
+    .sort((a, b) => b.saldo - a.saldo);
+  const positivos = Object.values(porPessoa).filter(p => p.saldo > 0.004);
+  const negativos = Object.values(porPessoa).filter(p => p.saldo < -0.004);
+  document.getElementById(cfg.pref + '-kpis').innerHTML = `
+    <div class="card kpi"><div class="kpi-val" style="color:${tp === 'cliente' ? '#dc2626' : '#166534'}">${fmtBRL(positivos.reduce((s, p) => s + p.saldo, 0))}</div><div class="kpi-lbl">${cfg.positivo} (${positivos.length})</div></div>
+    <div class="card kpi"><div class="kpi-val" style="color:${tp === 'cliente' ? '#166534' : '#dc2626'}">${fmtBRL(Math.abs(negativos.reduce((s, p) => s + p.saldo, 0)))}</div><div class="kpi-lbl">${cfg.negativo} (${negativos.length})</div></div>`;
+  const tb = document.getElementById(cfg.pref + '-tb');
+  if (!linhas.length) { tb.innerHTML = `<tr><td colspan="5" class="empty-state">Nenhum saldo em aberto.</td></tr>`; return; }
+  tb.innerHTML = linhas.map(x => {
+    const cor = x.saldo > 0 ? (tp === 'cliente' ? '#dc2626' : '#166534') : x.saldo < 0 ? (tp === 'cliente' ? '#166534' : '#dc2626') : '#a8a29e';
+    const sit = x.saldo > 0.004 ? cfg.positivo : x.saldo < -0.004 ? cfg.negativo : 'Zerado';
+    return `<tr>
+      <td><b>${_e(x.nome)}</b></td>
+      <td style="font-family:'DM Mono',monospace;font-weight:800;color:${cor}">${fmtBRL(Math.abs(x.saldo))}<div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:11px;font-weight:500;color:#a8a29e">${sit}</div></td>
+      <td>${x.qtd}</td>
+      <td>${fmtDate(x.ultimo)}</td>
+      <td class="actions">
+        <button class="btn btn-secondary btn-sm" onclick="abrirExtratoTerceiro('${tp}','${x.id}')">Extrato</button>
+        <button class="btn btn-primary btn-sm" onclick="abrirMovTerceiro('${tp}','${x.id}')">Movimentar</button>
+      </td></tr>`;
+  }).join('');
+}
+function abrirExtratoTerceiro(tp, pessoa) {
+  const cfg = _TERC[tp];
+  const ent = db.conta_terceiros.filter(e => e.tipo === tp && e.pessoa === pessoa).sort((a, b) => (a.data || '').localeCompare(b.data || ''));
+  let acum = 0;
+  document.getElementById('tx-titulo').textContent = `Extrato — ${_nomePessoa(tp, pessoa)}`;
+  document.getElementById('tx-tb').innerHTML = ent.length ? ent.map(e => {
+    acum = _r2(acum + e.valor);
+    const podeExcluir = ['devolucao', 'recebimento', 'baixa', 'manual'].includes(e.origem);
+    return `<tr>
+      <td>${fmtDate(e.data)}</td>
+      <td style="text-align:left">${_e(e.descricao || '')}<div style="font-size:11px;color:#a8a29e">${_e(_TERC_ORIGEM[e.origem] || e.origem || '')}${e.banco && e.caixa ? ' · ' + _e(getBancoNome(e.banco)) : ''}</div></td>
+      <td style="color:${e.valor >= 0 ? '#1f2937' : '#57534e'}">${e.valor >= 0 ? '+ ' : '− '}${fmtBRL(Math.abs(e.valor))}</td>
+      <td style="font-weight:700">${fmtBRL(acum)}</td>
+      <td>${podeExcluir ? `<button class="btn btn-danger btn-sm" onclick="excluirMovTerceiro('${e.id}')">Excluir</button>` : ''}</td>
+    </tr>`;
+  }).join('') : '<tr><td colspan="5" class="empty-state">Sem movimentos.</td></tr>';
+  const sit = acum > 0.004 ? cfg.positivo : acum < -0.004 ? cfg.negativo : 'Saldo zerado';
+  document.getElementById('tx-saldo').innerHTML = `${sit}: <b>${fmtBRL(Math.abs(acum))}</b>`;
+  document.getElementById('tx-btn-mov').onclick = () => { closeModal('modal-terc-extrato'); abrirMovTerceiro(tp, pessoa); };
+  openModal('modal-terc-extrato');
+}
+function abrirMovTerceiro(tp, pessoa) {
+  if (!_chqExigeTabelas()) return;
+  document.getElementById('tm-tipo').value = tp;
+  const sel = document.getElementById('tm-pessoa');
+  const lista = tp === 'cliente' ? db.clientes : db.fornecedores;
+  sel.innerHTML = '<option value="">Selecione...</option>' + [...lista].sort((a, b) => (a.nome || '').localeCompare(b.nome || '')).map(p => `<option value="${p.id}">${_e(p.nome)}</option>`).join('');
+  sel.value = pessoa || '';
+  document.getElementById('tm-pessoa-lbl').textContent = tp === 'cliente' ? 'Cliente *' : 'Fornecedor *';
+  const op = document.getElementById('tm-op');
+  op.innerHTML = tp === 'cliente'
+    ? `<option value="devolucao">Devolver ao cliente (sai dinheiro da conta)</option>
+       <option value="baixa">Baixar sem movimentar dinheiro</option>
+       <option value="manual">Lançar novo débito da Stoeck com o cliente</option>`
+    : `<option value="recebimento">Fornecedor devolveu o valor (entra dinheiro na conta)</option>
+       <option value="baixa">Baixar sem movimentar dinheiro</option>
+       <option value="manual">Lançar novo crédito com o fornecedor</option>`;
+  document.getElementById('tm-valor').value = '';
+  document.getElementById('tm-data').value = today();
+  document.getElementById('tm-desc').value = '';
+  document.getElementById('tm-banco').innerHTML = '<option value="">Selecione...</option>' + db.bancos.map(b => `<option value="${b.id}">${_e(b.nome)}</option>`).join('');
+  document.getElementById('tm-titulo').textContent = tp === 'cliente' ? 'Movimentar débito com cliente' : 'Movimentar crédito com fornecedor';
+  tmAtualizar();
+  openModal('modal-terc-mov');
+}
+function tmAtualizar() {
+  const tp = document.getElementById('tm-tipo').value;
+  const op = document.getElementById('tm-op').value;
+  const pessoa = document.getElementById('tm-pessoa').value;
+  document.getElementById('tm-banco-wrap').style.display = (op === 'devolucao' || op === 'recebimento') ? '' : 'none';
+  const s = saldoTerceiro(tp, pessoa);
+  const cfg = _TERC[tp];
+  document.getElementById('tm-saldo').innerHTML = pessoa
+    ? `Saldo atual: <b>${fmtBRL(Math.abs(s))}</b> (${s > 0.004 ? cfg.positivo : s < -0.004 ? cfg.negativo : 'zerado'})` : '';
+}
+async function salvarMovTerceiro() {
+  const tp = document.getElementById('tm-tipo').value;
+  const pessoa = document.getElementById('tm-pessoa').value;
+  const op = document.getElementById('tm-op').value;
+  const v = _r2(document.getElementById('tm-valor').value);
+  const data = document.getElementById('tm-data').value;
+  const banco = document.getElementById('tm-banco').value;
+  const descTxt = document.getElementById('tm-desc').value.trim();
+  if (!pessoa) { alert('Escolha o ' + (tp === 'cliente' ? 'cliente' : 'fornecedor') + '.'); return; }
+  if (v <= 0) { alert('Informe um valor maior que zero.'); return; }
+  if (!data) { alert('Informe a data.'); return; }
+  const comCaixa = op === 'devolucao' || op === 'recebimento';
+  if (comCaixa && !banco) { alert('Escolha a conta.'); return; }
+  const valor = op === 'manual' ? v : -v;
+  const caixa = op === 'devolucao' ? -v : op === 'recebimento' ? v : 0;
+  const padrao = { devolucao: 'Valor devolvido ao cliente', recebimento: 'Valor devolvido pelo fornecedor', baixa: 'Baixa sem movimentação de caixa', manual: tp === 'cliente' ? 'Débito lançado manualmente' : 'Crédito lançado manualmente' };
+  const e = { id: uid(), tipo: tp, pessoa, data, valor, caixa, banco: comCaixa ? banco : null, descricao: descTxt || padrao[op], origem: op, comp_id: null, cheque_id: null, usuario: _quem() };
+  if (!(await sbFetch('conta_terceiros', 'POST', e))) { alert('❌ Erro ao salvar.' + sbErroDetalhe()); return; }
+  db.conta_terceiros.push(e);
+  closeModal('modal-terc-mov');
+  _chqPosAlteracao(null, null);
+}
+async function excluirMovTerceiro(id) {
+  const e = db.conta_terceiros.find(x => x.id === id); if (!e) return;
+  if (!confirm('Excluir este movimento?')) return;
+  if (!(await sbFetch('conta_terceiros', 'DELETE', null, `?id=eq.${id}`))) { alert('❌ Erro ao excluir.' + sbErroDetalhe()); return; }
+  db.conta_terceiros = db.conta_terceiros.filter(x => x.id !== id);
+  _chqPosAlteracao(null, null);
+  abrirExtratoTerceiro(e.tipo, e.pessoa);
+}
+
 </script>
 </body>
 </html>
