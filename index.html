@@ -584,6 +584,12 @@ th.ef-th { padding:8px 8px 8px 12px; }
 .nav-sub-item:hover { background:#f5f4f2; color:#1f2937; }
 .nav-sub-item.active { background:#fff1e6; color:#ea580c; }
 .nav-sub-item svg { width:15px; height:15px; flex-shrink:0; }
+.nav-sub-item.nav-debito { color:#dc2626; }
+.nav-sub-item.nav-debito:hover { background:#fef2f2; color:#b91c1c; }
+.nav-sub-item.nav-debito.active { background:#fee2e2; color:#b91c1c; }
+.nav-sub-item.nav-credito { color:#16a34a; }
+.nav-sub-item.nav-credito:hover { background:#f0fdf4; color:#15803d; }
+.nav-sub-item.nav-credito.active { background:#dcfce7; color:#15803d; }
 /* badge receber */
 .badge-receber { background:#dcfce7; color:#166534; }
 .badge-apagar  { background:#fee2e2; color:#991b1b; }
@@ -1139,7 +1145,7 @@ th.ef-th { padding:8px 8px 8px 12px; }
         <span>📦 Contas a Pagar</span>
         <span class="nav-group-arrow">▶</span>
       </div>
-      <div class="nav-group-items" id="grp-pagar" style="max-height:600px">
+      <div class="nav-group-items" id="grp-pagar" style="max-height:400px">
         <div class="nav-sub-item" onclick="showPage('bancos')" id="nav-bancos">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
           Bancos / Caixas
@@ -1168,10 +1174,6 @@ th.ef-th { padding:8px 8px 8px 12px; }
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
           Contas Pagas
         </div>
-        <div class="nav-sub-item" onclick="showPage('creditos-fornecedores')" id="nav-creditos-fornecedores">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="4"/><path d="M2 21v-1a6 6 0 0 1 12 0v1"/><line x1="16" y1="11" x2="22" y2="11"/><line x1="19" y1="8" x2="19" y2="14"/></svg>
-          Créditos com Fornecedores
-        </div>
       </div>
 
       <!-- GRUPO: Contas a Receber -->
@@ -1179,7 +1181,7 @@ th.ef-th { padding:8px 8px 8px 12px; }
         <span>💰 Contas a Receber</span>
         <span class="nav-group-arrow">▶</span>
       </div>
-      <div class="nav-group-items" id="grp-receber" style="max-height:700px">
+      <div class="nav-group-items" id="grp-receber" style="max-height:400px">
         <div class="nav-sub-item" onclick="showPage('clientes')" id="nav-clientes">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
           Clientes
@@ -1200,6 +1202,22 @@ th.ef-th { padding:8px 8px 8px 12px; }
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
           Contas Recebidas
         </div>
+        <div class="nav-sub-item" onclick="showPage('pedidoscancelados')" id="nav-pedidoscancelados">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+          Pedidos Cancelados
+        </div>
+        <div class="nav-sub-item" onclick="showPage('reposicao')" id="nav-reposicao">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+          Reposição
+        </div>
+      </div>
+
+      <!-- GRUPO: Controle de Cheques -->
+      <div class="nav-group-header open" onclick="toggleNavGroup('grp-cheques',this)" style="margin-top:4px;">
+        <span>🧾 Controle de Cheques</span>
+        <span class="nav-group-arrow">▶</span>
+      </div>
+      <div class="nav-group-items" id="grp-cheques" style="max-height:400px">
         <div class="nav-sub-item" onclick="showPage('cheques')" id="nav-cheques">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"/><line x1="6" y1="14" x2="13" y2="14"/><line x1="16" y1="10" x2="18" y2="10"/></svg>
           Controle de Cheques
@@ -1208,17 +1226,21 @@ th.ef-th { padding:8px 8px 8px 12px; }
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"/><polyline points="8 12 11 15 16 9"/></svg>
           Cheques Compensados
         </div>
-        <div class="nav-sub-item" onclick="showPage('debitos-clientes')" id="nav-debitos-clientes">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="4"/><path d="M2 21v-1a6 6 0 0 1 12 0v1"/><line x1="16" y1="11" x2="22" y2="11"/><line x1="19" y1="8" x2="19" y2="14"/></svg>
+      </div>
+
+      <!-- GRUPO: Débitos e Créditos -->
+      <div class="nav-group-header open" onclick="toggleNavGroup('grp-saldos',this)" style="margin-top:4px;">
+        <span>⚖️ Débitos e Créditos</span>
+        <span class="nav-group-arrow">▶</span>
+      </div>
+      <div class="nav-group-items" id="grp-saldos" style="max-height:400px">
+        <div class="nav-sub-item nav-debito" onclick="showPage('debitos-clientes')" id="nav-debitos-clientes">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="4"/><path d="M2 21v-1a6 6 0 0 1 12 0v1"/><line x1="16" y1="11" x2="22" y2="11"/></svg>
           Débitos com Clientes
         </div>
-        <div class="nav-sub-item" onclick="showPage('pedidoscancelados')" id="nav-pedidoscancelados">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
-          Pedidos Cancelados
-        </div>
-        <div class="nav-sub-item" onclick="showPage('reposicao')" id="nav-reposicao">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
-          Reposição
+        <div class="nav-sub-item nav-credito" onclick="showPage('creditos-fornecedores')" id="nav-creditos-fornecedores">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="4"/><path d="M2 21v-1a6 6 0 0 1 12 0v1"/><line x1="16" y1="11" x2="22" y2="11"/><line x1="19" y1="8" x2="19" y2="14"/></svg>
+          Créditos com Fornecedores
         </div>
       </div>
 
@@ -4014,6 +4036,27 @@ th.ef-th { padding:8px 8px 8px 12px; }
   </div>
 </div>
 
+<div class="modal-overlay" id="modal-chq-saldo" style="z-index:250">
+  <div class="modal" style="width:1000px">
+    <div class="modal-title" id="chqsi-titulo">Cheques em carteira</div>
+    <div class="comp-resumo">Lance aqui os cheques de terceiros que <b>já estavam em mãos</b> antes de usar o sistema. Eles entram no <b>Controle de Cheques</b> e compõem o saldo inicial desta conta — sem criar lançamento de venda.</div>
+    <div class="comp-sec">
+      <div class="comp-sec-head"><div class="comp-sec-tit">🧾 Cheques recebidos</div></div>
+      <div style="overflow-x:auto"><table class="comp-tab">
+        <thead><tr><th>Nº do cheque</th><th>Banco</th><th>De quem é (emitente)</th><th>Recebido de (cliente)</th><th>Data de entrada</th><th>Bom para</th><th>Valor (R$)</th><th></th></tr></thead>
+        <tbody id="chqsi-tb"></tbody>
+      </table></div>
+      <button type="button" class="btn btn-secondary btn-sm" onclick="_chqSIAdd()">+ Adicionar cheque</button>
+    </div>
+    <div class="comp-totais" id="chqsi-total" style="margin-bottom:12px"></div>
+    <div id="chqsi-ja"></div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-chq-saldo')">Fechar</button>
+      <button class="btn btn-primary" onclick="salvarChequesSaldoInicial()">Lançar cheques</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="modal-chq-compensar" style="z-index:250">
   <div class="modal">
     <div class="modal-title">Compensar cheque(s)</div>
@@ -4078,7 +4121,7 @@ th.ef-th { padding:8px 8px 8px 12px; }
       <div class="form-group"><label>Bom para</label><input id="chqed-bompara" type="date" /></div>
     </div>
     <div class="form-group"><label>Observação</label><input id="chqed-obs" type="text" /></div>
-    <div style="font-size:12px;color:#a8a29e">O valor não pode ser alterado aqui: ele faz parte do recebimento. Para corrigir, estorne o recebimento na tela Contas Recebidas e lance de novo.</div>
+    <div id="chqed-nota" style="font-size:12px;color:#a8a29e">O valor não pode ser alterado aqui: ele faz parte do recebimento. Para corrigir, estorne o recebimento na tela Contas Recebidas e lance de novo.</div>
     <div class="modal-footer">
       <button class="btn btn-secondary" onclick="closeModal('modal-chq-editar')">Cancelar</button>
       <button class="btn btn-primary" onclick="salvarEdicaoCheque()">Salvar</button>
@@ -4157,15 +4200,15 @@ const PAGES_CONFIG = [
   { id:'lancamentos',       label:'Lançamentos (Compra)',grupo:'pagar'   },
   { id:'apagar',            label:'Contas a Pagar',      grupo:'pagar'   },
   { id:'pagas',             label:'Contas Pagas',        grupo:'pagar'   },
-  { id:'creditos-fornecedores', label:'Créditos com Fornecedores', grupo:'pagar' },
+  { id:'creditos-fornecedores', label:'Créditos com Fornecedores', grupo:'saldos' },
   { id:'clientes',          label:'Clientes',            grupo:'receber' },
   { id:'prodvenda',         label:'Produtos de Venda',   grupo:'receber' },
   { id:'lancreceber',       label:'Lançamentos (Venda)', grupo:'receber' },
   { id:'areceber',          label:'Contas a Receber',    grupo:'receber' },
   { id:'recebido',          label:'Contas Recebidas',    grupo:'receber' },
-  { id:'cheques',           label:'Controle de Cheques', grupo:'receber' },
-  { id:'cheques-compensados', label:'Cheques Compensados', grupo:'receber' },
-  { id:'debitos-clientes',  label:'Débitos com Clientes', grupo:'receber' },
+  { id:'cheques',           label:'Controle de Cheques', grupo:'cheques' },
+  { id:'cheques-compensados', label:'Cheques Compensados', grupo:'cheques' },
+  { id:'debitos-clientes',  label:'Débitos com Clientes', grupo:'saldos' },
   { id:'pedidoscancelados', label:'Pedidos Cancelados',  grupo:'receber' },
   { id:'reposicao',         label:'Reposição',           grupo:'receber' },
   { id:'dfc-categorias',    label:'DFC Categorias',      grupo:'dfc'     },
@@ -9443,7 +9486,7 @@ function applyNavPermissions() {
     item.style.display = allowed.includes(pg) ? '' : 'none';
   });
   // Ocultar cabeçalho do grupo se todos os itens estiverem ocultos
-  ['grp-pagar','grp-receber','grp-dfc','grp-dre'].forEach(grpId => {
+  ['grp-pagar','grp-receber','grp-cheques','grp-saldos','grp-dfc','grp-dre'].forEach(grpId => {
     const grp = document.getElementById(grpId);
     if(!grp) return;
     const visivel = grp.querySelectorAll('.nav-sub-item:not([style*="none"])').length > 0;
@@ -9471,6 +9514,8 @@ async function renderUsuariosAdmin() {
     const pagGeral   = PAGES_CONFIG.filter(pg=>pg.grupo==='geral');
     const pagPagar   = PAGES_CONFIG.filter(pg=>pg.grupo==='pagar');
     const pagReceber = PAGES_CONFIG.filter(pg=>pg.grupo==='receber');
+    const pagCheques = PAGES_CONFIG.filter(pg=>pg.grupo==='cheques');
+    const pagSaldos  = PAGES_CONFIG.filter(pg=>pg.grupo==='saldos');
     const pagDfc     = PAGES_CONFIG.filter(pg=>pg.grupo==='dfc');
     const pagDre     = PAGES_CONFIG.filter(pg=>pg.grupo==='dre');
     const buildPerms = (pgs) => pgs.map(pg => {
@@ -9491,6 +9536,10 @@ async function renderUsuariosAdmin() {
       <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px">${buildPerms(pagPagar)}</div>
       <div style="font-size:10px;color:#a8a29e;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">💰 Contas a Receber</div>
       <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px">${buildPerms(pagReceber)}</div>
+      <div style="font-size:10px;color:#a8a29e;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">🧾 Controle de Cheques</div>
+      <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px">${buildPerms(pagCheques)}</div>
+      <div style="font-size:10px;color:#a8a29e;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">⚖️ Débitos e Créditos</div>
+      <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px">${buildPerms(pagSaldos)}</div>
       <div style="font-size:10px;color:#a8a29e;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">📊 DFC</div>
       <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px">${buildPerms(pagDfc)}</div>
       <div style="font-size:10px;color:#a8a29e;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">📈 DRE</div>
@@ -13530,6 +13579,8 @@ async function salvarNovaFormaReceb() {
 
 function getBancoSaldo(banco) {
   let saldo = banco.saldo_inicial || 0;
+  // Cheques lançados como saldo inicial da conta de custódia
+  if (typeof chqSaldoInicialDoBanco === 'function') saldo += chqSaldoInicialDoBanco(banco.id);
   // Entradas: parcelas de contas a receber já efetivamente recebidas nesta conta
   // (por parcela, não pelo status do lançamento inteiro — assim uma venda
   // parcelada com recebimento parcial já entra com o que foi recebido até agora).
@@ -13628,7 +13679,8 @@ function renderFluxoBancoDiario() {
   const primeiroDiaMes = `${ano}-${mesStr}-01`;
 
   // Saldo acumulado até o dia anterior ao início do mês selecionado
-  let saldoAcum = db.bancos.filter(b => bancoIds.includes(b.id)).reduce((s, b) => s + (b.saldo_inicial || 0), 0);
+  let saldoAcum = db.bancos.filter(b => bancoIds.includes(b.id)).reduce((s, b) => s + (b.saldo_inicial || 0)
+    + (typeof chqSaldoInicialDoBanco === 'function' ? chqSaldoInicialDoBanco(b.id) : 0), 0);
   getParcelas(true).forEach(p => {
     if (!bancoIds.includes(p.banco)) return;
     if (p.dtpago && p.dtpago < primeiroDiaMes) saldoAcum -= (p.valParc || 0);
@@ -13768,8 +13820,10 @@ function renderBancos() {
       <div class="banco-saldo">
         <div class="banco-saldo-val ${saldoCls}">${fmtBRL(saldo)}</div>
         <div class="banco-saldo-lbl">Saldo estimado</div>
+        ${(typeof chqSaldoInicialDoBanco === 'function' && chqSaldoInicialDoBanco(b.id) > 0) ? `<div class="banco-saldo-lbl" style="color:#ea580c">inclui ${fmtBRL(chqSaldoInicialDoBanco(b.id))} de cheques (saldo inicial)</div>` : ''}
       </div>
       <div class="actions" style="margin-left:8px">
+        ${(typeof _bancoEhCustodia === 'function' && _bancoEhCustodia(b)) ? `<button class="btn btn-primary btn-sm" onclick="abrirChequesSaldoInicial('${b.id}')" title="Lançar cheques que já estavam em mãos">🧾 Cheques</button>` : ''}
         <button class="btn btn-secondary btn-sm" onclick="editBanco('${b.id}')">Editar</button>
         <button class="btn btn-danger btn-sm" onclick="deleteBanco('${b.id}')">Excluir</button>
       </div>
@@ -18461,7 +18515,7 @@ function renderCheques() {
     <td>${fmtDate(q.dt_entrada)}</td>
     <td><b>${_e(q.numero)}</b><div style="font-size:11px;color:#a8a29e">${_e(q.banco_cheque || '')}</div></td>
     <td style="font-family:'DM Mono',monospace;font-weight:700">${fmtBRL(q.valor)}</td>
-    <td>${_e(getClienteNome(q.cliente) || '—')}</td>
+    <td>${_e(getClienteNome(q.cliente) || '—')}${_ehChqSaldoInicial(q) ? '<div><span class="badge badge-blue" style="font-size:10px">saldo inicial</span></div>' : ''}</td>
     <td>${_e(q.emitente || '—')}</td>
     <td>${_chqBomParaHtml(q)}</td>
     <td style="font-size:12px">${_e(getBancoNome(q.banco_custodia))}</td>
@@ -18469,6 +18523,7 @@ function renderCheques() {
     <td class="actions">
       <button class="btn btn-primary btn-sm" onclick="abrirCompensarCheques(['${q.id}'])">Compensar</button>
       <button class="btn btn-secondary btn-sm" onclick="abrirEditarCheque('${q.id}')">Editar</button>
+      ${_podeExcluirChqSI(q) ? `<button class="btn btn-danger btn-sm" onclick="excluirChequeSaldoInicial('${q.id}')" title="Excluir cheque de saldo inicial">Excluir</button>` : ''}
       <button class="btn btn-secondary btn-sm" onclick="abrirHistoricoCheque('${q.id}')" title="Histórico">🕓</button>
     </td></tr>`).join('');
 }
@@ -18672,6 +18727,9 @@ function abrirEditarCheque(id) {
   document.getElementById('chqed-bompara').value = q.bom_para || '';
   document.getElementById('chqed-obs').value = q.obs || '';
   document.getElementById('chqed-valor').textContent = fmtBRL(q.valor);
+  document.getElementById('chqed-nota').textContent = _ehChqSaldoInicial(q)
+    ? 'O valor não pode ser alterado aqui. Para corrigir, exclua o cheque (Controle de Cheques ou Bancos → 🧾 Cheques) e lance de novo.'
+    : 'O valor não pode ser alterado aqui: ele faz parte do recebimento. Para corrigir, estorne o recebimento na tela Contas Recebidas e lance de novo.';
   openModal('modal-chq-editar');
 }
 async function salvarEdicaoCheque() {
@@ -18837,6 +18895,129 @@ async function excluirMovTerceiro(id) {
   abrirExtratoTerceiro(e.tipo, e.pessoa);
 }
 
+
+// ══════════════════════════════════════════════════════════════════
+// CHEQUES DE SALDO INICIAL (tela Bancos → conta de custódia)
+// Cheques que já estavam em mãos antes de usar o sistema. Entram direto na
+// carteira, sem lançamento de venda, e somam no saldo da conta de custódia
+// como se fossem saldo inicial. Marcados com comp_receber_id = 'saldo_inicial'.
+// ══════════════════════════════════════════════════════════════════
+const CHQ_SALDO_INICIAL = 'saldo_inicial';
+let _chqSI = null; // { banco, linhas: [] }
+function _ehChqSaldoInicial(q) { return q && q.comp_receber_id === CHQ_SALDO_INICIAL; }
+function chqSaldoInicialDoBanco(bancoId) {
+  return _r2((db.cheques || []).filter(q => _ehChqSaldoInicial(q) && q.banco_custodia === bancoId).reduce((s, q) => s + (Number(q.valor) || 0), 0));
+}
+function _bancoEhCustodia(b) {
+  return /cheque/i.test(b.nome || '') || (db.cheques || []).some(q => q.banco_custodia === b.id);
+}
+function _novaLinhaChqSI() {
+  return { id: uid(), numero: '', banco_cheque: '', emitente: '', cliente: '', dt_entrada: today(), bom_para: today(), valor: '' };
+}
+function abrirChequesSaldoInicial(bancoId) {
+  if (!_chqExigeTabelas()) return;
+  _chqSI = { banco: bancoId, linhas: [_novaLinhaChqSI()] };
+  document.getElementById('chqsi-titulo').textContent = '🧾 Cheques em carteira — ' + getBancoNome(bancoId);
+  // listas de apoio (emitentes / bancos)
+  const dlE = document.getElementById('chq-emitentes');
+  if (dlE) {
+    const nomes = new Set();
+    db.clientes.forEach(c => c.nome && nomes.add(c.nome));
+    db.fornecedores.forEach(f => f.nome && nomes.add(f.nome));
+    db.cheques.forEach(c => c.emitente && nomes.add(c.emitente));
+    dlE.innerHTML = [...nomes].sort().map(n => `<option value="${_e(n)}">`).join('');
+  }
+  const dlB = document.getElementById('chq-bancos-lista');
+  if (dlB) {
+    const bancos = new Set(['Banco do Brasil', 'Caixa Econômica Federal', 'Bradesco', 'Itaú', 'Santander', 'Sicoob', 'Sicredi', 'Ailos / Viacredi', 'Banrisul', 'Inter', 'Nubank', 'C6 Bank']);
+    db.cheques.forEach(c => c.banco_cheque && bancos.add(c.banco_cheque));
+    dlB.innerHTML = [...bancos].sort().map(n => `<option value="${_e(n)}">`).join('');
+  }
+  _renderChqSI();
+  openModal('modal-chq-saldo');
+}
+function _renderChqSI() {
+  const st = _chqSI; if (!st) return;
+  const optsCli = '<option value="">—</option>' + [...db.clientes].sort((a, b) => (a.nome || '').localeCompare(b.nome || ''))
+    .map(c => `<option value="${c.id}">${_e(c.nome)}</option>`).join('');
+  document.getElementById('chqsi-tb').innerHTML = st.linhas.map((q, i) => `<tr>
+      <td><input value="${_e(q.numero)}" placeholder="000123" oninput="_chqSI.linhas[${i}].numero=this.value" /></td>
+      <td><input value="${_e(q.banco_cheque)}" list="chq-bancos-lista" placeholder="Banco" oninput="_chqSI.linhas[${i}].banco_cheque=this.value" /></td>
+      <td><input value="${_e(q.emitente)}" list="chq-emitentes" placeholder="Titular do cheque" oninput="_chqSI.linhas[${i}].emitente=this.value" /></td>
+      <td><select onchange="_chqSI.linhas[${i}].cliente=this.value">${optsCli.replace(`value="${q.cliente}"`, `value="${q.cliente}" selected`)}</select></td>
+      <td><input type="date" value="${_e(q.dt_entrada)}" onchange="_chqSI.linhas[${i}].dt_entrada=this.value" /></td>
+      <td><input type="date" value="${_e(q.bom_para)}" onchange="_chqSI.linhas[${i}].bom_para=this.value" /></td>
+      <td><input type="number" step="0.01" min="0" value="${q.valor === '' ? '' : q.valor}" placeholder="0,00" oninput="_chqSI.linhas[${i}].valor=this.value;_chqSITotal()" /></td>
+      <td style="width:40px"><button type="button" class="btn btn-danger btn-sm" title="Remover" onclick="_chqSI.linhas.splice(${i},1);_renderChqSI()">✕</button></td>
+    </tr>`).join('') || '<tr><td colspan="8" class="empty-state" style="padding:12px">Use "+ Adicionar cheque".</td></tr>';
+  _chqSITotal();
+  // cheques de saldo inicial já lançados nesta conta
+  const ja = db.cheques.filter(q => _ehChqSaldoInicial(q) && q.banco_custodia === st.banco)
+    .sort((a, b) => (a.bom_para || '').localeCompare(b.bom_para || ''));
+  document.getElementById('chqsi-ja').innerHTML = ja.length ? `
+    <div class="comp-sec-tit" style="margin:4px 0 8px">Já lançados nesta conta (${ja.length}) — total ${fmtBRL(chqSaldoInicialDoBanco(st.banco))}</div>
+    <div class="comp-chq-scroll"><table class="comp-tab"><thead><tr><th>Nº</th><th>Emitente</th><th>Recebido de</th><th>Entrada</th><th>Bom para</th><th>Situação</th><th style="text-align:right">Valor</th><th></th></tr></thead><tbody>
+    ${ja.map(q => `<tr>
+      <td><b>${_e(q.numero)}</b> <span style="color:#a8a29e;font-size:11px">${_e(q.banco_cheque || '')}</span></td>
+      <td>${_e(q.emitente || '—')}</td><td>${_e(getClienteNome(q.cliente) || '—')}</td>
+      <td>${fmtDate(q.dt_entrada)}</td><td>${fmtDate(q.bom_para)}</td>
+      <td>${q.status === 'carteira' ? '<span class="badge badge-green">Em carteira</span>' : '<span class="badge badge-gray">Compensado</span>'}</td>
+      <td style="text-align:right;font-family:'DM Mono',monospace;font-weight:700">${fmtBRL(q.valor)}</td>
+      <td>${_podeExcluirChqSI(q) ? `<button class="btn btn-danger btn-sm" onclick="excluirChequeSaldoInicial('${q.id}')">Excluir</button>` : ''}</td>
+    </tr>`).join('')}</tbody></table></div>` : '';
+}
+function _chqSITotal() {
+  const st = _chqSI; if (!st) return;
+  const v = _r2(st.linhas.reduce((s, q) => s + _r2(q.valor), 0));
+  const n = st.linhas.filter(q => _r2(q.valor) > 0).length;
+  document.getElementById('chqsi-total').innerHTML =
+    `<div class="comp-tot-item"><div class="lbl">Cheques a lançar</div><div class="val">${n}</div></div>` +
+    `<div class="comp-tot-item"><div class="lbl">Total</div><div class="val" style="color:#ea580c">${fmtBRL(v)}</div></div>` +
+    `<div class="comp-status" style="font-weight:500;color:#57534e">O total entra na carteira e soma no saldo da conta <b>${_e(getBancoNome(st.banco))}</b> como saldo inicial.</div>`;
+}
+function _chqSIAdd() { _chqSI.linhas.push(_novaLinhaChqSI()); _renderChqSI(); }
+async function salvarChequesSaldoInicial() {
+  const st = _chqSI; if (!st) return;
+  const preench = st.linhas.filter(q => String(q.numero || '').trim() || _r2(q.valor) > 0);
+  if (!preench.length) { alert('Informe ao menos um cheque.'); return; }
+  for (let i = 0; i < preench.length; i++) {
+    const q = preench[i];
+    if (!String(q.numero || '').trim()) { alert(`Informe o número do cheque ${i + 1}.`); return; }
+    if (_r2(q.valor) <= 0) { alert(`Informe o valor do cheque nº ${q.numero}.`); return; }
+    if (!q.bom_para) { alert(`Informe a data "bom para" do cheque nº ${q.numero}.`); return; }
+    if (!q.dt_entrada) { alert(`Informe a data de entrada do cheque nº ${q.numero}.`); return; }
+    const dup = db.cheques.find(x => x.status === 'carteira' && normText(x.numero) === normText(q.numero) && normText(x.banco_cheque) === normText(q.banco_cheque || ''));
+    if (dup && !confirm(`Já existe em carteira um cheque nº ${q.numero}${q.banco_cheque ? ' do ' + q.banco_cheque : ''} (${fmtBRL(dup.valor)}). Lançar mesmo assim?`)) return;
+  }
+  const tot = _r2(preench.reduce((s, q) => s + _r2(q.valor), 0));
+  if (!confirm(`Lançar ${preench.length} cheque(s), total ${fmtBRL(tot)}, como saldo inicial da conta ${getBancoNome(st.banco)}?`)) return;
+  const regs = preench.map(q => ({
+    id: q.id, empresa_id: empresaAtual() || null,
+    numero: String(q.numero).trim(), banco_cheque: (q.banco_cheque || '').trim(), emitente: (q.emitente || '').trim(),
+    cliente: q.cliente || null, valor: _r2(q.valor), bom_para: q.bom_para, dt_entrada: q.dt_entrada,
+    banco_custodia: st.banco, status: 'carteira', comp_receber_id: CHQ_SALDO_INICIAL, lanc_receber_id: null,
+    devolvido: false,
+    historico: [{ data: q.dt_entrada, evento: 'Entrada na carteira (saldo inicial)', detalhe: `Lançado na conta ${getBancoNome(st.banco)}`, usuario: _quem() }],
+    obs: 'Saldo inicial'
+  }));
+  if (!(await sbFetch('cheques', 'POST', regs))) { alert('❌ Não foi possível lançar os cheques.' + sbErroDetalhe()); return; }
+  db.cheques.push(...regs);
+  st.linhas = [_novaLinhaChqSI()];
+  _renderChqSI();
+  _chqPosAlteracao(null, null);
+}
+function _podeExcluirChqSI(q) {
+  return _ehChqSaldoInicial(q) && q.status === 'carteira' && !q.comp_pagar_id;
+}
+async function excluirChequeSaldoInicial(id) {
+  const q = db.cheques.find(x => x.id === id);
+  if (!q || !_podeExcluirChqSI(q)) return;
+  if (!confirm(`Excluir o cheque nº ${q.numero} (${fmtBRL(q.valor)})? O saldo da conta ${getBancoNome(q.banco_custodia)} diminui nesse valor.`)) return;
+  if (!(await sbFetch('cheques', 'DELETE', null, `?id=eq.${id}`))) { alert('❌ Erro ao excluir.' + sbErroDetalhe()); return; }
+  db.cheques = db.cheques.filter(x => x.id !== id);
+  if (_chqSI) _renderChqSI();
+  _chqPosAlteracao(null, null);
+}
 </script>
 </body>
 </html>
