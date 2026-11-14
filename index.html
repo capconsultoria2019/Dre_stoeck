@@ -5173,7 +5173,9 @@ async function fetchAll(table, order='') {
   // disparamos as próximas em blocos simultâneos.
   const limit = 1000;
   const PARALELO = 4;
-  const orderParam = order ? `order=${order}&` : '';
+  // Desempate por id: sem ele, registros com a mesma data/nome podem
+  // repetir ou sumir entre uma página e outra.
+  const orderParam = `order=${order ? order + ',' : ''}id.asc&`;
   const fEmp = filtroEmpresaQuery(table);
   const pagina = off => sbFetch(table, 'GET', null, `?${orderParam}limit=${limit}&offset=${off}${fEmp}`);
 
@@ -8496,9 +8498,10 @@ async function confirmarMarcarRecebidoMassa() {
 // ══════════════════════════════════════════
 async function backupLancamentos() {
   console.log('Buscando dados direto do banco (lancamentos + lancreceber)...');
+  // Paginado: uma consulta só traria no máximo 1.000 registros.
   const [pagar, receber] = await Promise.all([
-    sbFetch('lancamentos', 'GET', null, '?select=*'),
-    sbFetch('lancreceber', 'GET', null, '?select=*')
+    _carregarTabelaOpcional('lancamentos', 'dtcompra'),
+    _carregarTabelaOpcional('lancreceber', 'dtvenda')
   ]);
   if (!pagar || !receber) {
     console.error('Não foi possível buscar os dados para backup. Nada foi baixado.');
@@ -20019,7 +20022,7 @@ function _quem() { return currentUser ? (currentUser.nome || currentUser.user) :
 async function _carregarTabelaOpcional(tabela, ordem) {
   const todos = []; const lim = 1000; let off = 0;
   while (true) {
-    const r = await sbFetch(tabela, 'GET', null, `?order=${ordem}&limit=${lim}&offset=${off}`);
+    const r = await sbFetch(tabela, 'GET', null, `?order=${ordem},id.asc&limit=${lim}&offset=${off}`);
     if (r === null) return null;
     todos.push(...r);
     if (r.length < lim) break;
