@@ -459,6 +459,28 @@ th.ef-th { padding:8px 8px 8px 12px; }
 .dfc-val-neg { color:#dc2626; }
 .dfc-val-zero { color:#a8a29e; }
 .dfc-col-total { background:#faf9f7 !important; font-weight:700 !important; }
+/* Fluxo de Caixa Futuro — resumo em linha e tabela compacta */
+.ff-resumo { margin-left:auto; display:flex; flex-wrap:wrap; gap:6px 18px; font-size:12.5px; color:#57534e; }
+.ff-resumo b { font-family:'DM Mono',monospace; font-size:13px; margin-left:4px; }
+.ff-tab td { padding:5px 12px; }
+.ff-tab thead th { position:sticky; top:0; z-index:1; }
+/* DFC — layout de demonstrativo */
+.dfcp { font-size:12px; }
+.dfcp thead th { position:sticky; top:0; z-index:1; background:#1f2937; color:#fff; border-bottom:none; padding:7px 8px; font-size:10.5px; }
+.dfcp thead th.dfc-col-total { background:#111827 !important; color:#fff; }
+.dfcp td { padding:5px 8px; border-bottom:1px solid #f1efec; color:#1f2937; }
+.dfcp td:first-child { font-size:12px; }
+.dfcp .dfc-row-sub td { color:#374151; }
+.dfcp .dfc-row-sub td:first-child { padding-left:22px; color:#57534e; }
+.dfcp .dfc-val-pos { color:inherit; }
+.dfcp-neg { color:#b91c1c; }
+.dfcp-sec td { background:#f8fafc; color:#334155; font-weight:700; font-size:11px !important; text-transform:uppercase; letter-spacing:.6px; padding-top:9px; border-top:1px solid #e2e8f0; border-bottom:1px solid #e2e8f0; font-family:inherit !important; }
+.dfcp-sub td { font-weight:700; border-top:1px solid #cbd5e1; background:#fcfcfb; }
+.dfcp-res td { font-weight:800; background:#f1f5f9; border-top:2px solid #334155; border-bottom:1px solid #cbd5e1; }
+.dfcp-acum td { font-weight:600; color:#334155; background:#fff; font-style:italic; }
+.dfcp-saldo td { font-weight:600; color:#334155; background:#fff; }
+.dfcp-final td { font-weight:800; background:#fff7ed; color:#9a3412; border-top:1px solid #fed7aa; border-bottom:2px solid #fdba74; }
+.dfcp-nota { font-size:11px; color:#a8a29e; padding:8px 14px 12px; }
 .dre-row-subtotal td { font-weight:700; background:#fff; border-top:1.5px solid #d6d3d1; border-bottom:1.5px solid #d6d3d1; }
 .dre-row-subtotal td:first-child { text-transform:uppercase; letter-spacing:.3px; font-size:12px; color:#ea580c; }
 .dre-row-percent td { color:#a8a29e; font-style:italic; font-size:11px; border-bottom:1px dashed #faf9f7; }
@@ -867,6 +889,36 @@ th.ef-th { padding:8px 8px 8px 12px; }
   .filter-compact label { margin-bottom:3px; font-size:11px; }
   .filter-compact input, .filter-compact select { padding:6px 9px; font-size:12px; }
 }
+
+/* ── Filtros em uma linha (telas de lançamentos) ──
+   Os campos encolhem para caber numa linha só; quando a tela é estreita
+   demais, só o que não couber desce para a linha de baixo. */
+@media (min-width: 861px) {
+  .filter-row.fr-1l { flex-wrap:wrap; gap:6px; margin-bottom:6px; align-items:flex-end; }
+  .fr-1l > .form-group { flex:1 1 76px; min-width:76px; margin-bottom:0; }
+  .fr-1l > .form-group:has(input[type=date]) { flex:1 1 106px; min-width:106px; }
+  .fr-1l > .form-group > label { font-size:10.5px; margin-bottom:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .fr-1l input, .fr-1l select { padding:5px 7px !important; font-size:12px !important; width:100% !important; min-width:0; }
+  .fr-1l .ef-combo-trigger { padding:5px 7px; font-size:12px; }
+  .fr-1l > div:not(.form-group) { flex:0 0 auto; }
+  .fr-1l .btn { padding:6px 10px; font-size:12px; white-space:nowrap; }
+  .fr-1l .ef-colbar { margin:0; gap:6px; }
+  .card:has(> .fr-1l) > .card-title { margin-bottom:6px; }
+}
+/* Barra de botões da tabela (Colunas / Separar por dia) */
+.ef-colbar { gap:6px; }
+/* Lista de nomes do Balanço Fornecedor × Cliente */
+.bfc-lista { position:absolute; left:0; right:0; top:100%; margin-top:2px; background:#fff; border:1px solid var(--border2); border-radius:8px; box-shadow:0 12px 32px rgba(15,30,58,0.2); max-height:320px; overflow-y:auto; z-index:600; font-size:13px; }
+.bfc-lista-item { padding:7px 12px; cursor:pointer; display:flex; justify-content:space-between; gap:10px; align-items:center; }
+.bfc-lista-item:hover, .bfc-lista-item.sel { background:var(--accent-light); }
+.bfc-lista-tag { font-size:10px; color:#a8a29e; text-transform:uppercase; letter-spacing:.3px; white-space:nowrap; }
+.bfc-nome-link { cursor:pointer; color:inherit; border-bottom:1px dashed #d6d3d1; }
+.bfc-nome-link:hover { color:var(--accent); border-color:var(--accent); }
+/* ── Separação dos lançamentos por dia ── */
+tr.ds-sep > td { background:#f4f7fb !important; color:#475569; font-size:11.5px; padding:5px 12px !important; border-top:1px solid #e3e9f1; border-bottom:1px solid #e3e9f1; }
+tr.ds-sep .ds-dia { font-weight:700; color:#334155; }
+tr.ds-sep .ds-sem { color:#94a3b8; margin-left:6px; text-transform:lowercase; }
+tr.ds-sep .ds-info { float:right; color:#64748b; font-family:'DM Mono',monospace; }
 
 /* ── ATALHOS FLUTUANTES: NOVO LANÇAMENTO (menu radial estilo app) ── */
 .fab-fundo { position:fixed; inset:0; z-index:899; background:rgba(17,24,39,.62); opacity:0; pointer-events:none; transition:opacity .18s ease; }
@@ -1600,6 +1652,10 @@ body.menu-oculto .sidebar { transform:translateX(-248px); }
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="4"/><path d="M2 21v-1a6 6 0 0 1 12 0v1"/><line x1="16" y1="11" x2="22" y2="11"/><line x1="19" y1="8" x2="19" y2="14"/></svg>
           Créditos com Fornecedores
         </div>
+        <div class="nav-sub-item" onclick="showPage('balanco-forn-cli')" id="nav-balanco-forn-cli">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v18"/><path d="M5 7h14"/><path d="M5 7l-3 7a4 4 0 0 0 6 0z"/><path d="M19 7l-3 7a4 4 0 0 0 6 0z"/></svg>
+          Balanço Fornecedor × Cliente
+        </div>
       </div>
 
       <!-- GRUPO: DFC -->
@@ -1766,7 +1822,7 @@ body.menu-oculto .sidebar { transform:translateX(-248px); }
       </div>
       <div class="card">
         <div class="card-title">Filtros</div>
-        <div class="filter-row">
+        <div class="filter-row fr-1l">
           <div class="form-group"><label>Mês</label>
             <select id="lf-mes" onchange="renderLancamentos()">
               <option value="">Todos</option>
@@ -1831,7 +1887,7 @@ body.menu-oculto .sidebar { transform:translateX(-248px); }
       <div id="apagar-kpis" class="grid4 kpis-compact" style="margin-bottom:20px;"></div>
       <div class="card card-compact">
         <div class="card-title">Filtros</div>
-        <div class="filter-row filter-compact">
+        <div class="filter-row filter-compact fr-1l">
           <div class="form-group"><label>Mês</label>
             <select id="af-mes" onchange="renderApagar()">
               <option value="">Todos</option>
@@ -1900,7 +1956,7 @@ body.menu-oculto .sidebar { transform:translateX(-248px); }
       <div id="pagas-kpis" class="grid4" style="margin-bottom:20px;"></div>
       <div class="card">
         <div class="card-title">Filtros</div>
-        <div class="filter-row">
+        <div class="filter-row fr-1l">
           <div class="form-group"><label>Mês</label>
             <select id="pgf-mes" onchange="renderPagas()">
               <option value="">Todos</option>
@@ -2136,7 +2192,7 @@ body.menu-oculto .sidebar { transform:translateX(-248px); }
       <div id="form-lr" style="display:none;"></div><!-- placeholder -->
       <div class="card" style="margin-top:0">
         <div class="card-title">Filtros</div>
-        <div class="filter-row">
+        <div class="filter-row fr-1l">
           <div class="form-group"><label>Mês</label>
             <select id="lrf-mes" onchange="renderLancReceber()">
               <option value="">Todos</option>
@@ -2214,7 +2270,7 @@ body.menu-oculto .sidebar { transform:translateX(-248px); }
       <div id="areceber-kpis" class="grid4" style="margin-bottom:20px;"></div>
       <div class="card">
         <div class="card-title">Filtros</div>
-        <div class="filter-row">
+        <div class="filter-row fr-1l">
           <div class="form-group"><label>Mês</label>
             <select id="arf-mes" onchange="renderAReceber()">
               <option value="">Todos</option>
@@ -2281,7 +2337,7 @@ body.menu-oculto .sidebar { transform:translateX(-248px); }
       <div id="recebido-kpis" class="grid4 kpis-compact" style="margin-bottom:20px;"></div>
       <div class="card card-compact">
         <div class="card-title">Filtros</div>
-        <div class="filter-row filter-compact">
+        <div class="filter-row filter-compact fr-1l">
           <div class="form-group"><label>Mês</label>
             <select id="recf-mes" onchange="renderRecebido()">
               <option value="">Todos</option>
@@ -2584,19 +2640,12 @@ body.menu-oculto .sidebar { transform:translateX(-248px); }
       </div>
 
       <!-- Tabela DFC -->
-      <div class="card" style="margin-bottom:20px;overflow-x:auto;">
+      <div class="card" style="margin-bottom:20px;overflow:auto;max-height:calc(100vh - 210px);padding:0">
         <div id="dfc-tabela-wrap">
           <div class="empty-state" style="padding:32px">Selecione um ano para visualizar o demonstrativo.</div>
         </div>
       </div>
 
-      <!-- Gráfico DFC -->
-      <div class="card">
-        <div class="card-title">Evolução Mensal</div>
-        <div style="position:relative;height:320px;">
-          <canvas id="chart-dfc"></canvas>
-        </div>
-      </div>
     </div>
 
     <!-- ══ DRE GRUPOS ══ -->
@@ -2699,13 +2748,6 @@ body.menu-oculto .sidebar { transform:translateX(-248px); }
         </div>
       </div>
 
-      <!-- Gráfico DRE -->
-      <div class="card">
-        <div class="card-title">Evolução Mensal</div>
-        <div style="position:relative;height:320px;">
-          <canvas id="chart-dre"></canvas>
-        </div>
-      </div>
     </div>
 
     <!-- ══ DRE ANÁLISE POR CATEGORIA ══ -->
@@ -2945,6 +2987,38 @@ body.menu-oculto .sidebar { transform:translateX(-248px); }
       </div>
     </div>
 
+    <!-- ══ BALANÇO FORNECEDOR × CLIENTE ══ -->
+    <div class="page" id="page-balanco-forn-cli">
+      <div class="page-header">
+        <div><div class="page-title">Balanço Fornecedor × Cliente</div><div class="page-sub" style="margin-bottom:0">Quanto cada um vendeu para a empresa (compras) e quanto comprou dela (vendas). Vincule o fornecedor ao cliente quando forem a mesma pessoa.</div></div>
+        <button class="btn-novo" onclick="bfcAbrirVinculo()">🔗 Vincular fornecedor e cliente</button>
+      </div>
+      <div id="bfc-kpis" class="grid4 kpis-compact" style="margin-bottom:12px"></div>
+      <div id="bfc-sugestoes"></div>
+      <div class="card card-compact">
+        <div class="filter-row filter-compact" style="margin-bottom:8px">
+          <div class="form-group" style="flex:2 1 200px;position:relative"><label>Buscar nome</label><input id="bfc-busca" type="text" autocomplete="off" placeholder="Digite ou escolha na lista…" oninput="bfcRender(); bfcBuscaLista()" onfocus="bfcBuscaLista()" onkeydown="bfcBuscaTecla(event)" /><div id="bfc-busca-lista" class="bfc-lista" style="display:none"></div></div>
+          <div class="form-group"><label>De</label><input id="bfc-de" type="date" onchange="bfcRender()" /></div>
+          <div class="form-group"><label>Até</label><input id="bfc-ate" type="date" onchange="bfcRender()" /></div>
+          <div class="form-group"><label>Mostrar</label>
+            <select id="bfc-mostrar" onchange="bfcRender()">
+              <option value="vinculados">Só vinculados (compra e venda)</option>
+              <option value="ambos">Quem comprou e vendeu</option>
+              <option value="todos">Todos com movimento</option>
+            </select>
+          </div>
+          <div style="align-self:flex-end"><button class="btn btn-secondary" onclick="bfcLimpar()">Limpar</button></div>
+        </div>
+        <div class="table-scroll"><table><thead><tr>
+          <th>Fornecedor</th><th>Cliente</th>
+          <th style="text-align:right">Compras (vendeu p/ nós)</th><th style="text-align:right">Pago</th><th style="text-align:right">A pagar</th>
+          <th style="text-align:right">Vendas (comprou de nós)</th><th style="text-align:right">Recebido</th><th style="text-align:right">A receber</th>
+          <th style="text-align:right">Balanço</th><th style="text-align:right">Saldo em aberto</th><th>Ações</th>
+        </tr></thead><tbody id="bfc-tb"><tr><td colspan="11" class="empty-state">Carregando…</td></tr></tbody></table></div>
+        <div style="font-size:11px;color:#a8a29e;margin-top:8px">Balanço = vendas − compras (positivo: ele comprou mais da empresa do que vendeu). Saldo em aberto = a receber − a pagar (positivo: ele deve para a empresa). Período filtra pela data da compra e da venda.</div>
+      </div>
+    </div>
+
     <!-- ══ PPR — PARTICIPAÇÃO NOS RESULTADOS ══ -->
     <div class="page" id="page-ppr">
       <div class="page-header">
@@ -3030,10 +3104,10 @@ body.menu-oculto .sidebar { transform:translateX(-248px); }
     <!-- ══ FLUXO DE CAIXA FUTURO ══ -->
     <div class="page" id="page-fluxo-futuro">
       <div class="page-header"><div><div class="page-title">Fluxo de Caixa Futuro</div><div class="page-sub" style="margin-bottom:0">Projeção dia a dia de entradas e saídas previstas (por vencimento)</div></div></div>
-      <div class="card" style="margin-bottom:16px">
-        <div class="filter-row" style="align-items:flex-end">
-          <div class="form-group"><label>Período</label>
-            <select id="ff-horizonte" onchange="renderFluxoFuturo()">
+      <div class="card" style="margin-bottom:8px;padding:10px 16px">
+        <div class="filter-row" style="align-items:center;margin-bottom:0;gap:14px">
+          <div class="form-group" style="min-width:150px;display:flex;align-items:center;gap:8px"><label style="margin:0">Período</label>
+            <select id="ff-horizonte" onchange="renderFluxoFuturo()" style="padding:6px 9px;font-size:13px">
               <option value="7">Próximos 7 dias</option>
               <option value="15">Próximos 15 dias</option>
               <option value="30" selected>Próximos 30 dias</option>
@@ -3041,10 +3115,11 @@ body.menu-oculto .sidebar { transform:translateX(-248px); }
               <option value="90">Próximos 90 dias</option>
             </select>
           </div>
-          <div class="form-group" style="flex-direction:row;align-items:center;gap:8px;display:flex;">
+          <div class="form-group" style="flex-direction:row;align-items:center;gap:8px;display:flex;min-width:0">
             <input type="checkbox" id="ff-usar-saldo" checked onchange="renderFluxoFuturo()" style="width:16px;height:16px;" />
             <label style="margin:0;">Usar saldo atual das contas como ponto de partida</label>
           </div>
+          <div id="ff-resumo" class="ff-resumo"></div>
         </div>
       </div>
       <div id="fluxo-futuro-wrap"></div>
@@ -3097,7 +3172,7 @@ body.menu-oculto .sidebar { transform:translateX(-248px); }
         </div>
       </div>
 
-      <div class="grid4" id="fd-kpis" style="margin-bottom:16px;"></div>
+      <div class="grid4" id="fd-kpis" style="display:none"></div><!-- só para o PDF; na tela o resumo vai na linha de análise -->
       <div id="fd-analise-wrap"></div>
       <div id="fd-tabelas"></div>
     </div>
@@ -4191,6 +4266,49 @@ body.menu-oculto .sidebar { transform:translateX(-248px); }
 </div>
 
 <!-- ══ MODAL DATA PAGAMENTO ══ -->
+
+<div class="modal-overlay" id="modal-bfc-vinculo">
+  <div class="modal" style="width:520px;">
+    <div class="modal-title">🔗 Vincular fornecedor e cliente</div>
+    <p style="font-size:13px;color:#57534e;margin-bottom:16px;">Use quando o mesmo parceiro vende para a empresa e também compra dela. Os valores passam a aparecer juntos na mesma linha do balanço.</p>
+    <div class="form-group"><label>Fornecedor</label><select id="bfc-v-forn"></select></div>
+    <div class="form-group"><label>Cliente</label><select id="bfc-v-cli"></select></div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-bfc-vinculo')">Cancelar</button>
+      <button class="btn btn-primary" onclick="bfcSalvarVinculoModal()">Vincular</button>
+    </div>
+  </div>
+</div>
+<div class="modal-overlay" id="modal-bfc-extrato">
+  <div class="modal" style="width:980px;">
+    <div class="modal-title" id="bfc-x-titulo" style="margin-bottom:12px">Extrato</div>
+    <div class="bfcx-filtro">
+      <label>Período</label>
+      <input type="date" id="bfc-x-de" onchange="bfcExtratoAtualizar()" />
+      <span>até</span>
+      <input type="date" id="bfc-x-ate" onchange="bfcExtratoAtualizar()" />
+      <div class="bfcx-atalhos">
+        <button class="btn btn-secondary btn-sm" onclick="bfcExtratoPeriodo('mes')">Este mês</button>
+        <button class="btn btn-secondary btn-sm" onclick="bfcExtratoPeriodo('mesant')">Mês anterior</button>
+        <button class="btn btn-secondary btn-sm" onclick="bfcExtratoPeriodo('tri')">Últimos 3 meses</button>
+        <button class="btn btn-secondary btn-sm" onclick="bfcExtratoPeriodo('ano')">Este ano</button>
+        <button class="btn btn-secondary btn-sm" onclick="bfcExtratoPeriodo('tudo')">Todo o histórico</button>
+      </div>
+    </div>
+    <div id="bfc-x-corpo"></div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-bfc-extrato')">Fechar</button>
+      <button class="btn btn-primary" onclick="bfcImprimirExtrato()">🖨️ Imprimir / PDF</button>
+    </div>
+  </div>
+</div>
+<div class="modal-overlay" id="modal-bfc-detalhe">
+  <div class="modal" style="width:860px;">
+    <div class="modal-title" id="bfc-d-titulo">Movimentos</div>
+    <div id="bfc-d-corpo"></div>
+    <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('modal-bfc-detalhe')">Fechar</button></div>
+  </div>
+</div>
 <div class="modal-overlay" id="modal-pago">
   <div class="modal" style="width:400px;">
     <div class="modal-title">Confirmar Pagamento</div>
@@ -4860,6 +4978,7 @@ const PAGES_CONFIG = [
   { id:'pagas',             label:'Contas Pagas',        grupo:'pagar'   },
   { id:'cartoes',           label:'Cartões de Crédito',  grupo:'pagar'   },
   { id:'creditos-fornecedores', label:'Créditos com Fornecedores', grupo:'saldos' },
+  { id:'balanco-forn-cli',  label:'Balanço Fornecedor × Cliente', grupo:'saldos' },
   { id:'clientes',          label:'Clientes',            grupo:'receber' },
   { id:'prodvenda',         label:'Produtos de Venda',   grupo:'receber' },
   { id:'lancreceber',       label:'Lançamentos (Venda)', grupo:'receber' },
@@ -5484,6 +5603,7 @@ function showPage(p) {
   if (p === 'cheques-compensados') renderChequesCompensados();
   if (p === 'debitos-clientes')    renderSaldosTerceiros('cliente');
   if (p === 'creditos-fornecedores') renderSaldosTerceiros('fornecedor');
+  if (p === 'balanco-forn-cli')      bfcAbrir();
   if (p === 'pedidoscancelados') renderPedidosCancelados();
   if (p === 'reposicao')         renderReposicoes();
   if (p === 'dfc-categorias')    renderDfcCategorias();
@@ -5530,6 +5650,7 @@ function renderPaginaAtual() {
   if (p === 'cheques-compensados') renderChequesCompensados();
   if (p === 'debitos-clientes')    renderSaldosTerceiros('cliente');
   if (p === 'creditos-fornecedores') renderSaldosTerceiros('fornecedor');
+  if (p === 'balanco-forn-cli')      bfcAbrir();
   if (p === 'pedidoscancelados') renderPedidosCancelados();
   if (p === 'reposicao')         renderReposicoes();
   if (p === 'dfc-categorias')    renderDfcCategorias();
@@ -7075,8 +7196,8 @@ function renderLancamentos() {
 
   if(!list.length) { tb.innerHTML='<tr><td colspan="12" class="empty-state">Nenhum lançamento encontrado.</td></tr>'; return; }
 
-  const _c = _cortarLista(list, 12);
-  tb.innerHTML = _c.aviso + _c.itens.map(l => {
+  const _c = _cortarLista(dsOrdenar('lancamentos', list), 12);
+  tb.innerHTML = _c.aviso + dsLinhas('lancamentos', _c.itens, l => {
     const refDate = l.dtprev || today();
     const lt = diffDias(l.dtcompra, refDate);
     const ltClass = lt > 30 ? 'lead-time-warn' : 'lead-time-ok';
@@ -7103,7 +7224,7 @@ function renderLancamentos() {
         <button class="btn btn-danger btn-sm" onclick="deleteLancamento('${l.id}')">Excluir</button>`}
       </td>
     </tr>`;
-  }).join('');
+  });
 }
 
 function clearLancamentoFiltros() {
@@ -7664,6 +7785,580 @@ function efMount(tableKey, theadId, cols, list, rerenderFn) {
   return out;
 }
 
+
+
+// ══════════════════════════════════════════════════════════
+// BALANÇO FORNECEDOR × CLIENTE
+// Compras (lançamentos a pagar do fornecedor) × vendas (lançamentos a
+// receber do cliente). Fornecedor e cliente podem ser vinculados quando são
+// a mesma pessoa. Os vínculos ficam na tabela "config" (chave
+// "vinculos_forn_cli"), sem tabela nova.
+// ══════════════════════════════════════════════════════════
+const BFC_KEY = 'vinculos_forn_cli';
+var bfcVinculos = [];           // [{ forn, cli }]
+var _bfcCarregado = false;
+
+async function bfcCarregarVinculos() {
+  const rows = await sbFetch('config', 'GET', null, `?key=eq.${BFC_KEY}&limit=1`);
+  if (rows === null) return false;
+  let lista = [];
+  try {
+    const v = rows[0] ? rows[0].value : null;
+    lista = typeof v === 'string' ? JSON.parse(v) : v;
+  } catch(e) { lista = []; }
+  bfcVinculos = (Array.isArray(lista) ? lista : []).filter(v => v && v.forn && v.cli);
+  _bfcCarregado = true;
+  return true;
+}
+async function bfcSalvarVinculos(lista) {
+  const ok = await _salvarFormasConfig(BFC_KEY, lista);
+  if (!ok) { alert('❌ Não foi possível salvar o vínculo.' + sbErroDetalhe()); return false; }
+  bfcVinculos = lista;
+  return true;
+}
+async function bfcAbrir() {
+  const sel = document.getElementById('bfc-mostrar');
+  if (!_bfcCarregado) {
+    document.getElementById('bfc-tb').innerHTML = '<tr><td colspan="11" class="empty-state">Carregando…</td></tr>';
+    await bfcCarregarVinculos();
+    if (sel && !bfcVinculos.length) sel.value = 'ambos';
+  }
+  bfcRender();
+}
+function bfcLimpar() {
+  ['bfc-busca','bfc-de','bfc-ate'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  bfcRender();
+}
+function _bfcNorm(t) {
+  return String(t || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
+    .replace(/\b(ltda|me|epp|eireli|s\/?a|ss)\b/g, '').replace(/[^a-z0-9]/g, '');
+}
+function _bfcDoc(t) { const d = String(t || '').replace(/\D/g, ''); return d.length >= 11 ? d : ''; }
+
+// Soma compras/vendas por fornecedor e cliente no período.
+function _bfcTotais() {
+  const de = document.getElementById('bfc-de').value, ate = document.getElementById('bfc-ate').value;
+  const noPer = d => { d = (d || '').slice(0, 10); if (de && d < de) return false; if (ate && d > ate) return false; return true; };
+  const forn = {}, cli = {};
+  const z = () => ({ total:0, quit:0, qtd:0 });
+  getParcelas(false).concat(getParcelas(true)).forEach(p => {
+    if (p.cartaoFatura || !p.forn || !noPer(p.dtcompra)) return;
+    const t = forn[p.forn] || (forn[p.forn] = z());
+    t.total += p.valParc || 0; if (p.isPago) t.quit += p.valParc || 0;
+  });
+  db.lancamentos.forEach(l => { if (!l.cartao_fatura && l.forn && forn[l.forn] && noPer(l.dtcompra)) forn[l.forn].qtd++; });
+  getParcelasReceber(false).concat(getParcelasReceber(true)).forEach(p => {
+    if (!p.cliente || !noPer(p.dtvenda)) return;
+    const t = cli[p.cliente] || (cli[p.cliente] = z());
+    t.total += p.valParc || 0; if (p.isRecebido) t.quit += p.valParc || 0;
+  });
+  db.lancreceber.forEach(l => { if (l.cliente && cli[l.cliente] && noPer(l.dtvenda || l.dtcompra)) cli[l.cliente].qtd++; });
+  return { forn, cli };
+}
+
+function _bfcSugestoes() {
+  const vF = new Set(bfcVinculos.map(v => v.forn)), vC = new Set(bfcVinculos.map(v => v.cli));
+  const porNome = new Map(), porDoc = new Map();
+  db.clientes.forEach(c => {
+    if (vC.has(c.id)) return;
+    const n = _bfcNorm(c.nome); if (n.length >= 4 && !porNome.has(n)) porNome.set(n, c);
+    const d = _bfcDoc(c.cnpj); if (d && !porDoc.has(d)) porDoc.set(d, c);
+  });
+  const out = [], usados = new Set();
+  db.fornecedores.forEach(f => {
+    if (vF.has(f.id)) return;
+    const c = porDoc.get(_bfcDoc(f.cnpj)) || porNome.get(_bfcNorm(f.nome));
+    if (c && !usados.has(c.id)) { usados.add(c.id); out.push({ forn: f.id, cli: c.id, porDoc: !!(_bfcDoc(f.cnpj) && porDoc.get(_bfcDoc(f.cnpj))) }); }
+  });
+  return out;
+}
+
+function bfcRender() {
+  if (!paginaVisivel('balanco-forn-cli')) return;
+  const tb = document.getElementById('bfc-tb');
+  const busca = _bfcNorm(document.getElementById('bfc-busca').value);
+  const mostrar = document.getElementById('bfc-mostrar').value;
+  const { forn, cli } = _bfcTotais();
+  const z = { total:0, quit:0, qtd:0 };
+
+  // Monta as linhas: pares vinculados + fornecedores e clientes soltos.
+  const linhas = [];
+  const vF = new Set(), vC = new Set();
+  bfcVinculos.forEach(v => {
+    vF.add(v.forn); vC.add(v.cli);
+    linhas.push({ forn: v.forn, cli: v.cli, vinc: true, c: forn[v.forn] || z, v: cli[v.cli] || z });
+  });
+  if (mostrar !== 'vinculados') {
+    Object.keys(forn).forEach(id => { if (!vF.has(id)) linhas.push({ forn: id, cli: '', vinc: false, c: forn[id], v: z }); });
+    Object.keys(cli).forEach(id => { if (!vC.has(id)) linhas.push({ forn: '', cli: id, vinc: false, c: z, v: cli[id] }); });
+  }
+  let lista = linhas.filter(r => {
+    if (mostrar === 'ambos' && !(r.c.total > 0 && r.v.total > 0)) return false;
+    if (mostrar === 'todos' && !(r.c.total > 0 || r.v.total > 0)) return false;
+    if (busca) {
+      const nomes = _bfcNorm((r.forn ? getFornNome(r.forn) : '') + ' ' + (r.cli ? getClienteNome(r.cli) : ''));
+      if (!nomes.includes(busca)) return false;
+    }
+    return true;
+  });
+  lista.sort((a, b) => (b.c.total + b.v.total) - (a.c.total + a.v.total));
+
+  // KPIs
+  const sC = lista.reduce((s, r) => s + r.c.total, 0), sV = lista.reduce((s, r) => s + r.v.total, 0);
+  const sAb = lista.reduce((s, r) => s + (r.v.total - r.v.quit) - (r.c.total - r.c.quit), 0);
+  const cor = v => v > 0.005 ? '#16a34a' : (v < -0.005 ? '#dc2626' : '#57534e');
+  document.getElementById('bfc-kpis').innerHTML = `
+    <div class="card kpi"><div class="kpi-val" style="color:#ea580c">${fmtBRL(sC)}</div><div class="kpi-lbl">Compras (fornecedores)</div></div>
+    <div class="card kpi"><div class="kpi-val" style="color:#2563eb">${fmtBRL(sV)}</div><div class="kpi-lbl">Vendas (clientes)</div></div>
+    <div class="card kpi"><div class="kpi-val" style="color:${cor(sV - sC)}">${fmtBRL(sV - sC)}</div><div class="kpi-lbl">Balanço (vendas − compras)</div></div>
+    <div class="card kpi"><div class="kpi-val" style="color:${cor(sAb)}">${fmtBRL(sAb)}</div><div class="kpi-lbl">Saldo em aberto</div></div>`;
+
+  // Sugestões de vínculo (mesmo nome ou mesmo CNPJ/CPF)
+  const sug = _bfcSugestoes();
+  document.getElementById('bfc-sugestoes').innerHTML = sug.length ? `
+    <div class="card card-compact" style="background:#fffbeb;border-color:#fde68a">
+      <div style="font-size:12px;font-weight:700;color:#92400e;margin-bottom:6px">💡 Possíveis vínculos (mesmo nome ou CNPJ/CPF): ${sug.length}</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;max-height:110px;overflow-y:auto">
+        ${sug.map(x => `<span style="display:inline-flex;align-items:center;gap:6px;background:#fff;border:1px solid #fde68a;border-radius:7px;padding:3px 4px 3px 9px;font-size:12px">
+          ${getFornNome(x.forn)} ⇄ ${getClienteNome(x.cli)}${x.porDoc ? ' <span class="badge badge-blue" style="font-size:9px">CNPJ</span>' : ''}
+          <button class="btn btn-primary btn-sm" style="padding:2px 8px;font-size:11px" onclick="bfcVincular('${x.forn}','${x.cli}')">Vincular</button></span>`).join('')}
+      </div>
+      ${sug.length > 1 ? `<div style="margin-top:6px"><button class="btn btn-secondary btn-sm" onclick="bfcVincularSugestoes()">Vincular todas as ${sug.length} sugestões</button></div>` : ''}
+    </div>` : '';
+
+  if (!lista.length) {
+    tb.innerHTML = `<tr><td colspan="11" class="empty-state">${mostrar === 'vinculados' ? 'Nenhum fornecedor vinculado a cliente ainda. Use “🔗 Vincular fornecedor e cliente” ou as sugestões acima, ou escolha “Quem comprou e vendeu” / “Todos com movimento” em Mostrar.' : 'Nenhum movimento encontrado.'}</td></tr>`;
+    return;
+  }
+  const num = v => `<td style="text-align:right;font-family:DM Mono,monospace">${Math.abs(v) > 0.005 ? fmtBRL(v) : '<span style="color:#d6d3d1">—</span>'}</td>`;
+  const _c = _cortarLista(lista, 11);
+  tb.innerHTML = _c.aviso + _c.itens.map(r => {
+    const bal = r.v.total - r.c.total;
+    const ab = (r.v.total - r.v.quit) - (r.c.total - r.c.quit);
+    const nm = (id, fn) => id ? `<span class="bfc-nome-link" onclick="bfcExtrato('${r.forn}','${r.cli}')" title="Abrir extrato mensal">${fn(id)}</span>` : '<span style="color:#d6d3d1">—</span>';
+    const acoes = r.vinc
+      ? `<button class="btn btn-primary btn-sm" onclick="bfcExtrato('${r.forn}','${r.cli}')" title="Extrato mês a mês para imprimir">📄 Extrato</button>
+         <button class="btn btn-secondary btn-sm" onclick="bfcDetalhe('${r.forn}','${r.cli}')">Ver</button>
+         <button class="btn btn-danger btn-sm" onclick="bfcDesvincular('${r.forn}','${r.cli}')" title="Desfazer o vínculo">Desvincular</button>`
+      : `<button class="btn btn-primary btn-sm" onclick="bfcExtrato('${r.forn}','${r.cli}')" title="Extrato mês a mês para imprimir">📄 Extrato</button>
+         <button class="btn btn-secondary btn-sm" onclick="bfcDetalhe('${r.forn}','${r.cli}')">Ver</button>
+         <button class="btn btn-secondary btn-sm" onclick="bfcAbrirVinculo('${r.forn}','${r.cli}')">🔗 Vincular</button>`;
+    return `<tr>
+      <td>${r.vinc ? '🔗 ' : ''}${nm(r.forn, getFornNome)}</td>
+      <td>${nm(r.cli, getClienteNome)}</td>
+      ${num(r.c.total)}${num(r.c.quit)}${num(r.c.total - r.c.quit)}
+      ${num(r.v.total)}${num(r.v.quit)}${num(r.v.total - r.v.quit)}
+      <td style="text-align:right;font-family:DM Mono,monospace;font-weight:700;color:${cor(bal)}">${fmtBRL(bal)}</td>
+      <td style="text-align:right;font-family:DM Mono,monospace;font-weight:700;color:${cor(ab)}">${fmtBRL(ab)}</td>
+      <td class="actions">${acoes}</td>
+    </tr>`;
+  }).join('');
+}
+
+function _bfcOpts(lista, vazio) {
+  return `<option value="">${vazio}</option>` + lista.slice()
+    .sort((a, b) => String(a.nome || '').localeCompare(String(b.nome || ''), 'pt-BR'))
+    .map(x => `<option value="${x.id}">${String(x.nome || '').replace(/</g, '&lt;')}</option>`).join('');
+}
+function bfcAbrirVinculo(forn, cli) {
+  const sf = document.getElementById('bfc-v-forn'), sc = document.getElementById('bfc-v-cli');
+  enhanceSearchableSelect(sf); enhanceSearchableSelect(sc); // campo com busca (centenas de nomes)
+  sf.innerHTML = _bfcOpts(db.fornecedores, 'Selecione o fornecedor…');
+  sc.innerHTML = _bfcOpts(db.clientes, 'Selecione o cliente…');
+  sf.value = forn || ''; sc.value = cli || '';
+  // Sugere o par pelo nome quando só um lado veio preenchido
+  if (forn && !cli) { const c = db.clientes.find(x => _bfcNorm(x.nome) === _bfcNorm(getFornNome(forn))); if (c) sc.value = c.id; }
+  if (cli && !forn) { const f = db.fornecedores.find(x => _bfcNorm(x.nome) === _bfcNorm(getClienteNome(cli))); if (f) sf.value = f.id; }
+  openModal('modal-bfc-vinculo');
+}
+async function bfcSalvarVinculoModal() {
+  const f = document.getElementById('bfc-v-forn').value, c = document.getElementById('bfc-v-cli').value;
+  if (!f || !c) { alert('Escolha o fornecedor e o cliente.'); return; }
+  if (await bfcVincular(f, c)) closeModal('modal-bfc-vinculo');
+}
+// Um fornecedor fica ligado a um cliente só (e vice-versa).
+async function bfcVincular(forn, cli) {
+  const outros = bfcVinculos.filter(v => v.forn === forn || v.cli === cli);
+  if (outros.length && !outros.every(v => v.forn === forn && v.cli === cli)) {
+    const desc = outros.map(v => `${getFornNome(v.forn)} ⇄ ${getClienteNome(v.cli)}`).join('\n');
+    if (!confirm('Este fornecedor ou cliente já tem vínculo:\n' + desc + '\n\nSubstituir pelo novo vínculo?')) return false;
+  }
+  const nova = bfcVinculos.filter(v => v.forn !== forn && v.cli !== cli).concat([{ forn, cli }]);
+  if (!(await bfcSalvarVinculos(nova))) return false;
+  bfcRender();
+  return true;
+}
+async function bfcVincularSugestoes() {
+  const sug = _bfcSugestoes();
+  if (!sug.length) return;
+  if (!confirm(`Vincular as ${sug.length} sugestões de uma vez?`)) return;
+  const fs = new Set(sug.map(x => x.forn)), cs = new Set(sug.map(x => x.cli));
+  const nova = bfcVinculos.filter(v => !fs.has(v.forn) && !cs.has(v.cli)).concat(sug.map(x => ({ forn: x.forn, cli: x.cli })));
+  if (await bfcSalvarVinculos(nova)) bfcRender();
+}
+async function bfcDesvincular(forn, cli) {
+  if (!confirm(`Desfazer o vínculo entre ${getFornNome(forn)} e ${getClienteNome(cli)}?`)) return;
+  if (await bfcSalvarVinculos(bfcVinculos.filter(v => !(v.forn === forn && v.cli === cli)))) bfcRender();
+}
+
+
+// ── Busca com lista de nomes ──
+let _bfcListaSel = -1;
+function _bfcNomesLista(termo) {
+  const t = _bfcNorm(termo);
+  const vF = new Map(bfcVinculos.map(v => [v.forn, v.cli])), vC = new Map(bfcVinculos.map(v => [v.cli, v.forn]));
+  const itens = [], vistos = new Set();
+  const add = (nome, tag) => { const k = _bfcNorm(nome); if (!k || vistos.has(k + tag)) return; vistos.add(k + tag); itens.push({ nome, tag, k }); };
+  db.fornecedores.forEach(f => add(f.nome, vF.has(f.id) ? 'Fornecedor 🔗' : 'Fornecedor'));
+  db.clientes.forEach(c => add(c.nome, vC.has(c.id) ? 'Cliente 🔗' : 'Cliente'));
+  let out = t ? itens.filter(i => i.k.includes(t)) : itens;
+  out.sort((a, b) => (t ? (b.k.startsWith(t) - a.k.startsWith(t)) : 0) || String(a.nome).localeCompare(String(b.nome), 'pt-BR'));
+  return out.slice(0, 60);
+}
+function bfcBuscaLista() {
+  const inp = document.getElementById('bfc-busca'), box = document.getElementById('bfc-busca-lista');
+  const itens = _bfcNomesLista(inp.value);
+  _bfcListaSel = -1;
+  if (!itens.length) { box.style.display = 'none'; return; }
+  box.innerHTML = itens.map((i, n) => `<div class="bfc-lista-item" data-n="${n}" onmousedown="event.preventDefault(); bfcBuscaEscolher(this)">
+      <span>${String(i.nome).replace(/</g, '&lt;')}</span><span class="bfc-lista-tag">${i.tag}</span></div>`).join('');
+  box.querySelectorAll('.bfc-lista-item').forEach((el, n) => { el.dataset.nome = itens[n].nome; });
+  box.style.display = '';
+  if (!box._bfcFechar) {
+    box._bfcFechar = true;
+    document.addEventListener('click', e => { if (e.target !== inp && !box.contains(e.target)) box.style.display = 'none'; });
+    inp.addEventListener('blur', () => setTimeout(() => { box.style.display = 'none'; }, 150));
+  }
+}
+function bfcBuscaEscolher(el) {
+  const inp = document.getElementById('bfc-busca');
+  inp.value = el.dataset.nome;
+  document.getElementById('bfc-busca-lista').style.display = 'none';
+  // Ao escolher um nome, mostra a linha mesmo que só compre ou só venda.
+  const m = document.getElementById('bfc-mostrar');
+  if (m && m.value !== 'todos') m.value = 'todos';
+  bfcRender();
+}
+function bfcBuscaTecla(e) {
+  const box = document.getElementById('bfc-busca-lista');
+  const itens = [...box.querySelectorAll('.bfc-lista-item')];
+  if (e.key === 'Escape') { box.style.display = 'none'; return; }
+  if (!itens.length || box.style.display === 'none') { if (e.key === 'ArrowDown') bfcBuscaLista(); return; }
+  if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+    e.preventDefault();
+    _bfcListaSel = Math.max(0, Math.min(itens.length - 1, _bfcListaSel + (e.key === 'ArrowDown' ? 1 : -1)));
+    itens.forEach((el, n) => el.classList.toggle('sel', n === _bfcListaSel));
+    itens[_bfcListaSel].scrollIntoView({ block: 'nearest' });
+  } else if (e.key === 'Enter' && _bfcListaSel >= 0) {
+    e.preventDefault(); bfcBuscaEscolher(itens[_bfcListaSel]);
+  }
+}
+
+// ── Extrato mensal (para imprimir) ──
+// Entradas = compras (o parceiro vendeu para a empresa).
+// Saídas   = vendas  (o parceiro comprou da empresa).
+// Variação = saídas − entradas (mesmo sinal do Balanço da tela).
+// Posição  = a receber em aberto − a pagar em aberto:
+//   negativo → a empresa tem um DÉBITO (dívida) com o parceiro;
+//   positivo → a empresa tem um CRÉDITO (valor a receber) com o parceiro.
+const _BFC_MESES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+let _bfcExtratoAtual = null, _bfcExtratoPar = null;
+function _bfcEmpresaNome() {
+  try { const n = empresaNome(empresaAtual()); if (n && n !== 'Consolidado' && n !== '(empresa removida)') return n; } catch(e) {}
+  return 'A empresa';
+}
+function _bfcExtratoDados(forn, cli, de, ate) {
+  const noPer = d => { d = (d || '').slice(0, 10); if (de && d < de) return false; if (ate && d > ate) return false; return true; };
+  // Quanto falta pagar/receber de cada lançamento (por parcela)
+  const abertoPag = {}, abertoRec = {};
+  if (forn) getParcelas(false).forEach(p => { if (p.forn === forn) abertoPag[p.lancId] = (abertoPag[p.lancId] || 0) + (p.valParc || 0); });
+  if (cli) getParcelasReceber(false).forEach(p => { if (p.cliente === cli) abertoRec[p.lancId] = (abertoRec[p.lancId] || 0) + (p.valParc || 0); });
+  const linhas = [];
+  if (forn) db.lancamentos.forEach(l => {
+    if (l.forn !== forn || l.cartao_fatura || !l.dtcompra || !noPer(l.dtcompra)) return;
+    const ab = abertoPag[l.id] || 0, v = Number(l.valor) || 0;
+    linhas.push({ data: l.dtcompra, tipo: 'Compra', item: l.prod ? getProdNome(l.prod) : '—', nf: l.nf || '', parcelas: l.parcelas || 1,
+      venc: l.dtprev || '', entrada: v, saida: 0, aberto: ab,
+      situacao: ab < 0.005 ? 'Pago' : (ab < v - 0.005 ? 'Pago em parte' : 'Em aberto') });
+  });
+  if (cli) db.lancreceber.forEach(l => {
+    const d = l.dtvenda || l.dtcompra;
+    if (l.cliente !== cli || !d || !noPer(d)) return;
+    const ab = abertoRec[l.id] || 0, v = Number(l.valor) || 0;
+    linhas.push({ data: d, tipo: 'Venda', item: l.prod ? getProdVendaNome(l.prod) : '—', nf: l.nf || '', parcelas: l.parcelas || 1,
+      venc: l.dtprev || '', entrada: 0, saida: v, aberto: ab,
+      situacao: ab < 0.005 ? 'Recebido' : (ab < v - 0.005 ? 'Recebido em parte' : 'Em aberto') });
+  });
+  linhas.sort((a, b) => a.data.localeCompare(b.data) || a.tipo.localeCompare(b.tipo));
+  const meses = [];
+  linhas.forEach(x => {
+    const k = x.data.slice(0, 7);
+    let m = meses[meses.length - 1];
+    if (!m || m.k !== k) { m = { k, linhas: [], ent: 0, sai: 0 }; meses.push(m); }
+    m.linhas.push(x); m.ent += x.entrada; m.sai += x.saida;
+  });
+  let acum = 0;
+  meses.forEach(m => { m.varia = m.sai - m.ent; acum += m.varia; m.acum = acum; });
+  const nomes = [...new Set([forn ? getFornNome(forn) : '', cli ? getClienteNome(cli) : ''].filter(Boolean))];
+  const abPagar = linhas.filter(x => x.tipo === 'Compra').reduce((s, x) => s + x.aberto, 0);
+  const abReceber = linhas.filter(x => x.tipo === 'Venda').reduce((s, x) => s + x.aberto, 0);
+  return { nomes, meses, de, ate, abPagar, abReceber, posicao: abReceber - abPagar,
+    ent: meses.reduce((s, m) => s + m.ent, 0), sai: meses.reduce((s, m) => s + m.sai, 0) };
+}
+function _bfcMesNome(k) { const [y, m] = k.split('-'); return `${_BFC_MESES[parseInt(m) - 1]}/${y}`; }
+const _bfcEsc = t => String(t == null ? '' : t).replace(/&/g, '&amp;').replace(/</g, '&lt;');
+
+function _bfcExtratoHtml(d) {
+  const emp = _bfcEmpresaNome();
+  const parceiro = d.nomes[0] || 'o parceiro';
+  const brl = v => Math.abs(v) > 0.005 ? fmtBRL(v) : '—';
+  const sinal = v => Math.abs(v) < 0.005 ? fmtBRL(0) : (v < 0 ? `(${fmtBRL(Math.abs(v))})` : fmtBRL(v));
+  const cls = v => v > 0.005 ? 'pos' : (v < -0.005 ? 'neg' : '');
+  const per = (d.de || d.ate) ? `${d.de ? fmtDate(d.de) : 'início'} a ${d.ate ? fmtDate(d.ate) : 'hoje'}` : 'Todo o histórico';
+
+  // Posição final: débito (a empresa deve) ou crédito (a empresa tem a receber)
+  let posHtml;
+  if (Math.abs(d.posicao) < 0.005) {
+    posHtml = `<div class="bfcx-pos zero"><div class="bfcx-pos-tag">SEM SALDO EM ABERTO</div>
+      <div class="bfcx-pos-txt">${_bfcEsc(emp)} e ${_bfcEsc(parceiro)} não têm valores em aberto entre si neste período.</div></div>`;
+  } else if (d.posicao < 0) {
+    posHtml = `<div class="bfcx-pos deb"><div class="bfcx-pos-tag">DÉBITO</div>
+      <div class="bfcx-pos-txt"><b>${_bfcEsc(emp)}</b> tem um <b>débito</b> de <b class="bfcx-pos-val">${fmtBRL(Math.abs(d.posicao))}</b> com <b>${_bfcEsc(parceiro)}</b>.</div></div>`;
+  } else {
+    posHtml = `<div class="bfcx-pos cred"><div class="bfcx-pos-tag">CRÉDITO</div>
+      <div class="bfcx-pos-txt"><b>${_bfcEsc(emp)}</b> tem um <b>crédito</b> de <b class="bfcx-pos-val">${fmtBRL(d.posicao)}</b> com <b>${_bfcEsc(parceiro)}</b>.</div></div>`;
+  }
+  const quadro = `<table class="bfcx-quadro"><tbody>
+      <tr><td>A receber de ${_bfcEsc(parceiro)} (vendas em aberto)</td><td class="r pos">${fmtBRL(d.abReceber)}</td></tr>
+      <tr><td>A pagar a ${_bfcEsc(parceiro)} (compras em aberto)</td><td class="r neg">(${fmtBRL(d.abPagar)})</td></tr>
+      <tr class="tot"><td>Saldo em aberto</td><td class="r ${cls(d.posicao)}">${sinal(d.posicao)}</td></tr>
+    </tbody></table>`;
+  const legenda = `<div class="bfcx-legenda"><span><i class="deb"></i><b>Débito</b> = dívida de ${_bfcEsc(emp)} com o parceiro (valor a pagar)</span>
+    <span><i class="cred"></i><b>Crédito</b> = valor que ${_bfcEsc(emp)} tem a receber do parceiro</span></div>`;
+
+  const cab = `<div class="bfcx-info">
+      <div><span>Parceiro</span><b>${_bfcEsc(d.nomes.join(' ⇄ '))}</b></div>
+      <div><span>Período</span><b>${per}</b></div>
+      <div><span>Compras (entradas)</span><b>${fmtBRL(d.ent)}</b></div>
+      <div><span>Vendas (saídas)</span><b>${fmtBRL(d.sai)}</b></div>
+      <div><span>Variação (vendas − compras)</span><b class="${cls(d.sai - d.ent)}">${sinal(d.sai - d.ent)}</b></div>
+    </div>`;
+
+  if (!d.meses.length) return cab + `<div class="empty-state">Nenhum movimento no período.</div>` + legenda;
+
+  const resumo = `<table class="bfcx-tab"><thead><tr><th>Mês</th><th class="r">Entradas (compras)</th><th class="r">Saídas (vendas)</th><th class="r">Variação no mês</th><th class="r">Acumulado</th></tr></thead><tbody>
+    ${d.meses.map(m => `<tr><td>${_bfcMesNome(m.k)}</td><td class="r">${brl(m.ent)}</td><td class="r">${brl(m.sai)}</td>
+      <td class="r b ${cls(m.varia)}">${sinal(m.varia)}</td><td class="r ${cls(m.acum)}">${sinal(m.acum)}</td></tr>`).join('')}
+    <tr class="bfcx-tot"><td>Total do período</td><td class="r">${brl(d.ent)}</td><td class="r">${brl(d.sai)}</td><td class="r ${cls(d.sai - d.ent)}">${sinal(d.sai - d.ent)}</td><td></td></tr>
+    </tbody></table>`;
+  const sit = x => `<span class="bfcx-sit ${x.aberto < 0.005 ? 'ok' : 'ab'}">${x.situacao}${x.aberto >= 0.005 && x.aberto < (x.entrada || x.saida) - 0.005 ? ' · falta ' + fmtBRL(x.aberto) : ''}</span>`;
+  const detalhe = d.meses.map(m => `<table class="bfcx-tab bfcx-mes"><thead>
+      <tr class="bfcx-mes-tit"><th colspan="8">${_bfcMesNome(m.k)}</th></tr>
+      <tr><th>Data</th><th>Tipo</th><th>Item</th><th>NF</th><th>Vencimento</th><th>Situação</th><th class="r">Entrada (compra)</th><th class="r">Saída (venda)</th></tr></thead><tbody>
+      ${m.linhas.map(x => `<tr><td>${fmtDate(x.data)}</td><td><span class="bfcx-tipo ${x.tipo === 'Compra' ? 'c' : 'v'}">${x.tipo}</span></td>
+        <td>${_bfcEsc(x.item)}${x.parcelas > 1 ? ` <small>(${x.parcelas}x)</small>` : ''}</td><td>${_bfcEsc(x.nf) || '—'}</td><td>${x.venc ? fmtDate(x.venc) : '—'}</td><td>${sit(x)}</td>
+        <td class="r">${brl(x.entrada)}</td><td class="r">${brl(x.saida)}</td></tr>`).join('')}
+      <tr class="bfcx-tot"><td colspan="6">Total de ${_bfcMesNome(m.k)} · variação <span class="${cls(m.varia)}">${sinal(m.varia)}</span></td><td class="r">${brl(m.ent)}</td><td class="r">${brl(m.sai)}</td></tr>
+    </tbody></table>`).join('');
+
+  return cab + posHtml + `<div class="bfcx-sec">Resumo por mês</div>${resumo}<div class="bfcx-sec">Movimentos</div>${detalhe}
+    <div class="bfcx-sec">Posição final</div>${quadro}${legenda}
+    <div class="bfcx-nota">Valores entre parênteses são negativos. Compras e vendas pela data da compra/venda; "em aberto" considera as parcelas ainda não pagas/recebidas.</div>`;
+}
+const _BFCX_CSS = `
+.bfcx-filtro{display:flex;align-items:center;flex-wrap:wrap;gap:8px;padding:10px 12px;background:#faf9f7;border:1px solid #e7e5e4;border-radius:8px;margin-bottom:14px;font-size:12px}
+.bfcx-filtro label{margin:0;font-weight:700;color:#57534e;font-size:11px;text-transform:uppercase;letter-spacing:.4px}
+.bfcx-filtro input{width:150px;padding:5px 8px;font-size:12px}
+.bfcx-atalhos{display:flex;gap:6px;flex-wrap:wrap;margin-left:auto}
+.bfcx-info{display:grid;grid-template-columns:2fr 1.3fr 1fr 1fr 1.3fr;border:1px solid #fed7aa;border-radius:8px;overflow:hidden;margin-bottom:12px;background:#fffaf6}
+.bfcx-info>div{padding:8px 12px;border-right:1px solid #fed7aa}
+.bfcx-info>div:last-child{border-right:none}
+.bfcx-info span{display:block;font-size:9.5px;text-transform:uppercase;letter-spacing:.5px;color:#c2703f;margin-bottom:2px}
+.bfcx-info b{font-size:13px;color:#1f2937}
+.bfcx-pos{display:flex;align-items:center;gap:14px;padding:10px 14px;border-radius:8px;margin:0 0 12px;border:1px solid}
+.bfcx-pos-tag{font-weight:800;font-size:11px;letter-spacing:.8px;padding:4px 10px;border-radius:5px;color:#fff;white-space:nowrap}
+.bfcx-pos-txt{font-size:13.5px;color:#1f2937}
+.bfcx-pos-val{font-size:15px}
+.bfcx-pos.deb{background:#fef2f2;border-color:#fecaca}.bfcx-pos.deb .bfcx-pos-tag{background:#b91c1c}.bfcx-pos.deb .bfcx-pos-val{color:#b91c1c}
+.bfcx-pos.cred{background:#f0fdf4;border-color:#bbf7d0}.bfcx-pos.cred .bfcx-pos-tag{background:#15803d}.bfcx-pos.cred .bfcx-pos-val{color:#15803d}
+.bfcx-pos.zero{background:#f8fafc;border-color:#e2e8f0}.bfcx-pos.zero .bfcx-pos-tag{background:#64748b}
+.bfcx-sec{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.7px;color:#9a3412;margin:16px 0 6px;padding-bottom:4px;border-bottom:2px solid #ea580c}
+.bfcx-tab{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:10px}
+.bfcx-tab th{background:#fff4ec;color:#9a3412;text-align:left;padding:6px 8px;font-size:10px;text-transform:uppercase;letter-spacing:.4px;font-weight:700;border-bottom:1.5px solid #fdba74}
+.bfcx-tab td{padding:5px 8px;border-bottom:1px solid #f1efec;color:#1f2937}
+.bfcx-tab .r,.bfcx-quadro .r{text-align:right;font-family:'DM Mono',monospace;white-space:nowrap}
+.bfcx-tab .b{font-weight:700}
+.bfcx-tot td{font-weight:700;background:#fdf8f3;border-top:1.5px solid #fdba74}
+.bfcx-mes-tit th{background:#fff;color:#1f2937;font-size:12.5px;text-transform:none;letter-spacing:0;border-left:3px solid #ea580c;border-bottom:none}
+.bfcx-mes{page-break-inside:avoid}
+.bfcx-tipo{font-size:10.5px;font-weight:700;padding:1px 7px;border-radius:10px}
+.bfcx-tipo.c{background:#fef3c7;color:#92400e}.bfcx-tipo.v{background:#dbeafe;color:#1e40af}
+.bfcx-sit{font-size:11px}.bfcx-sit.ok{color:#15803d}.bfcx-sit.ab{color:#b45309;font-weight:600}
+.bfcx-quadro{width:420px;max-width:100%;border-collapse:collapse;font-size:12.5px;margin:0 0 10px auto}
+.bfcx-quadro td{padding:5px 10px;border-bottom:1px solid #f1efec}
+.bfcx-quadro tr.tot td{font-weight:800;border-top:2px solid #fdba74;border-bottom:none;background:#fdf8f3}
+.pos{color:#15803d}.neg{color:#b91c1c}
+.bfcx-legenda{display:flex;flex-wrap:wrap;gap:6px 22px;font-size:11.5px;color:#57534e;padding:8px 12px;background:#faf9f7;border:1px dashed #d6d3d1;border-radius:7px}
+.bfcx-legenda i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+.bfcx-legenda i.deb{background:#b91c1c}.bfcx-legenda i.cred{background:#15803d}
+.bfcx-nota{font-size:10.5px;color:#a8a29e;margin-top:8px}`;
+
+function bfcExtrato(forn, cli) {
+  _bfcExtratoPar = { forn, cli };
+  if (!document.getElementById('bfcx-style')) {
+    const st = document.createElement('style'); st.id = 'bfcx-style'; st.textContent = _BFCX_CSS; document.head.appendChild(st);
+  }
+  // Começa com o período da tela do balanço
+  document.getElementById('bfc-x-de').value = document.getElementById('bfc-de').value || '';
+  document.getElementById('bfc-x-ate').value = document.getElementById('bfc-ate').value || '';
+  bfcExtratoAtualizar();
+  openModal('modal-bfc-extrato');
+}
+function bfcExtratoAtualizar() {
+  if (!_bfcExtratoPar) return;
+  const de = document.getElementById('bfc-x-de').value, ate = document.getElementById('bfc-x-ate').value;
+  if (de && ate && de > ate) { document.getElementById('bfc-x-corpo').innerHTML = '<div class="empty-state">A data inicial é maior que a final.</div>'; return; }
+  const d = _bfcExtratoDados(_bfcExtratoPar.forn, _bfcExtratoPar.cli, de, ate);
+  _bfcExtratoAtual = d;
+  document.getElementById('bfc-x-titulo').textContent = 'Extrato mensal — ' + d.nomes.join(' ⇄ ');
+  document.getElementById('bfc-x-corpo').innerHTML = _bfcExtratoHtml(d);
+}
+function bfcExtratoPeriodo(tipo) {
+  const h = new Date(), y = h.getFullYear(), m = h.getMonth();
+  const iso = dt => `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`;
+  let de = '', ate = '';
+  if (tipo === 'mes')    { de = iso(new Date(y, m, 1));     ate = iso(new Date(y, m + 1, 0)); }
+  if (tipo === 'mesant') { de = iso(new Date(y, m - 1, 1)); ate = iso(new Date(y, m, 0)); }
+  if (tipo === 'tri')    { de = iso(new Date(y, m - 2, 1)); ate = iso(new Date(y, m + 1, 0)); }
+  if (tipo === 'ano')    { de = `${y}-01-01`; ate = `${y}-12-31`; }
+  document.getElementById('bfc-x-de').value = de;
+  document.getElementById('bfc-x-ate').value = ate;
+  bfcExtratoAtualizar();
+}
+function bfcImprimirExtrato() {
+  const d = _bfcExtratoAtual; if (!d) return;
+  const agora = new Date().toLocaleString('pt-BR', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
+  const w = window.open('', '_blank');
+  if (!w) { alert('O navegador bloqueou a janela de impressão. Libere pop-ups para este site.'); return; }
+  w.document.write('<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Extrato — ' + _bfcEsc(d.nomes.join(' / ')) + '</title><style>'
+    + '*{box-sizing:border-box}body{font-family:Arial,sans-serif;color:#1f2937;padding:24px 28px;font-size:12px;margin:0;-webkit-print-color-adjust:exact;print-color-adjust:exact}'
+    + '.hd{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:3px solid #ea580c;padding-bottom:10px;margin-bottom:14px}'
+    + '.logo{font-size:22px;font-weight:800;color:#ea580c}.logo-img{height:58px;width:auto;display:block}.hd-esq{display:flex;flex-direction:column;gap:2px}.emp{font-size:11px;color:#57534e;margin-top:2px}.tit{font-size:16px;font-weight:800;text-align:right}.meta{text-align:right;font-size:10px;color:#a8a29e;margin-top:3px}'
+    + '.ft{margin-top:18px;padding-top:8px;border-top:1px solid #e7e5e4;font-size:9px;color:#a8a29e;text-align:center}'
+    + _BFCX_CSS + '@media print{body{padding:10px 14px}@page{margin:12mm}}</style></head><body>'
+    + '<div class="hd"><div class="hd-esq">' + (typeof BRAND_LOGO_DATA_URI !== 'undefined' && BRAND_LOGO_DATA_URI ? '<img class="logo-img" src="' + BRAND_LOGO_DATA_URI + '" alt="C@P Consultoria" />' : '<div class="logo">C@P</div>') + '<div class="emp">' + _bfcEsc(_bfcEmpresaNome()) + '</div></div>'
+    + '<div><div class="tit">Extrato de Movimentação — Compras × Vendas</div><div class="meta">Emitido em ' + agora + '</div></div></div>'
+    + _bfcExtratoHtml(d)
+    + '<div class="ft">C@P Consultoria — Sistema de Gestão Financeira · ' + agora + '</div>'
+    + '<' + 'script>window.onload=function(){window.print()}<' + '/script></body></html>');
+  w.document.close();
+}
+
+// Lista as compras e vendas da linha, no período filtrado.
+function bfcDetalhe(forn, cli) {
+  const de = document.getElementById('bfc-de').value, ate = document.getElementById('bfc-ate').value;
+  const noPer = d => { d = (d || '').slice(0, 10); if (de && d < de) return false; if (ate && d > ate) return false; return true; };
+  const mov = [];
+  if (forn) getParcelas(false).concat(getParcelas(true)).forEach(p => {
+    if (p.forn !== forn || p.cartaoFatura || !noPer(p.dtcompra)) return;
+    mov.push({ tipo:'Compra', data:p.dtcompra, venc:p.venc, desc:p.prod ? getProdNome(p.prod) : '—', parc:`${p.parcIdx}/${p.totalParc}`, nf:p.nf, valor:-(p.valParc || 0), ok:p.isPago, dtok:p.dtpago });
+  });
+  if (cli) getParcelasReceber(false).concat(getParcelasReceber(true)).forEach(p => {
+    if (p.cliente !== cli || !noPer(p.dtvenda)) return;
+    mov.push({ tipo:'Venda', data:p.dtvenda, venc:p.venc, desc:p.prod ? getProdVendaNome(p.prod) : '—', parc:`${p.parcIdx}/${p.totalParc}`, nf:p.nf, valor:(p.valParc || 0), ok:p.isRecebido, dtok:p.dtrecebido });
+  });
+  mov.sort((a, b) => (a.data || '').localeCompare(b.data || '') || (a.venc || '').localeCompare(b.venc || ''));
+  const nomes = [forn ? getFornNome(forn) : '', cli ? getClienteNome(cli) : ''].filter(Boolean);
+  document.getElementById('bfc-d-titulo').textContent = 'Movimentos — ' + [...new Set(nomes)].join(' ⇄ ');
+  document.getElementById('bfc-d-corpo').innerHTML = mov.length ? `<div class="table-scroll" style="max-height:60vh"><table><thead><tr>
+      <th>Tipo</th><th>Data</th><th>Item</th><th>Parcela</th><th>Vencimento</th><th>NF</th><th style="text-align:right">Valor</th><th>Situação</th></tr></thead><tbody>
+      ${mov.map(m => `<tr>
+        <td><span class="badge ${m.tipo === 'Compra' ? 'badge-yellow' : 'badge-blue'}">${m.tipo}</span></td>
+        <td>${fmtDate(m.data)}</td><td>${m.desc}</td><td>${m.parc}</td><td>${fmtDate(m.venc)}</td><td>${m.nf || '—'}</td>
+        <td style="text-align:right;font-family:DM Mono,monospace;color:${m.valor < 0 ? '#dc2626' : '#16a34a'}">${fmtBRL(m.valor)}</td>
+        <td>${m.ok ? `<span class="badge badge-green">${m.tipo === 'Compra' ? 'Pago' : 'Recebido'}${m.dtok ? ' ' + fmtDate(m.dtok) : ''}</span>` : '<span class="badge badge-yellow">Em aberto</span>'}</td>
+      </tr>`).join('')}</tbody></table></div>` : '<div class="empty-state">Nenhum movimento no período.</div>';
+  openModal('modal-bfc-detalhe');
+}
+
+// ══════════════════════════════════════════════════════════
+// SEPARAÇÃO DOS LANÇAMENTOS POR DIA
+// Insere uma faixa suave com a data, o dia da semana, a quantidade e o
+// total sempre que muda o dia. Liga/desliga pelo botão "📅 Separar por dia"
+// acima de cada tabela; a escolha fica salva no navegador, por tela.
+// Agrupa pela coluna de data em que a tabela está ordenada (ou pela data
+// padrão da tela). Se a tabela for ordenada por uma coluna que não é data,
+// a separação fica suspensa até voltar a ordenar por data.
+// ══════════════════════════════════════════════════════════
+const DS_KEY = '477_separar_por_dia';
+const DS_CFG = {
+  lancamentos: { padrao:'dtcompra',  dir: 1, datas:['dtcompra','dtprev'],          val:l => l.valor || 0 },
+  apagar:      { padrao:'venc',      dir: 1, datas:['venc','dtcompra'],            val:p => p.valParc || 0 },
+  pagas:       { padrao:'venc',      dir:-1, datas:['venc','dtcompra','dtpago'],   val:p => p.valParc || 0 },
+  lancreceber: { padrao:'dtvenda',   dir: 1, datas:['dtvenda','dtprev'],           val:l => l.valor || 0 },
+  areceber:    { padrao:'venc',      dir: 1, datas:['dtvenda','venc'],             val:p => p.valParc || 0 },
+  recebido:    { padrao:'venc',      dir:-1, datas:['venc','dtvenda','dtrecebido'], val:p => p.valParc || 0 }
+};
+function _dsPrefs() { try { return JSON.parse(localStorage.getItem(DS_KEY)) || {}; } catch(e) { return {}; } }
+// Padrão: ligado.
+function dsAtivo(tableKey) { const v = _dsPrefs()[tableKey]; return v === undefined ? true : !!v; }
+function dsAlternar(tableKey) {
+  const p = _dsPrefs(); p[tableKey] = !dsAtivo(tableKey);
+  try { localStorage.setItem(DS_KEY, JSON.stringify(p)); } catch(e) {}
+  const ctx = _efReg[tableKey];
+  if (ctx && typeof ctx.rerenderFn === 'function') ctx.rerenderFn();
+}
+// Qual coluna de data agrupa (null = não separar).
+function _dsColuna(tableKey) {
+  const cfg = DS_CFG[tableKey], ctx = _efReg[tableKey];
+  if (!cfg || !ctx || !dsAtivo(tableKey)) return null;
+  const st = _efState(tableKey);
+  const key = st.sortKey ? (cfg.datas.includes(st.sortKey) ? st.sortKey : null) : cfg.padrao;
+  if (!key) return null;
+  const col = ctx.cols.find(c => c.key === key);
+  return col ? col.get : null;
+}
+// Sem ordenação escolhida, ordena pela data padrão para os dias ficarem juntos.
+function dsOrdenar(tableKey, list) {
+  const cfg = DS_CFG[tableKey];
+  if (!cfg || !dsAtivo(tableKey) || _efState(tableKey).sortKey) return list;
+  const get = _dsColuna(tableKey);
+  if (!get) return list;
+  return list.map((x, i) => [x, i]).sort((a, b) => {
+    const da = get(a[0]) || '', db_ = get(b[0]) || '';
+    if (da === db_) return a[1] - b[1];
+    if (!da) return 1; if (!db_) return -1;
+    return da.localeCompare(db_) * cfg.dir;
+  }).map(x => x[0]);
+}
+const _DS_SEMANA = ['domingo','segunda-feira','terça-feira','quarta-feira','quinta-feira','sexta-feira','sábado'];
+function _dsCabecalho(data, qtd, total) {
+  let sem = '';
+  if (/^\d{4}-\d{2}-\d{2}/.test(data || '')) {
+    const [y, m, d] = data.slice(0, 10).split('-').map(Number);
+    sem = _DS_SEMANA[new Date(y, m - 1, d).getDay()];
+  }
+  return `<tr class="ds-sep"><td colspan="99" style="background:#f4f7fb;color:#475569;font-size:11.5px;padding:5px 12px">
+    <span class="ds-dia">📅 ${data ? fmtDate(data) : 'Sem data'}</span>${sem ? `<span class="ds-sem">${sem}</span>` : ''}
+    <span class="ds-info">${qtd} lançamento${qtd > 1 ? 's' : ''} · ${fmtBRL(total)}</span></td></tr>`;
+}
+// Monta as linhas da tabela com as faixas de dia entre elas.
+function dsLinhas(tableKey, itens, rowFn) {
+  const get = _dsColuna(tableKey);
+  if (!get) return itens.map(rowFn).join('');
+  const val = DS_CFG[tableKey].val;
+  let out = '', i = 0;
+  while (i < itens.length) {
+    const d = get(itens[i]) || '';
+    let j = i, tot = 0;
+    while (j < itens.length && (get(itens[j]) || '') === d) { tot += Number(val(itens[j])) || 0; j++; }
+    out += _dsCabecalho(d, j - i, tot);
+    for (let k = i; k < j; k++) out += rowFn(itens[k], k);
+    i = j;
+  }
+  return out;
+}
+
 // ══════════════════════════════════════════════════════════
 // OCULTAR/MOSTRAR COLUNAS
 // Vale para qualquer tabela que use efMount. Em vez de mexer no HTML de
@@ -7712,7 +8407,7 @@ function efAplicarColunasOcultas() {
       const n = i + 1;
       seletores.push(`#${ctx.theadId} > th:nth-child(${n})`);
       // As linhas de aviso/"nenhum registro" usam colspan e ficam intactas.
-      if (tbody && tbody.id) seletores.push(`#${tbody.id} > tr > td:nth-child(${n})`);
+      if (tbody && tbody.id) seletores.push(`#${tbody.id} > tr:not(.ds-sep) > td:nth-child(${n})`);
     });
   });
   el.textContent = seletores.length ? seletores.join(',') + '{display:none !important;}' : '';
@@ -7731,10 +8426,17 @@ function efMontarBarraColunas(tableKey, theadId) {
     barra = document.createElement('div');
     barra.id = barraId;
     barra.className = 'ef-colbar';
-    scroll.parentElement.insertBefore(barra, scroll);
+    // Nas telas de lançamentos o botão vai no fim da linha de filtros,
+    // em vez de ocupar uma linha inteira entre os filtros e a tabela.
+    const fr = scroll.previousElementSibling;
+    if (fr && fr.classList.contains('fr-1l')) fr.appendChild(barra);
+    else scroll.parentElement.insertBefore(barra, scroll);
   }
   const n = _efHidden(tableKey).size;
-  barra.innerHTML = `<button class="ef-colbtn${n ? ' ef-colbtn-on' : ''}" onclick="efAbrirSeletorColunas(event,'${tableKey}')" title="Escolher quais colunas aparecem">
+  const dsBtn = DS_CFG[tableKey]
+    ? `<button class="ef-colbtn${dsAtivo(tableKey) ? ' ef-colbtn-on' : ''}" onclick="dsAlternar('${tableKey}')" title="Mostrar ou retirar a separação dos lançamentos por dia">📅 Separar por dia${dsAtivo(tableKey) ? ' ✓' : ''}</button>`
+    : '';
+  barra.innerHTML = dsBtn + `<button class="ef-colbtn${n ? ' ef-colbtn-on' : ''}" onclick="efAbrirSeletorColunas(event,'${tableKey}')" title="Escolher quais colunas aparecem">
       ▦ Colunas${n ? ` <span class="ef-colbtn-badge">${n} oculta${n > 1 ? 's' : ''}</span>` : ''}
     </button>`;
 }
@@ -8202,8 +8904,8 @@ function renderApagar() {
   if(!list.length) { tb.innerHTML='<tr><td colspan="11" class="empty-state">Nenhuma parcela em aberto.</td></tr>'; return; }
   if(!_efState('apagar').sortKey) list.sort((a,b)=>(a.venc||'9999-99-99').localeCompare(b.venc||'9999-99-99'));
   window._pdfLists = window._pdfLists || {}; window._pdfLists.apagar = list.slice();
-  const _c = _cortarLista(list, 10);
-  tb.innerHTML = _c.aviso + _c.itens.map(p => {
+  const _c = _cortarLista(dsOrdenar('apagar', list), 10);
+  tb.innerHTML = _c.aviso + dsLinhas('apagar', _c.itens, p => {
     const sit = situacaoParcela(p.venc);
     const finBadge = p.financeiro === 'sim' ? '<span class="badge badge-green">Sim</span>' : '<span class="badge badge-red">Não</span>';
     const catNome = p.catId ? getDreCatNome(p.catId) : '';
@@ -8226,7 +8928,7 @@ function renderApagar() {
         <button class="btn btn-primary btn-sm" onclick="marcarPago('${p.lancId}', ${p.parcIdx})">Marcar Pago</button>`}
       </td>
     </tr>`;
-  }).join('');
+  });
 }
 
 function marcarPago(id, parcIdx) {
@@ -8843,8 +9545,8 @@ function renderPagas() {
   if(!list.length) { tb.innerHTML='<tr><td colspan="13" class="empty-state">Nenhuma parcela paga.</td></tr>'; return; }
   if(!_efState('pagas').sortKey) list.sort((a,b)=>(b.venc||'').localeCompare(a.venc||''));
   window._pdfLists = window._pdfLists || {}; window._pdfLists.pagas = list.slice();
-  const _c = _cortarLista(list, 13);
-  tb.innerHTML = _c.aviso + _c.itens.map(p=>{
+  const _c = _cortarLista(dsOrdenar('pagas', list), 13);
+  tb.innerHTML = _c.aviso + dsLinhas('pagas', _c.itens, p=>{
     const finBadge = p.financeiro==='sim' ? '<span class="badge badge-green">Sim</span>' : '<span class="badge badge-red">Não</span>';
     const dtpagoCell = p.dtpago
       ? `<span style="font-family:DM Mono,monospace;font-size:12px;color:#16a34a;font-weight:600">${fmtDate(p.dtpago)}</span>`
@@ -8868,7 +9570,7 @@ function renderPagas() {
       <td>${finBadge}</td>
       <td><button class="btn btn-danger btn-sm" onclick="estornarPago('${p.lancId}', ${p.parcIdx})" title="Desfazer pagamento">↩ Estornar</button></td>
     </tr>`;
-  }).join('');
+  });
 }
 
 function clearPagasFiltros() {
@@ -10903,8 +11605,8 @@ function renderLancReceber() {
   list = efMount('lancreceber','th-lancreceber-row',colsLR,list,renderLancReceber);
   window._pdfLists = window._pdfLists || {}; window._pdfLists.lancreceber = list.slice();
   if(!list.length){ tb.innerHTML='<tr><td colspan="11" class="empty-state">Nenhum lançamento encontrado.</td></tr>'; return; }
-  const _c = _cortarLista(list, 11);
-  tb.innerHTML = _c.aviso + _c.itens.map(l=>{
+  const _c = _cortarLista(dsOrdenar('lancreceber', list), 11);
+  tb.innerHTML = _c.aviso + dsLinhas('lancreceber', _c.itens, l=>{
     const finBadge=l.financeiro==='sim'?'<span class="badge badge-green">Sim</span>':'<span class="badge badge-red">Não</span>';
     const recBadge=l.recebido==='sim'?'<span class="badge badge-green">Recebido</span>':'<span class="badge badge-yellow">Pendente</span>';
     const prodObj = l.prod ? db.prodvenda.find(x=>x.id===l.prod) : null;
@@ -10926,7 +11628,7 @@ function renderLancReceber() {
         <button class="btn btn-sm" style="background:#2563eb;color:#fff" onclick="abrirReposicaoPedido('${l.id}')" title="Computar como reposição de material">🔄 Reposição</button>
         <button class="btn btn-danger btn-sm" onclick="deleteLancReceber('${l.id}')">Excluir</button>
       </td></tr>`;
-  }).join('');
+  });
 }
 function clearLancReceberFiltros() {
   ['lrf-mes','lrf-ano','lrf-cliente','lrf-recebido','lrf-categoria','lrf-data','lrf-data-de','lrf-data-ate','lrf-valor-min','lrf-valor-max','lrf-nf'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
@@ -11192,8 +11894,8 @@ function renderAReceber() {
   if(!list.length){ tb.innerHTML='<tr><td colspan="14" class="empty-state">Nenhuma parcela em aberto.</td></tr>'; return; }
   if(!_efState('areceber').sortKey) list.sort((a,b)=>(a.venc||'9999').localeCompare(b.venc||'9999'));
   window._pdfLists = window._pdfLists || {}; window._pdfLists.areceber = list.slice();
-  const _c = _cortarLista(list, 14);
-  tb.innerHTML = _c.aviso + _c.itens.map(p=>{
+  const _c = _cortarLista(dsOrdenar('areceber', list), 14);
+  tb.innerHTML = _c.aviso + dsLinhas('areceber', _c.itens, p=>{
     const sit=situacaoParcela(p.venc);
     const finBadge=p.financeiro==='sim'?'<span class="badge badge-green">Sim</span>':'<span class="badge badge-red">Não</span>';
     const taxaJuros = p.juros != null ? p.juros : getJurosGlobal();
@@ -11224,7 +11926,7 @@ function renderAReceber() {
         <button class="btn btn-primary btn-sm" onclick="marcarRecebido('${p.lancId}', ${p.parcIdx})">Marcar Recebido</button>
       </td>
     </tr>`;
-  }).join('');
+  });
 }
 function clearAReceberFiltros() {
   ['arf-mes','arf-ano','arf-cliente','arf-categoria','arf-data','arf-data-de','arf-data-ate','arf-valor-min','arf-valor-max','arf-situacao','arf-tipo-pag','arf-nf'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
@@ -11363,8 +12065,8 @@ function renderRecebido() {
   if(!list.length){ tb.innerHTML='<tr><td colspan="12" class="empty-state">Nenhum recebimento registrado.</td></tr>'; return; }
   if(!_efState('recebido').sortKey) list.sort((a,b)=>(b.venc||'').localeCompare(a.venc||''));
   window._pdfLists = window._pdfLists || {}; window._pdfLists.recebido = list.slice();
-  const _c = _cortarLista(list, 12);
-  tb.innerHTML = _c.aviso + _c.itens.map(p=>{
+  const _c = _cortarLista(dsOrdenar('recebido', list), 12);
+  tb.innerHTML = _c.aviso + dsLinhas('recebido', _c.itens, p=>{
     const finBadge=p.financeiro==='sim'?'<span class="badge badge-green">Sim</span>':'<span class="badge badge-red">Não</span>';
     const dtrecCell=p.dtrecebido
       ?`<span style="font-family:DM Mono,monospace;font-size:12px;color:#16a34a;font-weight:600">${fmtDate(p.dtrecebido)}</span>`
@@ -11383,7 +12085,7 @@ function renderRecebido() {
       <td>${finBadge}</td>
       <td><button class="btn btn-danger btn-sm" onclick="estornarRecebido('${p.lancId}', ${p.parcIdx})" title="Desfazer recebimento">↩ Estornar</button></td>
     </tr>`;
-  }).join('');
+  });
 }
 function clearRecebidoFiltros() {
   ['recf-mes','recf-ano','recf-cliente','recf-categoria','recf-data-venc','recf-data-rec','recf-data-venda','recf-tipo-pag','recf-nf'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
@@ -11969,20 +12671,98 @@ function renderDfc() {
   const entradaGrupos = grupos.filter(g => g.tipo === 'entrada');
   const saidaGrupos   = grupos.filter(g => g.tipo !== 'entrada');
 
-  const html = `<table class="dfc-table">
-    <thead><tr><th>Categoria</th>${mesesHeader}</tr></thead>
+  // Totais de entradas e saídas por mês
+  const totEnt = {}, totSai = {};
+  for (let m = 1; m <= 12; m++) {
+    totEnt[m] = entradaGrupos.reduce((s, g) => s + dados[m][g.id], 0);
+    totSai[m] = saidaGrupos.reduce((s, g) => s + dados[m][g.id], 0);
+  }
+  const somaAno = o => Object.values(o).reduce((s, v) => s + v, 0);
+
+  // Resultado acumulado no ano e saldo (saldo dos bancos em 31/12 do ano anterior + resultado)
+  const bancosAtivos = (db.bancos || []).filter(b => b.ativo !== false);
+  const saldoIniAno = bancosAtivos.reduce((s, b) => s + _dfcSaldoBancoAte(b, `${ano - 1}-12-31`), 0);
+  const acum = {}, saldoIni = {}, saldoFim = {};
+  let a = 0, sd = saldoIniAno;
+  for (let m = 1; m <= 12; m++) {
+    a += liquido[m]; acum[m] = a;
+    saldoIni[m] = sd; sd += liquido[m]; saldoFim[m] = sd;
+  }
+
+  // Saldos reais de cada banco no fim de cada mês (meses futuros ficam em branco)
+  const hoje = today();
+  const fimMes = m => { const d = new Date(ano, m, 0).getDate(); return `${ano}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`; };
+  const mesAberto = m => `${ano}-${String(m).padStart(2,'0')}-01` <= hoje;
+  const dataCorte = m => { const f = fimMes(m); return f < hoje ? f : hoje; };
+  const saldosBanco = bancosAtivos.map(b => {
+    const v = {};
+    for (let m = 1; m <= 12; m++) v[m] = mesAberto(m) ? _dfcSaldoBancoAte(b, dataCorte(m)) : null;
+    return { b, v };
+  });
+  const totBanco = {};
+  for (let m = 1; m <= 12; m++) totBanco[m] = mesAberto(m) ? saldosBanco.reduce((s, x) => s + (x.v[m] || 0), 0) : null;
+  let ultMes = 0; for (let m = 1; m <= 12; m++) if (mesAberto(m)) ultMes = m;
+
+  const brl = v => v == null ? '<span class="dfc-val-zero">—</span>'
+    : (Math.abs(v) < 0.005 ? '<span class="dfc-val-zero">—</span>'
+    : `<span class="${v < 0 ? 'dfcp-neg' : ''}">${v < 0 ? '(' + fmtBRL(Math.abs(v)) + ')' : fmtBRL(v)}</span>`);
+  const linhaVal = (cls, label, vals, total, title) =>
+    `<tr class="${cls}"${title ? ` title="${title}"` : ''}><td>${label}</td>${Array.from({length:12},(_,i)=>`<td>${brl(vals[i+1])}</td>`).join('')}<td class="dfc-col-total">${brl(total)}</td></tr>`;
+  const linhaSaida = (g) => {
+    const cells = Array.from({length:12},(_,i)=>{
+      const v = dados[i+1][g.id];
+      return v > 0
+        ? `<td class="dre-cell-click" onclick="abrirDetalheDfc('${g.id}',${i+1})" title="Ver lançamentos">${brl(v)}</td>`
+        : `<td><span class="dfc-val-zero">—</span></td>`;
+    }).join('');
+    const tot = totais[g.id];
+    const totCell = tot > 0
+      ? `<td class="dfc-col-total dre-cell-click" onclick="abrirDetalheDfc('${g.id}','total')" title="Ver lançamentos do ano">${brl(tot)}</td>`
+      : `<td class="dfc-col-total"><span class="dfc-val-zero">—</span></td>`;
+    return `<tr class="dfc-row-sub"><td>${g.nome}</td>${cells}${totCell}</tr>`;
+  };
+  const sec = t => `<tr class="dfcp-sec"><td colspan="14">${t}</td></tr>`;
+
+  const html = `<table class="dfc-table dfcp">
+    <thead><tr><th>Descrição</th>${mesesHeader}</tr></thead>
     <tbody>
-      ${entradaGrupos.length ? `<tr class="dfc-row-group"><td colspan="14">📥 ENTRADAS</td></tr>` + entradaGrupos.map(linha).join('') : ''}
-      ${saidaGrupos.length ? `<tr class="dfc-row-group"><td colspan="14">📤 SAÍDAS</td></tr>` + saidaGrupos.map(linha).join('') : ''}
-      <tr><td colspan="14" style="padding:4px"></td></tr>
-      ${linhaResult('🟢 Resultado Líquido (Entradas − Saídas)', liquido, totalLiquido)}
+      ${linhaVal('dfcp-saldo', 'Saldo inicial do mês', saldoIni, saldoIniAno, 'Saldo das contas em 31/12/' + (ano - 1) + ' + resultado dos meses anteriores')}
+      ${entradaGrupos.length ? sec('Entradas') + entradaGrupos.map(linhaSaida).join('') + linhaVal('dfcp-sub', 'Total de entradas', totEnt, somaAno(totEnt)) : ''}
+      ${saidaGrupos.length ? sec('Saídas') + saidaGrupos.map(linhaSaida).join('') + linhaVal('dfcp-sub', 'Total de saídas', totSai, somaAno(totSai)) : ''}
+      ${linhaVal('dfcp-res', 'Resultado do mês (entradas − saídas)', liquido, totalLiquido)}
+      ${linhaVal('dfcp-acum', 'Fluxo de caixa acumulado no ano', acum, acum[12])}
+      ${linhaVal('dfcp-final', 'Saldo final do mês', saldoFim, saldoFim[12], 'Saldo inicial + resultado do mês')}
+      ${saldosBanco.length ? sec('Saldos bancários (realizado no fim do mês)') + saldosBanco.map(x =>
+          linhaVal('dfc-row-sub', x.b.nome || 'Conta', x.v, ultMes ? x.v[ultMes] : null)).join('')
+        + linhaVal('dfcp-sub', 'Total em bancos', totBanco, ultMes ? totBanco[ultMes] : null) : ''}
     </tbody>
-  </table>`;
+  </table>
+  <div class="dfcp-nota">Valores entre parênteses são negativos. Entradas e saídas pela data de vencimento. Saldo inicial = saldo das contas em 31/12/${ano - 1}. Saldos bancários = o que já foi efetivamente recebido, pago e transferido até o fim de cada mês${ultMes ? ` (mês atual: até hoje); na coluna Total, o saldo de ${MESES_ABR[ultMes]}` : ''}.</div>`;
 
   wrap.innerHTML = html;
+}
 
-  // Gráfico
-  renderDfcChart(grupos, dados, liquido);
+// Saldo realizado de uma conta até uma data (inclusive) — mesmo critério do
+// saldo da tela Bancos (getBancoSaldo), só que limitado pela data.
+function _dfcSaldoBancoAte(banco, data) {
+  let saldo = banco.saldo_inicial || 0;
+  if (typeof chqSaldoInicialDoBanco === 'function') saldo += chqSaldoInicialDoBanco(banco.id);
+  getParcelasReceber(true).forEach(p => {
+    if (p.banco === banco.id && p.dtrecebido && p.dtrecebido <= data) saldo += (p.valParc || 0);
+  });
+  getParcelas(true).forEach(p => {
+    if (p.banco === banco.id && p.dtpago && p.dtpago <= data) saldo -= (p.valParc || 0);
+  });
+  (db.transferencias || []).forEach(t => {
+    if (t.data && t.data > data) return;
+    if (t.origem === banco.id) saldo -= (t.valor || 0);
+    if (t.destino === banco.id) saldo += (t.valor || 0);
+  });
+  (db.conta_terceiros || []).forEach(e => {
+    if (e.data && e.data > data) return;
+    if (e.banco === banco.id && e.caixa) saldo += (Number(e.caixa) || 0);
+  });
+  return saldo;
 }
 
 function renderDfcChart(grupos, dados, liquido) {
@@ -15193,27 +15973,29 @@ function renderFluxoFuturo() {
     </tr>`;
   }).join('');
 
+  // Resumo em uma linha (sem caixas), ao lado do filtro
+  const resumoEl = document.getElementById('ff-resumo');
+  if (resumoEl) resumoEl.innerHTML = `
+    <span>${usarSaldo ? 'Saldo atual' : 'Ponto de partida'} <b style="color:#ea580c">${fmtBRL(saldoBase)}</b></span>
+    <span>A receber <b style="color:#166534">+ ${fmtBRL(totalReceber)}</b></span>
+    <span>A pagar <b style="color:#dc2626">− ${fmtBRL(totalPagar)}</b></span>
+    <span>Saldo projetado <b style="color:${saldoAcum >= 0 ? '#166534' : '#dc2626'}">${fmtBRL(saldoAcum)}</b></span>`;
+
   const alertaHtml = diasNegativos > 0
-    ? `<div style="background:#fef2f2;border:1px solid #fecaca;color:#991b1b;padding:12px 16px;border-radius:8px;margin-bottom:16px;font-size:13px;">
+    ? `<div style="background:#fef2f2;border:1px solid #fecaca;color:#991b1b;padding:6px 12px;border-radius:7px;margin-bottom:8px;font-size:12px;">
         ⚠️ <b>Atenção:</b> o saldo projetado fica negativo em ${diasNegativos} dia(s) dentro deste período. Menor saldo previsto: <b>${fmtBRL(menorSaldo)}</b>, em ${fmtDate(menorSaldoData)}.
         ${!usarSaldo ? ' Este cálculo <b>não</b> está considerando o saldo atual das contas — marque a opção acima para incluí-lo.' : ''}
       </div>`
-    : `<div style="background:#f0fdf4;border:1px solid #bbf7d0;color:#166534;padding:12px 16px;border-radius:8px;margin-bottom:16px;font-size:13px;">
+    : `<div style="color:#166534;margin:0 0 6px 2px;font-size:12px;">
         ✓ O saldo projetado permanece positivo em todo o período selecionado.
       </div>`;
 
   wrap.innerHTML = `
-    <div class="grid4" style="margin-bottom:16px;">
-      <div class="card kpi"><div class="kpi-val" style="color:#ea580c">${fmtBRL(saldoBase)}</div><div class="kpi-lbl">${usarSaldo ? 'Saldo atual das contas' : 'Ponto de partida (sem saldo)'}</div></div>
-      <div class="card kpi"><div class="kpi-val" style="color:#166534">+ ${fmtBRL(totalReceber)}</div><div class="kpi-lbl">A receber no período</div></div>
-      <div class="card kpi"><div class="kpi-val" style="color:#dc2626">− ${fmtBRL(totalPagar)}</div><div class="kpi-lbl">A pagar no período</div></div>
-      <div class="card kpi"><div class="kpi-val" style="color:${saldoAcum >= 0 ? '#166534' : '#dc2626'}">${fmtBRL(saldoAcum)}</div><div class="kpi-lbl">Saldo projetado final</div></div>
-    </div>
     ${alertaHtml}
-    <div class="card">
-      <div class="page-sub" style="margin-bottom:10px">Clique em qualquer valor do dia para ver, editar ou excluir os lançamentos que o compõem.</div>
-      <div style="max-height:560px;overflow-y:auto">
-        <table class="dfc-table" style="width:100%">
+    <div class="card" style="padding:10px 14px">
+      <div class="page-sub" style="margin-bottom:6px;font-size:11.5px">Clique em qualquer valor do dia para ver, editar ou excluir os lançamentos que o compõem.</div>
+      <div style="max-height:calc(100vh - 250px);min-height:300px;overflow-y:auto">
+        <table class="dfc-table ff-tab" style="width:100%">
           <thead><tr><th style="text-align:left">Data</th><th>Dia</th><th>A Receber</th><th>A Pagar</th><th>Saldo do Dia</th><th>Saldo Projetado</th></tr></thead>
           <tbody>${linhas}</tbody>
         </table>
@@ -15550,9 +16332,15 @@ function renderFluxoDiario() {
     const avisoBanco = (bancoSel && base !== 'realizado')
       ? `<span style="color:#92400e">⚠️ Com uma conta selecionada, lançamentos ainda sem banco definido ficam de fora.</span>`
       : '';
+    // Resumo do mês em linha (sem caixas)
+    const resumoFd = `<span class="fd-resumo-item">Receita <b style="color:#166534">${fmtBRL(totReceita)}</b></span>
+      <span class="fd-resumo-item">Despesa <b style="color:#dc2626">${fmtBRL(totDespesa)}</b></span>
+      <span class="fd-resumo-item">Resultado <b style="color:${corRes}">${resultadoMes >= 0 ? '' : '−'}${fmtBRL(Math.abs(resultadoMes))}</b></span>
+      <span class="fd-resumo-item" style="margin-right:12px">Dias com movimento <b>${diasComMovimento}/${diasNoMes}</b></span>`;
     wrapAna.innerHTML = diasComMovimento === 0
-      ? `<div class="fd-analise"><span class="fd-analise-lbl">Análise do resultado</span><span class="fd-zero">Nenhum movimento registrado neste mês com os filtros atuais.</span></div>`
+      ? `<div class="fd-analise">${resumoFd}<span class="fd-analise-lbl">Análise do resultado</span><span class="fd-zero">Nenhum movimento registrado neste mês com os filtros atuais.</span></div>`
       : `<div class="fd-analise">
+          ${resumoFd}
           <span class="fd-analise-lbl">Análise do resultado</span>
           <span>Melhor dia de ${nomeMes}: ${txtDia(melhorDia, '#166534')}</span>
           <span>Pior dia: ${txtDia(piorDia, '#dc2626')}</span>
@@ -15807,7 +16595,7 @@ function imprimirFluxoDiario() {
     + '<div style="font-size:10px;color:#78716c;margin-top:2px">' + subtitulo + '</div></div>'
     + '<div class="meta"><div>Emitido em: ' + dataHoje + '</div><div>Sistema de Gestão C@P Consultoria</div></div></div>'
     + (kpiEl ? '<div class="kpis">' + kpiEl.innerHTML.replace(/class="card kpi"/g, 'class="kpi"') + '</div>' : '')
-    + (anaEl ? '<div class="analise">' + anaEl.innerHTML + '</div>' : '')
+    + (anaEl ? '<div class="analise">' + (() => { const c = anaEl.cloneNode(true); c.querySelectorAll('.fd-resumo-item').forEach(x => x.remove()); return c.innerHTML; })() + '</div>' : '')
     + '<div class="fd-cols">' + clone.innerHTML + '</div>'
     + '<div class="footer">C@P Consultoria — Fluxo de Caixa Diário &middot; Gerado em ' + dataHoje + '</div>'
     + '<' + 'script>window.onload=function(){window.print()}<' + '/script></body></html>';
