@@ -21643,9 +21643,9 @@ function renderCheques() {
     <td>${q.devolvido ? `<span class="chq-st dev" title="${_e(q.motivo_devolucao || '')}">● Devolvido</span><div class="chq-motivo">${_e(q.motivo_devolucao || '')}</div>` : '<span class="chq-st ok">● Em carteira</span>'}</td>
     <td class="actions" style="justify-content:flex-end">
       <button class="btn btn-primary btn-sm" onclick="abrirCompensarCheques(['${q.id}'])">Compensar</button>
-      <button class="btn btn-secondary btn-sm" onclick="abrirEditarCheque('${q.id}')" title="Editar">✎</button>
+      <button class="btn btn-secondary btn-sm" onclick="abrirFichaCheque('${q.id}','editar')" title="Editar cheque">✎</button>
       ${_podeExcluirChqSI(q) ? `<button class="btn btn-danger btn-sm" onclick="excluirChequeSaldoInicial('${q.id}')" title="Excluir cheque de saldo inicial">🗑</button>` : ''}
-      <button class="btn btn-secondary btn-sm" onclick="abrirHistoricoCheque('${q.id}')" title="Histórico">🕓</button>
+      <button class="btn btn-secondary btn-sm" onclick="abrirFichaCheque('${q.id}')" title="Ficha completa e histórico">🔍</button>
     </td></tr>`).join('');
   tf.innerHTML = `<tr><td></td><td colspan="3">${list.length} de ${carteira.length} cheque(s)</td><td class="chq-val">${fmtBRL(soma(list))}</td><td colspan="7"></td></tr>`;
 }
@@ -21762,13 +21762,10 @@ function renderChequesCompensados() {
   const destPara = q => q.destino_tipo === 'pagamento' ? (getFornNome(q.destino_forn) || null) : (q.destino_banco ? getBancoNome(q.destino_banco) : null);
   const cols = [
     { key: 'dtcomp', label: 'Compensado em', get: q => q.dt_compensacao || null, display: q => fmtDate(q.dt_compensacao) },
-    { key: 'numero', label: 'Nº do cheque', get: q => q.numero || null },
-    { key: 'banco', label: 'Banco', get: q => q.banco_cheque || null },
+    { key: 'numero', label: 'Cheque', get: q => q.numero || null },
     { key: 'valor', label: 'Valor', get: q => Number(q.valor) || 0, display: q => fmtBRL(q.valor) },
-    { key: 'cliente', label: 'Recebido de', get: q => getClienteNome(q.cliente) || null },
-    { key: 'emitente', label: 'Emitente', get: q => q.emitente || null },
+    { key: 'cliente', label: 'Recebido de / Emitente', get: q => getClienteNome(q.cliente) || null },
     { key: 'bompara', label: 'Bom para', get: q => q.bom_para || null, display: q => fmtDate(q.bom_para) },
-    { key: 'entrada', label: 'Entrada', get: q => q.dt_entrada || null, display: q => fmtDate(q.dt_entrada) },
     { key: 'destino', label: 'Destino', get: destTipo },
     { key: 'para', label: 'Conta / Fornecedor', get: destPara },
     { key: 'acoes', label: 'Ações', get: () => '', noFilter: true }
@@ -21777,24 +21774,30 @@ function renderChequesCompensados() {
   window._chqCompListaAtual = list;
   const tb = document.getElementById('tb-cheques-compensados');
   const tf = document.getElementById('tf-chqcomp');
-  if (!list.length) { tb.innerHTML = `<tr><td colspan="11" class="empty-state">${comp.length ? 'Nenhum cheque com esses filtros.' : 'Nenhum cheque compensado.'}</td></tr>`; tf.innerHTML = ''; return; }
+  if (!list.length) { tb.innerHTML = `<tr><td colspan="8" class="empty-state">${comp.length ? 'Nenhum cheque com esses filtros.' : 'Nenhum cheque compensado.'}</td></tr>`; tf.innerHTML = ''; return; }
   const cls = { deposito: 'dep', pagamento: 'pag', resgate: 'res', outro: 'out' };
-  tb.innerHTML = list.map(q => `<tr>
-    <td>${fmtDate(q.dt_compensacao)}</td>
-    <td><span class="chq-num">${_e(q.numero)}</span>${q.devolvido ? ' <span class="badge badge-red" style="font-size:10px">já devolvido</span>' : ''}</td>
-    <td class="chq-mut">${_e(q.banco_cheque || '—')}</td>
+  const ico = { deposito: '🏦', pagamento: '🤝', resgate: '↩', outro: '•' };
+  const dias = q => (q.dt_entrada && q.dt_compensacao) ? Math.round((new Date(q.dt_compensacao + 'T12:00:00') - new Date(q.dt_entrada + 'T12:00:00')) / 86400000) : null;
+  tb.innerHTML = list.map(q => {
+    const cli = getClienteNome(q.cliente) || '';
+    const emiDif = q.emitente && normText(q.emitente) !== normText(cli);
+    const cp = q.destino_tipo === 'pagamento' ? (db.composicoes || []).find(c => c.id === q.comp_pagar_id) : null;
+    const dd = dias(q);
+    return `<tr class="chq-row-click d-${cls[q.destino_tipo] || 'out'}" onclick="if(!event.target.closest('button,a,input'))abrirFichaCheque('${q.id}')" title="Clique para ver a ficha do cheque">
+    <td><div>${fmtDate(q.dt_compensacao)}</div>${dd != null ? `<div class="chq-sub">${dd} dia(s) em carteira</div>` : ''}</td>
+    <td><span class="chq-num">${_e(q.numero)}</span>${q.devolvido ? ' <span class="badge badge-red" style="font-size:10px">já devolvido</span>' : ''}<div class="chq-sub">${_e(q.banco_cheque || 'banco não informado')}</div></td>
     <td class="chq-val">${fmtBRL(q.valor)}</td>
-    <td><b>${_e(getClienteNome(q.cliente) || '—')}</b></td>
-    <td>${_e(q.emitente || '—')}</td>
-    <td>${fmtDate(q.bom_para)}</td>
-    <td class="chq-mut">${fmtDate(q.dt_entrada)}</td>
-    <td><span class="chq-dest ${cls[q.destino_tipo] || 'out'}">${destTipo(q)}</span></td>
-    <td>${_e(destPara(q) || '—')}</td>
+    <td><b>${_e(cli || '—')}</b>${_ehChqSaldoInicial(q) ? ' <span class="badge badge-blue" style="font-size:10px">saldo inicial</span>' : ''}${emiDif || !cli ? `<div class="chq-sub">Emitente: ${_e(q.emitente || '—')}</div>` : ''}</td>
+    <td><div>${fmtDate(q.bom_para)}</div><div class="chq-sub">entrou ${fmtDate(q.dt_entrada)}</div></td>
+    <td><span class="chq-dest ${cls[q.destino_tipo] || 'out'}"><span class="i">${ico[q.destino_tipo] || '•'}</span>${destTipo(q)}</span></td>
+    <td><b style="font-weight:600">${_e(destPara(q) || '—')}</b>${q.destino_tipo === 'pagamento' && q.destino_lanc ? `<div class="chq-sub"><button class="pgd-link" onclick="abrirDetalhesPgto('pagar','${q.destino_lanc}',${cp ? cp.parcelas[0] : 1})">ver pagamento →</button></div>` : ''}</td>
     <td class="actions" style="justify-content:flex-end">
-      <button class="btn btn-danger btn-sm" onclick="abrirEstornoCheque('${q.id}')">↩ Estornar</button>
-      <button class="btn btn-secondary btn-sm" onclick="abrirHistoricoCheque('${q.id}')" title="Histórico">🕓</button>
-    </td></tr>`).join('');
-  tf.innerHTML = `<tr><td colspan="3">${list.length} de ${comp.length} cheque(s)</td><td class="chq-val">${fmtBRL(soma(list))}</td><td colspan="7"></td></tr>`;
+      <button class="btn btn-sm btn-edit" onclick="abrirFichaCheque('${q.id}','editar')" title="Editar todos os dados do cheque">✎ Editar</button>
+      <button class="btn btn-danger btn-sm" onclick="abrirEstornoCheque('${q.id}')" title="O cheque voltou: desfaz a compensação">↩ Estornar</button>
+      <button class="btn btn-secondary btn-sm" onclick="abrirFichaCheque('${q.id}')" title="Ficha completa e histórico">🔍</button>
+    </td></tr>`;
+  }).join('');
+  tf.innerHTML = `<tr><td colspan="2">${list.length} de ${comp.length} cheque(s)</td><td class="chq-val">${fmtBRL(soma(list))}</td><td colspan="5"></td></tr>`;
 }
 function clearChequesCompFiltros() {
   ['chqcomp-f-busca', 'chqcomp-f-destino', 'chqcomp-f-de', 'chqcomp-f-ate', 'chqcomp-f-valor'].forEach(id => { document.getElementById(id).value = ''; });
@@ -22272,7 +22275,8 @@ function _bxRenderLinhas() {
   const b = _bx;
   const formas = _bxFormas(b.tipo);
   const rot = b.tipo === 'pagar' ? '+ Cadastrar nova forma de pagamento...' : '+ Cadastrar nova forma de recebimento...';
-  document.getElementById('bx-linhas').innerHTML = b.linhas.map((x, i) => `<div class="bx-linha">
+  b.linhas.forEach(x => { if (x.forma === 'Cheque' && !(x.cheques && x.cheques.length)) x.valor = 0; });
+  document.getElementById('bx-linhas').innerHTML = b.linhas.map((x, i) => x.forma === 'Cheque' ? _bxLinhaChequeHtml(x, i, b.linhas.length) : `<div class="bx-linha">
       <select onchange="_bxSetForma(${i},this.value)"><option value="">Forma (não informada)</option>
         ${formas.map(f => `<option value="${_e(f)}" ${f === x.forma ? 'selected' : ''}>${_e(f)}</option>`).join('')}
         <option value="${FORMA_NOVA}">${rot}</option></select>
@@ -22293,11 +22297,12 @@ function _bxSetForma(i, v) {
     return;
   }
   if (v === 'Cheque') {
-    if (_bx.itens.length > 1) { alert('Cheque pede os dados de cada cheque (número, emitente, bom para). Receba com cheque um pedido por vez, pela tela de cheques / várias formas.'); _bxRenderLinhas(); return; }
-    _bxAbrirAvancado();
+    if (_bx.itens.length > 1) { alert('Cheque pede os dados de cada cheque (número, emitente, bom para). Receba com cheque um pedido por vez.'); _bxRenderLinhas(); return; }
+    _bxChqAbrir(i);
     return;
   }
   _bx.linhas[i].forma = v;
+  delete _bx.linhas[i].cheques;
 }
 function _bxAposNovaForma(tipo) {
   if (!_bx || _bx.novaIdx == null || _bx.tipo !== tipo) return;
@@ -22334,6 +22339,7 @@ function _bxTotais() {
   let cor, txt;
   if (Math.abs(k.dif) < 0.005) { cor = '#16a34a'; txt = '✓ Valor fechado'; }
   else if (k.dif < 0) { cor = '#dc2626'; txt = `Faltam ${fmtBRL(-k.dif)} — adicione outra forma`; }
+  else if (b.linhas.some(x => x.forma === 'Cheque' && x.cheques && x.cheques.length)) { cor = '#1d4ed8'; txt = `Excedente de ${fmtBRL(k.dif)} → fica como ${b.tipo === 'receber' ? 'débito com o cliente' : 'crédito com o fornecedor'}`; }
   else { cor = '#c2410c'; txt = `Passou ${fmtBRL(k.dif)} do valor — ajuste os valores` + (b.itens.length === 1 ? ' (troco/crédito: use a tela de cheques / várias formas)' : ''); }
   document.getElementById('bx-totais').innerHTML = `
     <div class="bx-tot">
@@ -22404,6 +22410,7 @@ async function _bxConfirmar() {
   const ehRec = b.tipo === 'receber';
   const data = document.getElementById('bx-data').value;
   if (!data) { alert('Informe a data do ' + (ehRec ? 'recebimento.' : 'pagamento.')); return; }
+  if (b.linhas.some(x => x.forma === 'Cheque')) { await _bxConfirmarComCheques(data, b.linhas.filter(x => x.forma === 'Cheque' || _r2(x.valor) > 0)); return; }
   const linhas = b.linhas.filter(x => _r2(x.valor) > 0);
   if (!linhas.length) { alert('Informe o valor ' + (ehRec ? 'recebido.' : 'pago.')); return; }
   for (const x of linhas) {
@@ -23442,6 +23449,614 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Escape' && _pgd && document.getElementById('modal-pgd').classList.contains('open')
       && !document.querySelector('#modal-chq-hist.open')) fecharDetalhesPgto();
 });
+</script>
+
+
+<!-- ══ FICHA DO CHEQUE (ver / editar tudo, inclusive o valor) + SELETOR DE CHEQUES NA BAIXA ══ -->
+<style>
+.chq-sub { font-size:11.5px; color:#78716c; margin-top:3px; line-height:1.35; white-space:nowrap; }
+.chq-sub a, .chq-sub .pgd-link { font-size:11.5px; }
+.chq-row-click { cursor:pointer; }
+.chq-dest .i { margin-right:4px; }
+.chq-tab td.actions .btn-edit { background:#fff; border:1px solid #e7e5e4; color:#1f2937; }
+.chq-tab td.actions .btn-edit:hover { border-color:#fdba74; color:#c2410c; }
+#page-cheques-compensados .chq-tab td { padding-top:11px; padding-bottom:11px; }
+#page-cheques-compensados .chq-tab tbody tr td:first-child { border-left:3px solid transparent; }
+#page-cheques-compensados .chq-tab tbody tr.d-dep td:first-child { border-left-color:#16a34a; }
+#page-cheques-compensados .chq-tab tbody tr.d-pag td:first-child { border-left-color:#2563eb; }
+#page-cheques-compensados .chq-tab tbody tr.d-res td:first-child { border-left-color:#d97706; }
+#page-cheques-compensados .chq-tab tbody tr.d-out td:first-child { border-left-color:#a8a29e; }
+.fch-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; margin-bottom:16px; }
+.fch-flow { display:grid; grid-template-columns:1fr 40px 1fr; gap:0; align-items:stretch; margin-bottom:16px; }
+.fch-flow .seta { display:flex; align-items:center; justify-content:center; font-size:20px; color:#d6d3d1; }
+.fch-box { background:#fff; border:1px solid var(--border); border-radius:12px; padding:14px 16px; }
+.fch-box .t { font-size:10.5px; text-transform:uppercase; letter-spacing:.06em; color:#a8a29e; font-weight:700; margin-bottom:6px; }
+.fch-box .n { font-weight:700; color:#1f2937; font-size:14px; }
+.fch-box .s { font-size:12px; color:#78716c; margin-top:3px; line-height:1.45; }
+.fch-imp { margin:0 16px 4px; padding:12px 14px; border-radius:10px; font-size:12.5px; line-height:1.55; }
+.fch-imp.ok { background:#f0f9ff; border:1px solid #bae6fd; color:#0c4a6e; }
+.fch-imp.bad { background:#fef2f2; border:1px solid #fecaca; color:#991b1b; }
+.fch-imp.warn { background:#fffbeb; border:1px solid #fde68a; color:#92400e; }
+.fch-imp ul { margin:4px 0 0 18px; padding:0; }
+.fch-valor input { font-family:'DM Mono',monospace; font-weight:700; font-size:15px; text-align:right; }
+.fch-lock { font-size:11px; color:#a8a29e; font-weight:500; }
+/* seletor de cheques na baixa */
+.bx-linha-chq { grid-template-columns:1fr auto 140px 34px !important; background:#eff6ff !important; border-color:#bfdbfe !important; }
+.bx-linha-chq.vazio { background:#fff7ed !important; border-color:#fed7aa !important; }
+.bx-chq-info { min-width:0; font-size:12.5px; color:#1e3a8a; }
+.bx-chq-info b { color:#1e40af; }
+.bx-chq-tags { display:flex; flex-wrap:wrap; gap:4px; margin-top:4px; }
+.bx-chq-tag { font-family:'DM Mono',monospace; font-size:11px; background:#fff; border:1px solid #bfdbfe; color:#1e40af; border-radius:6px; padding:1px 6px; white-space:nowrap; }
+.bxq-modal { width:880px; padding:0; overflow:hidden; display:flex; flex-direction:column; max-height:90vh; }
+.bxq-head { padding:18px 24px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; gap:16px; align-items:flex-start; }
+.bxq-head h3 { margin:0; font-size:17px; color:#1f2937; }
+.bxq-head .sub { font-size:12.5px; color:#78716c; margin-top:4px; }
+.bxq-alvo { text-align:right; }
+.bxq-alvo .l { font-size:10.5px; text-transform:uppercase; letter-spacing:.06em; color:#a8a29e; font-weight:700; }
+.bxq-alvo .v { font-family:'DM Mono',monospace; font-weight:700; font-size:20px; color:#1f2937; }
+.bxq-tools { padding:12px 24px; background:#fafaf9; border-bottom:1px solid #f0eeec; display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
+.bxq-body { overflow-y:auto; flex:1; }
+.bxq-body table { font-size:12.5px; }
+.bxq-body th { position:sticky; top:0; background:#fff; z-index:1; font-size:10.5px; }
+.bxq-body tr.pick { cursor:pointer; }
+.bxq-body tr.pick.on td { background:#eff6ff; }
+.bxq-body tr.pick:hover td { background:#f8fafc; }
+.bxq-body input[type=checkbox] { width:16px; height:16px; accent-color:#2563eb; }
+.bxq-body .ideal { font-size:10px; font-weight:700; color:#166534; background:#dcfce7; border-radius:999px; padding:1px 7px; margin-left:6px; }
+.bxq-foot { padding:14px 24px; border-top:1px solid var(--border); display:flex; gap:10px; align-items:center; background:#fff; }
+.bxq-foot .st { margin-right:auto; font-size:12.5px; color:#57534e; }
+.bxq-novos { padding:12px 18px; }
+.bxq-novos input, .bxq-novos select { width:100%; margin:0; }
+@media (max-width:860px) { .fch-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } .fch-flow { grid-template-columns:1fr; } .fch-flow .seta { transform:rotate(90deg); padding:4px 0; } }
+</style>
+
+<div class="modal-overlay" id="modal-fch" style="z-index:215">
+  <div class="modal pgd-modal" role="dialog" aria-modal="true" aria-labelledby="fch-nome">
+    <div class="pgd-head" id="fch-head"></div>
+    <div class="pgd-body" id="fch-body"></div>
+    <div class="pgd-foot" id="fch-foot"></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-bxchq" style="z-index:230">
+  <div class="modal bxq-modal" role="dialog" aria-modal="true" aria-labelledby="bxq-titulo">
+    <div class="bxq-head" id="bxq-head"></div>
+    <div class="bxq-tools" id="bxq-tools"></div>
+    <div class="bxq-body" id="bxq-body"></div>
+    <div class="bxq-foot" id="bxq-foot"></div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════
+// FICHA DO CHEQUE — visão completa (origem → destino → histórico) e
+// edição de todos os dados, inclusive o VALOR (só master).
+// Corrigir o valor ajusta tudo que depende dele, para os saldos
+// continuarem certos: composição do recebimento/pagamento, excedente
+// (Débitos com Clientes / Créditos com Fornecedores) e transferências.
+// Se o novo valor deixar uma conta já quitada "a menos", a alteração é
+// recusada (nesse caso o certo é estornar e lançar de novo).
+// ═══════════════════════════════════════════════════════════════════
+let _fch = null;
+
+async function _audVerificar() {
+  if (window._pgdAuditOk !== null && window._pgdAuditOk !== undefined) return window._pgdAuditOk;
+  const r = await sbFetch('auditoria_pagamentos', 'GET', null, '?limit=1');
+  window._pgdAuditOk = r !== null;
+  return window._pgdAuditOk;
+}
+async function _audLog(tipo, lancId, parcela, acao, detalhe, motivo, antes, depois) {
+  const l = (tipo === 'pagar' ? db.lancamentos : db.lancreceber).find(x => x.id === lancId);
+  const reg = {
+    id: uid(), empresa_id: (l && l.empresa_id) || empresaAtual() || null,
+    tipo, lanc_id: lancId, parcela: parcela || null,
+    usuario: _quem() + (currentUser && currentUser.user && currentUser.nome ? ` (${currentUser.user})` : ''),
+    acao, detalhe: detalhe || '', motivo: motivo || '', antes: antes || null, depois: depois || null
+  };
+  return !!(await sbFetch('auditoria_pagamentos', 'POST', reg));
+}
+function _fchDatalists() {
+  const dlE = document.getElementById('chq-emitentes');
+  if (dlE) {
+    const nomes = new Set();
+    db.clientes.forEach(c => c.nome && nomes.add(c.nome));
+    db.fornecedores.forEach(f => f.nome && nomes.add(f.nome));
+    db.cheques.forEach(c => c.emitente && nomes.add(c.emitente));
+    dlE.innerHTML = [...nomes].sort().map(n => `<option value="${_e(n)}">`).join('');
+  }
+  const dlB = document.getElementById('chq-bancos-lista');
+  if (dlB) {
+    const bancos = new Set(['Banco do Brasil', 'Caixa Econômica Federal', 'Bradesco', 'Itaú', 'Santander', 'Sicoob', 'Sicredi', 'Ailos / Viacredi', 'Banrisul', 'BRDE', 'Inter', 'Nubank', 'C6 Bank']);
+    db.cheques.forEach(c => c.banco_cheque && bancos.add(c.banco_cheque));
+    dlB.innerHTML = [...bancos].sort().map(n => `<option value="${_e(n)}">`).join('');
+  }
+}
+
+// Situação resumida do cheque (cabeçalho da ficha e da tabela)
+function _fchStatus(q) {
+  if (q.status === 'carteira') return q.devolvido ? { cls: 'bad', txt: '↩ Devolvido · em carteira' } : { cls: 'info', txt: '🗂 Em carteira' };
+  const m = { deposito: ['ok', '🏦 Depositado'], pagamento: ['info', '🤝 Usado em pagamento'], resgate: ['warn', '↩ Resgatado pelo cliente'], outro: ['warn', '• Baixado (outro)'] };
+  const s = m[q.destino_tipo] || ['warn', 'Compensado'];
+  return { cls: s[0], txt: s[1] };
+}
+function _fchCompRec(q) { return _ehChqSaldoInicial(q) ? null : (db.composicoes || []).find(c => c.id === q.comp_receber_id) || null; }
+function _fchCompPag(q) { return (db.composicoes || []).find(c => c.id === q.comp_pagar_id) || null; }
+
+async function abrirFichaCheque(id, modo) {
+  const q = db.cheques.find(x => x.id === id);
+  if (!q) { alert('Cheque não encontrado.'); return; }
+  _fch = { id, modo: modo === 'editar' ? 'editar' : 'ver' };
+  _fchDatalists();
+  _fchRender();
+  openModal('modal-fch');
+  if (_ehMaster() && window._pgdAuditOk == null) { await _audVerificar(); if (_fch && _fch.id === id) _fchRender(); }
+  if (_fch && _fch.modo === 'editar') setTimeout(() => { const el = document.getElementById('fch-numero'); if (el) el.focus(); }, 60);
+}
+function fecharFichaCheque() { closeModal('modal-fch'); _fch = null; }
+
+function _fchRender() {
+  if (!_fch) return;
+  const q = db.cheques.find(x => x.id === _fch.id);
+  if (!q) { fecharFichaCheque(); return; }
+  const st = _fchStatus(q);
+  const si = _ehChqSaldoInicial(q);
+  const cr = _fchCompRec(q), cp = _fchCompPag(q);
+
+  document.getElementById('fch-head').innerHTML = `
+    <div class="pgd-head-main">
+      <div class="pgd-kicker">🧾 Cheque de terceiro${si ? ' · saldo inicial' : ''}</div>
+      <div class="pgd-nome" id="fch-nome">Nº ${_e(q.numero || '—')} <span style="font-weight:500;color:#d6d3d1;font-size:16px">${q.banco_cheque ? '· ' + _e(q.banco_cheque) : ''}</span></div>
+      <div class="pgd-meta">
+        <span>Emitente <b>${_e(q.emitente || '—')}</b></span>
+        <span>Recebido de <b>${_e(getClienteNome(q.cliente) || '—')}</b></span>
+        <span>Bom para <b>${fmtDate(q.bom_para)}</b></span>
+      </div>
+    </div>
+    <div class="pgd-valor">
+      <div class="v">${fmtBRL(q.valor)}</div>
+      <div class="pgd-status" style="${st.cls === 'bad' ? 'background:rgba(220,38,38,.2);color:#fca5a5;border-color:rgba(252,165,165,.4)' : st.cls === 'info' ? 'background:rgba(37,99,235,.2);color:#bfdbfe;border-color:rgba(191,219,254,.4)' : st.cls === 'warn' ? 'background:rgba(217,119,6,.2);color:#fde68a;border-color:rgba(253,230,138,.4)' : ''}">${st.txt}</div>
+    </div>
+    <button class="pgd-x" onclick="fecharFichaCheque()" title="Fechar" aria-label="Fechar">✕</button>`;
+
+  const dias = (a, b) => (a && b) ? Math.round((new Date(b + 'T12:00:00') - new Date(a + 'T12:00:00')) / 86400000) : null;
+  const dEnt = dias(q.dt_entrada, q.dt_compensacao);
+  let h = `<div class="fch-grid">
+    <div class="pgd-stat"><div class="l">Entrada</div><div class="n txt">${fmtDate(q.dt_entrada)}</div></div>
+    <div class="pgd-stat"><div class="l">Bom para</div><div class="n txt">${fmtDate(q.bom_para)}</div></div>
+    <div class="pgd-stat"><div class="l">Guardado em</div><div class="n txt">${_e(getBancoNome(q.banco_custodia) || '—')}</div></div>
+    <div class="pgd-stat"><div class="l">${q.status === 'compensado' ? 'Saiu da carteira' : 'Dias em carteira'}</div><div class="n txt">${q.status === 'compensado' ? fmtDate(q.dt_compensacao) + (dEnt != null ? ` <span style="font-size:11px;color:#a8a29e">(${dEnt}d)</span>` : '') : (dias(q.dt_entrada, today()) ?? '—') + ' dia(s)'}</div></div>
+  </div>`;
+
+  // Origem → Destino
+  const origem = si
+    ? `<div class="n">Saldo inicial</div><div class="s">Já estava em mãos quando o sistema começou · conta ${_e(getBancoNome(q.banco_custodia) || '—')}</div>`
+    : `<div class="n">${_e(getClienteNome(q.cliente) || '—')}</div><div class="s">Recebido em ${fmtDate(q.dt_entrada)}${cr && cr.parcelas ? ` · parcela ${cr.parcelas.join(', ')}` : ''}</div>
+       ${q.lanc_receber_id ? `<div class="s"><button class="pgd-link" onclick="abrirDetalhesPgto('receber','${q.lanc_receber_id}',${cr ? cr.parcelas[0] : 1})">ver recebimento →</button></div>` : ''}`;
+  let destino;
+  if (q.status === 'carteira') destino = `<div class="n">Em carteira</div><div class="s">${q.devolvido ? `Devolvido${q.motivo_devolucao ? ': ' + _e(q.motivo_devolucao) : ''}` : 'Aguardando depósito ou uso num pagamento'}</div>`;
+  else if (q.destino_tipo === 'pagamento') destino = `<div class="n">${_e(getFornNome(q.destino_forn) || '—')}</div><div class="s">Entregue em pagamento em ${fmtDate(q.dt_compensacao)}</div>
+       ${q.destino_lanc ? `<div class="s"><button class="pgd-link" onclick="abrirDetalhesPgto('pagar','${q.destino_lanc}',${cp ? cp.parcelas[0] : 1})">ver pagamento →</button></div>` : ''}`;
+  else destino = `<div class="n">${_e(_chqDestinoTxt(q))}</div><div class="s">em ${fmtDate(q.dt_compensacao)}</div>`;
+  h += `<div class="fch-flow"><div class="fch-box"><div class="t">⬇ Origem</div>${origem}</div><div class="seta">→</div><div class="fch-box"><div class="t">⬆ Destino</div>${destino}</div></div>`;
+  if (q.obs) h += `<div class="pgd-alert info"><span>📝</span><div>${_e(q.obs)}</div></div>`;
+
+  if (_fch.modo === 'editar') h += _fchHtmlEditar(q);
+
+  // Histórico
+  const hist = (q.historico || []).slice().sort((a, b) => String(b.data || '').localeCompare(String(a.data || '')));
+  h += `<div class="pgd-sec"><div class="pgd-sec-h"><div class="pgd-sec-t">🕓 Histórico do cheque <small>${hist.length} evento(s)</small></div></div>
+    <div class="pgd-tl">${hist.length ? hist.map(e => `<div class="pgd-tl-i"><div class="pgd-tl-dot ${/corrigid|alterad|ajustad/i.test(e.evento || '') ? 'm' : /estorn|devolv/i.test(e.evento || '') ? '' : 'c'}"></div>
+      <div class="pgd-tl-q">${fmtDate(e.data)}</div><div class="pgd-tl-b"><b>${_e(e.evento || '')}</b>${e.detalhe ? `<div class="pgd-mut">${_e(e.detalhe)}</div>` : ''}${e.usuario ? `<div class="pgd-mut">👤 ${_e(e.usuario)}</div>` : ''}</div></div>`).join('')
+      : '<div class="pgd-empty">Sem eventos registrados.</div>'}</div></div>`;
+  document.getElementById('fch-body').innerHTML = h;
+
+  document.getElementById('fch-foot').innerHTML = `<div class="esq">
+      ${_fch.modo !== 'editar' ? `<button class="btn btn-secondary btn-sm" onclick="_fchModo('editar')">✎ Editar cheque</button>` : ''}
+      ${q.status === 'carteira' && typeof abrirCompensarCheques === 'function' ? `<button class="btn btn-secondary btn-sm" onclick="fecharFichaCheque();abrirCompensarCheques(['${q.id}'])">✓ Compensar</button>` : ''}
+    </div>
+    ${q.status === 'compensado' ? `<button class="btn btn-danger" onclick="fecharFichaCheque();abrirEstornoCheque('${q.id}')">↩ Estornar</button>` : ''}
+    <button class="btn btn-primary" onclick="fecharFichaCheque()">Fechar</button>`;
+}
+function _fchModo(m) {
+  if (!_fch) return;
+  _fch.modo = m;
+  _fchRender();
+  if (m === 'editar') {
+    const sec = document.querySelector('#fch-body .pgd-sec.edit');
+    if (sec) sec.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    setTimeout(() => { const el = document.getElementById('fch-numero'); if (el) el.focus(); }, 60);
+  }
+}
+
+function _fchHtmlEditar(q) {
+  const master = _ehMaster();
+  const si = _ehChqSaldoInicial(q);
+  const podeValor = master && window._pgdAuditOk === true;
+  const lockValor = !master ? '🔒 só o usuário master' : (window._pgdAuditOk !== true ? '🔒 falta a tabela de auditoria' : '');
+  return `<div class="pgd-sec edit"><div class="pgd-sec-h"><div class="pgd-sec-t">✎ Editar cheque</div>
+      <span class="pgd-mut">A alteração fica registrada no histórico do cheque${window._pgdAuditOk ? ' e na auditoria' : ''}.</span></div>
+    <div class="pgd-form" style="grid-template-columns:repeat(4,minmax(0,1fr))">
+      <div class="form-group"><label>Nº do cheque *</label><input id="fch-numero" type="text" value="${_e(q.numero || '')}" /></div>
+      <div class="form-group"><label>Banco do cheque</label><input id="fch-banco" type="text" list="chq-bancos-lista" value="${_e(q.banco_cheque || '')}" /></div>
+      <div class="form-group"><label>Emitente</label><input id="fch-emitente" type="text" list="chq-emitentes" value="${_e(q.emitente || '')}" /></div>
+      <div class="form-group"><label>Bom para *</label><input id="fch-bompara" type="date" value="${q.bom_para || ''}" /></div>
+      <div class="form-group fch-valor"><label>Valor (R$) * ${lockValor ? `<span class="fch-lock">${lockValor}</span>` : ''}</label>
+        <input id="fch-valor" type="number" step="0.01" min="0.01" value="${_r2(q.valor)}" ${podeValor ? '' : 'disabled'} oninput="_fchPreview()" /></div>
+      ${si ? `<div class="form-group"><label>Recebido de</label><select id="fch-cliente"><option value="">—</option>${db.clientes.slice().sort((a, b) => String(a.nome).localeCompare(String(b.nome))).map(c => `<option value="${c.id}" ${c.id === q.cliente ? 'selected' : ''}>${_e(c.nome)}</option>`).join('')}</select></div>
+        <div class="form-group"><label>Data de entrada</label><input id="fch-entrada" type="date" value="${q.dt_entrada || ''}" /></div>`
+      : `<div class="form-group" style="grid-column:span 2"><label>Recebido de / entrada</label><input type="text" value="${_e(getClienteNome(q.cliente) || '—')} · ${fmtDate(q.dt_entrada)}" disabled title="Vem do recebimento. Para mudar, estorne o recebimento e lance de novo." /></div>`}
+      <div class="form-group"><label>Observação</label><input id="fch-obs" type="text" value="${_e(q.obs || '')}" /></div>
+      <div class="form-group full"><label>Motivo da alteração * <span style="font-weight:400;color:#a8a29e">(fica registrado)</span></label><input id="fch-motivo" type="text" placeholder="Ex.: valor digitado errado — conferido com a cópia do cheque" /></div>
+    </div>
+    <div id="fch-impacto">${_fchImpactoHtml(q, _r2(q.valor))}</div>
+    <div class="pgd-form-foot"><div class="info">Os campos marcados com * são obrigatórios.</div>
+      <button class="btn btn-secondary" onclick="_fchModo('ver')">Cancelar</button><button class="btn btn-primary" id="fch-ok" onclick="_fchSalvar()">Salvar alterações</button></div></div>`;
+}
+function _fchPreview() {
+  if (!_fch) return;
+  const q = db.cheques.find(x => x.id === _fch.id); if (!q) return;
+  const nv = _r2(document.getElementById('fch-valor').value);
+  document.getElementById('fch-impacto').innerHTML = _fchImpactoHtml(q, nv);
+}
+function _fchImpactoHtml(q, nv) {
+  if (!(nv > 0) || Math.abs(nv - _r2(q.valor)) < 0.005) return '';
+  const P = _fchPlano(q, nv);
+  if (P.erros.length) return `<div class="fch-imp bad"><b>Não é possível alterar o valor para ${fmtBRL(nv)}:</b><ul>${P.erros.map(e => `<li>${_e(e)}</li>`).join('')}</ul></div>`;
+  return `<div class="fch-imp ok"><b>O que muda ao salvar (${fmtBRL(q.valor)} → ${fmtBRL(nv)}):</b><ul>${P.itens.map(e => `<li>${_e(e)}</li>`).join('') || '<li>Somente o valor do cheque.</li>'}</ul></div>`
+    + (P.avisos.length ? `<div class="fch-imp warn">⚠ ${P.avisos.map(_e).join('<br>⚠ ')}</div>` : '');
+}
+
+// Plano de ajustes quando o valor muda (mantém os saldos consistentes)
+function _fchPlano(q, nv) {
+  const P = { erros: [], avisos: [], itens: [], acoes: [], logs: [] };
+  const d = _r2(nv - _r2(q.valor));
+  if (Math.abs(d) < 0.005) return P;
+  if (_ehChqSaldoInicial(q)) {
+    P.itens.push(`Saldo da conta ${getBancoNome(q.banco_custodia) || '—'} ${d > 0 ? 'aumenta' : 'diminui'} ${fmtBRL(Math.abs(d))} (cheque de saldo inicial).`);
+    return P;
+  }
+  if (q.estorno_ledger_id) {
+    P.erros.push('Este cheque foi devolvido depois de ter sido usado num pagamento. O valor não pode ser alterado aqui — ajuste a diferença em "Créditos com Fornecedores" (+ Movimentar).');
+    return P;
+  }
+  const ajustar = (c, ehRec) => {
+    const ln = c.linhas.find(x => x.tipo === 'cheque' && x.id === q.id);
+    if (!ln) return;
+    const l = (ehRec ? db.lancreceber : db.lancamentos).find(x => x.id === c.lanc_id);
+    const pessoa = l ? (ehRec ? l.cliente : l.forn) : null;
+    const tp = _tipoPessoa(c.tipo);
+    const nome = _nomePessoa(tp, pessoa);
+    const rot = ehRec ? `Recebimento de ${nome}` : `Pagamento a ${nome}`;
+    const novoTotal = _r2(c.total + d);
+    const dif = _r2(novoTotal - c.valor_conta);
+    if (dif < -0.004) {
+      P.erros.push(`${rot}: com ${fmtBRL(nv)} o total ficaria ${fmtBRL(-dif)} abaixo do valor da conta (${fmtBRL(c.valor_conta)}). Estorne o ${ehRec ? 'recebimento' : 'pagamento'} e lance de novo com o valor certo.`);
+      return;
+    }
+    const exc = Math.max(0, dif), excAnt = _r2(c.excedente || 0);
+    if (exc > 0.004 && !pessoa) { P.erros.push(`${rot}: o valor a mais precisaria virar ${ehRec ? 'débito com o cliente' : 'crédito com o fornecedor'}, mas o lançamento não tem ${ehRec ? 'cliente' : 'fornecedor'}.`); return; }
+    const eExc = db.conta_terceiros.find(e => (c.ledger_ids || []).includes(e.id) && e.origem === 'excedente');
+    P.itens.push(`${rot}: total entregue ${fmtBRL(c.total)} → ${fmtBRL(novoTotal)}`);
+    if (Math.abs(exc - excAnt) > 0.004) P.itens.push(`${ehRec ? 'Débito com o cliente' : 'Crédito com o fornecedor'} (excedente): ${fmtBRL(excAnt)} → ${fmtBRL(exc)}`);
+    if (exc < excAnt && pessoa) {
+      const s = _r2(saldoTerceiro(tp, pessoa) - (excAnt - exc));
+      if (s < -0.004) P.avisos.push(`O saldo com ${nome} ficará negativo em ${fmtBRL(-s)} — parte do excedente já foi ${ehRec ? 'devolvida ou abatida' : 'usada'}.`);
+    }
+    const tr = (ln.banco && ln.banco !== c.banco_principal)
+      ? db.transferencias.find(t => (c.transf_ids || []).includes(t.id) && (ehRec ? t.destino : t.origem) === ln.banco) : null;
+    if (tr) P.itens.push(`Transferência ${getBancoNome(tr.origem)} → ${getBancoNome(tr.destino)}: ${fmtBRL(tr.valor)} → ${fmtBRL(_r2(tr.valor + d))}`);
+    const desc = l ? _descLancComp(c.tipo, l) : '';
+    P.acoes.push(async falhas => {
+      if (tr) { const v = _r2(tr.valor + d); if (await sbFetch('transferencias', 'PATCH', { valor: v }, `?id=eq.${tr.id}`)) tr.valor = v; else falhas.push('transferência entre contas'); }
+      let ledgerIds = (c.ledger_ids || []).slice();
+      if (exc > 0.004) {
+        if (eExc) {
+          const pe = { valor: exc, caixa: ehRec ? exc : -exc };
+          if (await sbFetch('conta_terceiros', 'PATCH', pe, `?id=eq.${eExc.id}`)) Object.assign(eExc, pe); else falhas.push('saldo com terceiros');
+        } else {
+          const e = { id: uid(), tipo: tp, pessoa, data: c.data, valor: exc, caixa: ehRec ? exc : -exc, banco: c.banco_principal,
+            descricao: ehRec ? `Excedente entregue pelo cliente (troco a devolver) — ${desc}` : `Valor pago a mais ao fornecedor — ${desc}`,
+            origem: 'excedente', comp_id: c.id, cheque_id: null, usuario: _quem() };
+          if (await sbFetch('conta_terceiros', 'POST', e)) { db.conta_terceiros.push(e); ledgerIds.push(e.id); } else falhas.push('saldo com terceiros');
+        }
+      } else if (eExc) {
+        if (await sbFetch('conta_terceiros', 'DELETE', null, `?id=eq.${eExc.id}`)) { db.conta_terceiros = db.conta_terceiros.filter(e => e.id !== eExc.id); ledgerIds = ledgerIds.filter(i => i !== eExc.id); }
+        else falhas.push('saldo com terceiros');
+      }
+      const linhas = c.linhas.map(x => (x.tipo === 'cheque' && x.id === q.id) ? Object.assign({}, x, { valor: nv }) : x);
+      const pc = { linhas, total: novoTotal, excedente: exc, ledger_ids: ledgerIds };
+      if (await sbFetch('pagamentos_compostos', 'PATCH', pc, `?id=eq.${c.id}`)) Object.assign(c, pc); else falhas.push('registro do ' + (ehRec ? 'recebimento' : 'pagamento'));
+    });
+    P.logs.push({ tipo: c.tipo, lancId: c.lanc_id, parc: c.parcelas[0],
+      linhas: [`Valor do cheque nº ${q.numero}: ${fmtBRL(q.valor)} → ${fmtBRL(nv)}`, `Total entregue: ${fmtBRL(c.total)} → ${fmtBRL(novoTotal)}`]
+        .concat(Math.abs(exc - excAnt) > 0.004 ? [`Excedente: ${fmtBRL(excAnt)} → ${fmtBRL(exc)}`] : []) });
+  };
+  const cr = _fchCompRec(q);
+  if (cr) ajustar(cr, true);
+  if (q.status === 'compensado' && q.destino_tipo === 'pagamento') {
+    const cp = _fchCompPag(q);
+    if (cp) ajustar(cp, false);
+  }
+  if (q.status === 'compensado' && q.transf_id) {
+    const t = db.transferencias.find(x => x.id === q.transf_id);
+    if (t) {
+      P.itens.push(`Transferência do ${q.destino_tipo === 'resgate' ? 'resgate' : 'depósito'} (${getBancoNome(t.origem)} → ${getBancoNome(t.destino)}): ${fmtBRL(t.valor)} → ${fmtBRL(nv)}`);
+      P.acoes.push(async falhas => { if (await sbFetch('transferencias', 'PATCH', { valor: nv }, `?id=eq.${t.id}`)) t.valor = nv; else falhas.push('transferência do depósito'); });
+    }
+  }
+  if (!cr && !P.erros.length && !P.itens.length) P.itens.push('Somente o valor do cheque (não há recebimento vinculado a ele).');
+  return P;
+}
+
+async function _fchSalvar() {
+  if (!_fch) return;
+  const q = db.cheques.find(x => x.id === _fch.id); if (!q) return;
+  const v = id => { const el = document.getElementById(id); return el ? el.value.trim() : null; };
+  const si = _ehChqSaldoInicial(q);
+  const novo = { numero: v('fch-numero'), banco_cheque: v('fch-banco'), emitente: v('fch-emitente'), bom_para: v('fch-bompara') || null, obs: v('fch-obs') };
+  if (si) { novo.cliente = v('fch-cliente') || null; novo.dt_entrada = v('fch-entrada') || null; }
+  const nv = _r2(v('fch-valor'));
+  const motivo = v('fch-motivo');
+  if (!novo.numero) { alert('Informe o número do cheque.'); return; }
+  if (!novo.bom_para) { alert('Informe a data "bom para".'); return; }
+  if (!(nv > 0)) { alert('Informe um valor maior que zero.'); return; }
+  const mudouValor = Math.abs(nv - _r2(q.valor)) >= 0.005;
+  const rot = { numero: 'Nº', banco_cheque: 'Banco', emitente: 'Emitente', bom_para: 'Bom para', obs: 'Observação', cliente: 'Recebido de', dt_entrada: 'Entrada' };
+  const fmtCampo = (k, x) => (k === 'bom_para' || k === 'dt_entrada') ? fmtDate(x) : k === 'cliente' ? (getClienteNome(x) || '—') : (x || '—');
+  const antes = {}, depois = {}, dif = [];
+  Object.keys(novo).forEach(k => {
+    const a = q[k] || '', b = novo[k] || '';
+    if (a !== b) { antes[k] = q[k] || null; depois[k] = novo[k]; dif.push(`${rot[k]}: ${fmtCampo(k, a)} → ${fmtCampo(k, b)}`); }
+  });
+  if (mudouValor) { antes.valor = _r2(q.valor); depois.valor = nv; dif.unshift(`Valor: ${fmtBRL(q.valor)} → ${fmtBRL(nv)}`); }
+  if (!dif.length) { alert('Nada foi alterado.'); return; }
+  if (!motivo) { alert('Informe o motivo da alteração — ele fica registrado.'); document.getElementById('fch-motivo').focus(); return; }
+
+  let P = { acoes: [], logs: [], itens: [], avisos: [], erros: [] };
+  if (mudouValor) {
+    if (!_ehMaster()) { alert('Somente o usuário master pode alterar o valor do cheque.'); return; }
+    if (!(await _audVerificar())) { alert('Rode o script auditoria_pagamentos.sql no Supabase antes de alterar valores — a alteração precisa ficar registrada.'); return; }
+    P = _fchPlano(q, nv);
+    if (P.erros.length) { alert('Não é possível alterar o valor:\n\n• ' + P.erros.join('\n• ')); return; }
+    if (!confirm(`Alterar o valor do cheque nº ${q.numero} de ${fmtBRL(q.valor)} para ${fmtBRL(nv)}?\n\n• ${P.itens.join('\n• ')}${P.avisos.length ? '\n\n⚠ ' + P.avisos.join('\n⚠ ') : ''}`)) return;
+  }
+  const btn = document.getElementById('fch-ok'); if (btn) btn.disabled = true;
+  const falhas = [];
+  for (const a of P.acoes) await a(falhas);
+
+  const patch = Object.assign({}, novo);
+  if (mudouValor) patch.valor = nv;
+  patch.historico = (q.historico || []).concat([{ data: today(), evento: mudouValor ? 'Valor e dados corrigidos' : 'Dados corrigidos', detalhe: `${dif.join('; ')} · Motivo: ${motivo}`, usuario: _quem() }]);
+  if (!(await sbFetch('cheques', 'PATCH', patch, `?id=eq.${q.id}`))) {
+    alert('❌ Erro ao salvar o cheque.' + sbErroDetalhe() + (P.acoes.length ? '\n\nAtenção: os ajustes de saldo podem ter sido aplicados — confira o recebimento/pagamento.' : ''));
+    if (btn) btn.disabled = false; return;
+  }
+  Object.assign(q, patch);
+
+  // Auditoria nos lançamentos ligados ao cheque
+  if (window._pgdAuditOk) {
+    const alvos = P.logs.slice();
+    const ja = new Set(alvos.map(x => x.tipo + '|' + x.lancId));
+    const cr = _fchCompRec(q), cp = _fchCompPag(q);
+    if (cr && !ja.has('receber|' + cr.lanc_id)) alvos.push({ tipo: 'receber', lancId: cr.lanc_id, parc: cr.parcelas[0], linhas: [] });
+    if (cp && q.destino_lanc === cp.lanc_id && !ja.has('pagar|' + cp.lanc_id)) alvos.push({ tipo: 'pagar', lancId: cp.lanc_id, parc: cp.parcelas[0], linhas: [] });
+    for (const a of alvos) {
+      const linhas = a.linhas.concat(dif.filter(x => !/^Valor:/.test(x)));
+      if (!(await _audLog(a.tipo, a.lancId, a.parc, `Cheque nº ${antes.numero || q.numero} ${mudouValor ? 'teve o valor corrigido' : 'corrigido'}`, linhas.join('\n'), motivo, antes, depois))) falhas.push('registro na auditoria');
+    }
+  }
+  const tipos = new Set(P.logs.map(x => x.tipo));
+  _chqPosAlteracao(tipos.has('pagar') ? 'pagar' : 'receber', null);
+  if (tipos.has('pagar') && tipos.has('receber')) _chqPosAlteracao('receber', null);
+  if (falhas.length) alert('⚠️ Cheque salvo, mas houve falha em: ' + [...new Set(falhas)].join(', ') + '. Verifique a conexão e confira os saldos.');
+  if (_fch) { _fch.modo = 'ver'; _fchRender(); }
+  if (typeof _pgd !== 'undefined' && _pgd && typeof _pgdRender === 'function') { try { await _pgdCarregarLogs(); _pgdRender(); } catch (e) {} }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// SELETOR DE CHEQUES NA BAIXA (Confirmar Pagamento / Recebimento)
+// Ao escolher a forma "Cheque", abre por cima da baixa:
+//  • pagamento → escolher os cheques da carteira que foram entregues;
+//  • recebimento → informar os cheques recebidos (nº, banco, emitente…).
+// As outras formas da baixa são mantidas e tudo é gravado junto, como
+// composição (o estorno continua devolvendo os cheques à carteira).
+// ═══════════════════════════════════════════════════════════════════
+let _bxq = null;
+
+function _bxChqAbrir(i) {
+  const b = _bx; if (!b || !b.linhas[i]) return;
+  if (b.itens.length > 1) { alert('Para usar cheque, dê baixa em um pedido por vez.'); _bxRenderLinhas(); return; }
+  const x = b.linhas[i];
+  const outras = _r2(b.linhas.reduce((s, y, j) => j === i ? s : s + _r2(y.valor), 0));
+  const alvo = Math.max(0, _r2(b.total - outras));
+  const p = b.itens[0]; const l = _bxLanc(b.tipo, p.lancId);
+  const data = document.getElementById('bx-data').value || today();
+  const ja = (x.cheques || []);
+  _bxq = {
+    i, alvo, busca: '',
+    sel: new Set(b.tipo === 'pagar' ? ja.map(c => c.id) : []),
+    novos: b.tipo === 'receber'
+      ? (ja.length ? ja.map(c => Object.assign({}, c)) : [{ id: uid(), numero: '', banco_cheque: '', emitente: (l && getClienteNome(l.cliente)) || '', bom_para: data, valor: alvo || '' }])
+      : [],
+    custodia: (ja[0] && ja[0].banco) || _bancoCustodiaPadrao(x.banco || (l && l.banco))
+  };
+  _fchDatalists();
+  _bxqRender();
+  openModal('modal-bxchq');
+  setTimeout(() => { const el = document.getElementById(b.tipo === 'pagar' ? 'bxq-busca' : 'bxq-n0'); if (el) el.focus(); }, 60);
+}
+function _bxqSoma() {
+  if (_bx.tipo === 'pagar') return _r2([..._bxq.sel].reduce((s, id) => s + _r2((db.cheques.find(q => q.id === id) || {}).valor), 0));
+  return _r2(_bxq.novos.reduce((s, q) => s + _r2(q.valor), 0));
+}
+function _bxqStatusHtml() {
+  const soma = _bxqSoma(), dif = _r2(soma - _bxq.alvo), ehRec = _bx.tipo === 'receber';
+  const n = ehRec ? _bxq.novos.filter(q => _r2(q.valor) > 0).length : _bxq.sel.size;
+  let t;
+  if (!n) t = `<span>${ehRec ? 'Informe os cheques recebidos.' : 'Marque os cheques entregues ao fornecedor.'}</span>`;
+  else if (Math.abs(dif) < 0.005) t = `<span style="color:#166534;font-weight:700">✓ Fecha o valor</span>`;
+  else if (dif < 0) t = `<span style="color:#b45309;font-weight:700">Faltam ${fmtBRL(-dif)} — complete com outra forma na baixa</span>`;
+  else t = `<span style="color:#1d4ed8;font-weight:700">Passa ${fmtBRL(dif)} → vira ${ehRec ? 'débito com o cliente' : 'crédito com o fornecedor'}</span>`;
+  return `<b>${n}</b> cheque(s) · <b style="font-family:'DM Mono',monospace">${fmtBRL(soma)}</b> · ${t}`;
+}
+function _bxqRender() {
+  if (!_bxq || !_bx) return;
+  const ehRec = _bx.tipo === 'receber';
+  const p = _bx.itens[0]; const l = _bxLanc(_bx.tipo, p.lancId);
+  document.getElementById('bxq-head').innerHTML = `<div><h3 id="bxq-titulo">🧾 ${ehRec ? 'Cheques recebidos' : 'Selecionar cheques da carteira'}</h3>
+      <div class="sub">${ehRec ? 'Cliente' : 'Fornecedor'}: <b>${_e((ehRec ? getClienteNome(l && l.cliente) : getFornNome(l && l.forn)) || '—')}</b> · ${ehRec ? 'informe os dados de cada cheque' : 'marque os cheques entregues neste pagamento'}</div></div>
+    <div class="bxq-alvo"><div class="l">Valor a cobrir com cheque</div><div class="v">${fmtBRL(_bxq.alvo)}</div></div>`;
+  if (!ehRec) {
+    document.getElementById('bxq-tools').innerHTML = `<div class="chq-busca" style="flex:1"><span>🔍</span><input id="bxq-busca" type="text" placeholder="Buscar nº, emitente, cliente, banco ou valor…" value="${_e(_bxq.busca)}" oninput="_bxqBusca(this.value)" /></div>
+      <span class="pgd-mut">${db.cheques.filter(q => q.status === 'carteira').length} cheque(s) em carteira</span>`;
+    const t = normText(_bxq.busca);
+    const cart = db.cheques.filter(q => q.status === 'carteira')
+      .filter(q => !t || normText(`${q.numero} ${q.emitente} ${q.banco_cheque} ${getClienteNome(q.cliente)} ${fmtBRL(q.valor)} ${String(q.valor).replace('.', ',')}`).includes(t))
+      .sort((a, b) => (_bxq.sel.has(b.id) - _bxq.sel.has(a.id)) || (Math.abs(a.valor - _bxq.alvo) - Math.abs(b.valor - _bxq.alvo)) || String(a.bom_para || '').localeCompare(String(b.bom_para || '')));
+    document.getElementById('bxq-body').innerHTML = `<table><thead><tr><th style="width:36px"></th><th>Nº / Banco</th><th>Emitente</th><th>Recebido de</th><th>Bom para</th><th>Guardado em</th><th style="text-align:right">Valor</th></tr></thead><tbody>
+      ${cart.length ? cart.map(q => `<tr class="pick ${_bxq.sel.has(q.id) ? 'on' : ''}" onclick="_bxqToggle('${q.id}')">
+        <td><input type="checkbox" ${_bxq.sel.has(q.id) ? 'checked' : ''} onclick="event.stopPropagation();_bxqToggle('${q.id}')" /></td>
+        <td><span class="pgd-chqno">${_e(q.numero)}</span><div class="pgd-mut">${_e(q.banco_cheque || '')}</div></td>
+        <td>${_e(q.emitente || '—')}</td>
+        <td>${_e(getClienteNome(q.cliente) || '—')}${q.devolvido ? ' <span class="pgd-sit bad">devolvido</span>' : ''}</td>
+        <td>${fmtDate(q.bom_para)}</td><td>${_e(getBancoNome(q.banco_custodia) || '—')}</td>
+        <td class="pgd-num"><b>${fmtBRL(q.valor)}</b>${Math.abs(q.valor - _bxq.alvo) < 0.005 ? '<span class="ideal">valor exato</span>' : ''}</td></tr>`).join('')
+        : `<tr><td colspan="7" class="pgd-empty">Nenhum cheque em carteira${t ? ' para esta busca' : ''}.</td></tr>`}</tbody></table>`;
+  } else {
+    const custs = db.bancos.filter(b => _bancoEhCustodia(b));
+    document.getElementById('bxq-tools').innerHTML = `<div class="comp-custodia" style="margin:0"><div><label>Guardar os cheques em *</label>
+      <select id="bxq-cust" onchange="_bxq.custodia=this.value">${(custs.length ? custs : db.bancos).map(b => `<option value="${b.id}" ${b.id === _bxq.custodia ? 'selected' : ''}>${_e(b.nome)}</option>`).join('')}</select></div></div>
+      <span class="pgd-mut" style="margin-left:auto">Os cheques ficam em carteira até serem depositados ou usados num pagamento.</span>`;
+    document.getElementById('bxq-body').innerHTML = `<div class="bxq-novos"><table class="comp-tab"><thead><tr><th>Nº do cheque *</th><th>Banco</th><th>Emitente</th><th>Bom para *</th><th>Valor (R$) *</th><th></th></tr></thead><tbody>
+      ${_bxq.novos.map((q, i) => `<tr>
+        <td><input id="bxq-n${i}" type="text" value="${_e(q.numero)}" oninput="_bxq.novos[${i}].numero=this.value" /></td>
+        <td><input type="text" list="chq-bancos-lista" value="${_e(q.banco_cheque)}" oninput="_bxq.novos[${i}].banco_cheque=this.value" /></td>
+        <td><input type="text" list="chq-emitentes" value="${_e(q.emitente)}" oninput="_bxq.novos[${i}].emitente=this.value" /></td>
+        <td><input type="date" value="${q.bom_para || ''}" onchange="_bxq.novos[${i}].bom_para=this.value" /></td>
+        <td><input type="number" step="0.01" min="0" value="${q.valor === '' ? '' : q.valor}" oninput="_bxq.novos[${i}].valor=this.value;_bxqAtualizarStatus()" style="font-family:'DM Mono',monospace;text-align:right" /></td>
+        <td>${_bxq.novos.length > 1 ? `<button class="btn btn-danger btn-sm" onclick="_bxq.novos.splice(${i},1);_bxqRender()">×</button>` : ''}</td></tr>`).join('')}
+      </tbody></table>
+      <button class="btn btn-secondary btn-sm" style="margin-top:8px" onclick="_bxqAddNovo()">+ Adicionar cheque</button></div>`;
+  }
+  document.getElementById('bxq-foot').innerHTML = `<div class="st" id="bxq-st">${_bxqStatusHtml()}</div>
+    <button class="btn btn-secondary" onclick="_bxqCancelar()">Cancelar</button>
+    <button class="btn btn-primary" onclick="_bxqUsar()">Usar ${ehRec ? 'estes cheques' : 'cheques selecionados'}</button>`;
+}
+function _bxqAtualizarStatus() { const el = document.getElementById('bxq-st'); if (el) el.innerHTML = _bxqStatusHtml(); }
+function _bxqAddNovo() {
+  const falta = Math.max(0, _r2(_bxq.alvo - _bxqSoma()));
+  const ult = _bxq.novos[_bxq.novos.length - 1] || {};
+  _bxq.novos.push({ id: uid(), numero: '', banco_cheque: ult.banco_cheque || '', emitente: ult.emitente || '', bom_para: ult.bom_para || today(), valor: falta || '' });
+  _bxqRender();
+  setTimeout(() => { const el = document.getElementById('bxq-n' + (_bxq.novos.length - 1)); if (el) el.focus(); }, 30);
+}
+function _bxqBusca(v) {
+  _bxq.busca = v; _bxqRender();
+  const i = document.getElementById('bxq-busca'); if (i) { i.focus(); i.setSelectionRange(v.length, v.length); }
+}
+function _bxqToggle(id) {
+  if (_bxq.sel.has(id)) _bxq.sel.delete(id); else _bxq.sel.add(id);
+  const body = document.getElementById('bxq-body'); const st = body.scrollTop;
+  _bxqRender(); document.getElementById('bxq-body').scrollTop = st;
+}
+function _bxqCancelar() {
+  closeModal('modal-bxchq');
+  _bxq = null;
+  if (_bx) _bxRenderLinhas(); // volta o select para a forma anterior
+}
+function _bxqUsar() {
+  if (!_bxq || !_bx) return;
+  const x = _bx.linhas[_bxq.i]; if (!x) return;
+  if (_bx.tipo === 'pagar') {
+    const qs = [..._bxq.sel].map(id => db.cheques.find(q => q.id === id)).filter(Boolean);
+    if (!qs.length) { alert('Marque ao menos um cheque.'); return; }
+    const fora = qs.find(q => q.status !== 'carteira');
+    if (fora) { alert(`O cheque nº ${fora.numero} não está mais em carteira.`); return; }
+    x.cheques = qs.map(q => ({ id: q.id, numero: q.numero, banco_cheque: q.banco_cheque || '', emitente: q.emitente || '', valor: _r2(q.valor), banco: q.banco_custodia || '' }));
+    x.banco = qs[0].banco_custodia || x.banco;
+  } else {
+    const cust = (document.getElementById('bxq-cust') || {}).value || _bxq.custodia;
+    if (!cust) { alert('Escolha a conta onde os cheques ficam guardados.'); return; }
+    const preench = _bxq.novos.filter(q => String(q.numero || '').trim() || _r2(q.valor) > 0);
+    if (!preench.length) { alert('Informe ao menos um cheque.'); return; }
+    for (let i = 0; i < preench.length; i++) {
+      const q = preench[i];
+      if (!String(q.numero || '').trim()) { alert(`Informe o número do cheque ${i + 1}.`); return; }
+      if (_r2(q.valor) <= 0) { alert(`Informe o valor do cheque nº ${q.numero}.`); return; }
+      if (!q.bom_para) { alert(`Informe a data "bom para" do cheque nº ${q.numero}.`); return; }
+      const dup = db.cheques.find(z => z.status === 'carteira' && normText(z.numero) === normText(q.numero) && normText(z.banco_cheque) === normText(q.banco_cheque || ''));
+      if (dup && !confirm(`Já existe em carteira um cheque nº ${q.numero}${q.banco_cheque ? ' do ' + q.banco_cheque : ''} (${fmtBRL(dup.valor)}). Continuar mesmo assim?`)) return;
+    }
+    x.cheques = preench.map(q => ({ id: q.id, numero: String(q.numero).trim(), banco_cheque: (q.banco_cheque || '').trim(), emitente: (q.emitente || '').trim(), bom_para: q.bom_para, valor: _r2(q.valor), banco: cust }));
+    x.banco = cust;
+  }
+  x.forma = 'Cheque';
+  x.valor = _r2(x.cheques.reduce((s, c) => s + c.valor, 0));
+  closeModal('modal-bxchq');
+  _bxq = null;
+  _bxRenderLinhas();
+}
+
+// Linha "Cheque" dentro da baixa
+function _bxLinhaChequeHtml(x, i, n) {
+  const tem = x.cheques && x.cheques.length;
+  return `<div class="bx-linha bx-linha-chq ${tem ? '' : 'vazio'}">
+    <div class="bx-chq-info">${tem
+      ? `<b>🧾 Cheque</b> · ${x.cheques.length} cheque(s)${x.banco ? ' · ' + _e(getBancoNome(x.banco)) : ''}<div class="bx-chq-tags">${x.cheques.map(c => `<span class="bx-chq-tag">nº ${_e(c.numero)} · ${fmtBRL(c.valor)}</span>`).join('')}</div>`
+      : `<b style="color:#c2410c">🧾 Cheque</b> <span style="color:#9a3412">— selecione ${_bx.tipo === 'pagar' ? 'quais cheques da carteira foram usados' : 'os cheques recebidos'}</span>`}</div>
+    <button type="button" class="btn ${tem ? 'btn-secondary' : 'btn-primary'} btn-sm" onclick="_bxChqAbrir(${i})">${tem ? 'Alterar' : 'Selecionar cheques'}</button>
+    <input type="number" value="${tem ? x.valor : ''}" placeholder="0,00" disabled title="O valor vem dos cheques" />
+    <button type="button" class="bx-rem" title="Remover esta forma" onclick="${n < 2 ? `_bx.linhas[${i}]={forma:'',banco:'',valor:_bx.total};_bxRenderLinhas()` : `_bxRemLinha(${i})`}">✕</button>
+  </div>`;
+}
+
+// Confirmação da baixa quando há cheques
+async function _bxConfirmarComCheques(data, linhas) {
+  const b = _bx; const ehRec = b.tipo === 'receber';
+  if (b.itens.length > 1) { alert('Para usar cheque, dê baixa em um pedido por vez.'); return; }
+  const vazia = linhas.find(x => x.forma === 'Cheque' && !(x.cheques && x.cheques.length));
+  if (vazia) { alert(`Clique em "Selecionar cheques" para informar ${ehRec ? 'os cheques recebidos' : 'quais cheques foram usados'}.`); return; }
+  for (const x of linhas) {
+    if (x.forma === 'Cheque') continue;
+    if (!x.forma) { alert('Escolha a forma de cada valor.'); return; }
+    if (!x.banco) { alert(`Selecione a conta ${ehRec ? 'em que entrou' : 'de onde saiu'} o valor de ${fmtBRL(_r2(x.valor))}.`); return; }
+  }
+  const p = b.itens[0]; const l = _bxLanc(b.tipo, p.lancId);
+  if (!l) { alert('Lançamento não encontrado.'); return; }
+  const CL = [];
+  for (const x of linhas) {
+    if (x.forma === 'Cheque') {
+      for (const c of x.cheques) {
+        if (!ehRec) {
+          const q = db.cheques.find(z => z.id === c.id);
+          if (!q || q.status !== 'carteira') { alert(`O cheque nº ${c.numero} não está mais em carteira.`); return; }
+          CL.push({ tipo: 'cheque', id: c.id, numero: c.numero, valor: _r2(c.valor), banco: q.banco_custodia || '' });
+        } else {
+          CL.push({ tipo: 'cheque', id: c.id, numero: c.numero, banco_cheque: c.banco_cheque, emitente: c.emitente, bom_para: c.bom_para, valor: _r2(c.valor), banco: c.banco });
+        }
+      }
+    } else CL.push({ tipo: 'forma', forma: x.forma, banco: x.banco, valor: _r2(x.valor) });
+  }
+  const total = _r2(CL.reduce((s, x) => s + x.valor, 0));
+  const dif = _r2(total - b.total);
+  if (dif < -0.004) { alert(`Faltam ${fmtBRL(-dif)} para fechar o valor. Adicione outra forma.`); return; }
+  const pessoa = ehRec ? l.cliente : l.forn;
+  if (dif > 0.004) {
+    if (!pessoa) { alert(`O total passa ${fmtBRL(dif)} do valor. Para registrar esse excedente, o lançamento precisa ter ${ehRec ? 'cliente' : 'fornecedor'}.`); return; }
+    const tp = _tipoPessoa(b.tipo);
+    const msg = ehRec
+      ? `O cliente entregou ${fmtBRL(dif)} a mais. Esse valor fica registrado como DÉBITO da empresa com ${_nomePessoa(tp, pessoa)}, para devolver ou abater numa próxima venda.\n\nContinuar?`
+      : `Você está entregando ${fmtBRL(dif)} a mais. Esse valor fica registrado como CRÉDITO com ${_nomePessoa(tp, pessoa)}, para usar num próximo pagamento.\n\nContinuar?`;
+    if (!confirm(msg)) return;
+  }
+  const C = { tipo: b.tipo, data, linhas: CL, valorConta: b.total, total, desconto: 0, saldoUsar: 0, excedente: Math.max(0, dif), bancoPadrao: l.banco || '', pessoa: pessoa || '' };
+  const btn = document.getElementById('bx-btn-ok'); btn.disabled = true;
+  let ok = false;
+  try { ok = await aplicarComposicao(b.tipo, l, [p.parcIdx], C); } finally { btn.disabled = false; }
+  if (!ok) return;
+  closeModal('modal-baixa');
+  _bx = null;
+}
 </script>
 
 </body>
