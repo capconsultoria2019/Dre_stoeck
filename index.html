@@ -1996,6 +1996,9 @@ body.menu-oculto .sidebar { transform:translateX(-248px); }
           <div class="form-group"><label>NF</label>
             <input type="text" id="pgf-nf" oninput="renderPagas()" placeholder="Nº da NF" style="width:120px" />
           </div>
+          <div class="form-group"><label>Nº Cheque</label>
+            <input type="text" id="pgf-cheque" oninput="renderPagas()" placeholder="Nº do cheque" style="width:120px" />
+          </div>
           <div style="align-self:flex-end"><button class="btn btn-secondary" onclick="clearPagasFiltros()">Limpar</button></div>
         </div>
         <div class="table-scroll"><table><thead><tr id="th-pagas-row">
@@ -2370,6 +2373,9 @@ body.menu-oculto .sidebar { transform:translateX(-248px); }
           </div>
           <div class="form-group"><label>NF</label>
             <input type="text" id="recf-nf" oninput="renderRecebido()" placeholder="Nº da NF" style="width:120px" />
+          </div>
+          <div class="form-group"><label>Nº Cheque</label>
+            <input type="text" id="recf-cheque" oninput="renderRecebido()" placeholder="Nº do cheque" style="width:120px" />
           </div>
           <div style="align-self:flex-end"><button class="btn btn-secondary" onclick="clearRecebidoFiltros()">Limpar</button></div>
         </div>
@@ -9480,6 +9486,8 @@ function renderPagas() {
   const dataCompra = document.getElementById('pgf-data-compra').value;
   const tipoPagF = document.getElementById('pgf-tipo-pag') ? document.getElementById('pgf-tipo-pag').value : '';
   const nfPG = document.getElementById('pgf-nf') ? document.getElementById('pgf-nf').value.trim().toLowerCase() : '';
+  const chqPG = document.getElementById('pgf-cheque') ? document.getElementById('pgf-cheque').value.trim() : '';
+  const _mapChqPG = (typeof _pgdMapaCheques === 'function') ? _pgdMapaCheques('pagar') : new Map();
   const tb = document.getElementById('tb-pagas');
   const _ccOrig = ccOrigensSet();
   let list = getParcelas(true).filter(p => !_ccOrig.has(`${p.lancId}|${p.parcIdx}`));
@@ -9488,6 +9496,7 @@ function renderPagas() {
     if(forn && p.forn !== forn) return false;
     if(prod && p.prod !== prod) return false;
     if(nfPG && !String(p.nf||'').toLowerCase().includes(nfPG)) return false;
+    if(chqPG && !_pgdFiltroCheque(_mapChqPG, p, chqPG)) return false;
     if(catP) {
       if (catP === '__sem_categoria__') { if (p.catId) return false; }
       else if (p.catId !== catP) return false;
@@ -9564,17 +9573,17 @@ function renderPagas() {
       <td>${fmtDate(p.venc)}</td>
       <td>${fmtDate(p.dtcompra)}</td>
       <td>${dtpagoCell}</td>
-      <td>${p.tipoPag ? `<span class="badge badge-blue">${p.tipoPag}</span>` : '<span style="color:#a8a29e;font-size:12px">—</span>'}</td>
+      <td>${_pgdFormaCell('pagar', p, _mapChqPG)}</td>
       <td>${p.banco ? getBancoNome(p.banco) : '<span style="color:#a8a29e;font-size:12px">—</span>'}</td>
       <td style="font-family:DM Mono,monospace;font-size:12px">${p.nf||'—'}</td>
       <td>${finBadge}</td>
-      <td><button class="btn btn-danger btn-sm" onclick="estornarPago('${p.lancId}', ${p.parcIdx})" title="Desfazer pagamento">↩ Estornar</button></td>
+      <td style="white-space:nowrap"><button class="btn btn-secondary btn-sm" onclick="abrirDetalhesPgto('pagar','${p.lancId}',${p.parcIdx})" title="Ver como foi pago, cheques usados e auditoria">🔍 Detalhes</button> <button class="btn btn-danger btn-sm" onclick="estornarPago('${p.lancId}', ${p.parcIdx})" title="Desfazer pagamento">↩ Estornar</button></td>
     </tr>`;
   });
 }
 
 function clearPagasFiltros() {
-  ['pgf-mes','pgf-ano','pgf-forn','pgf-prod','pgf-grupo','pgf-categoria','pgf-data-venc','pgf-data-pago','pgf-data-compra','pgf-tipo-pag','pgf-nf'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+  ['pgf-mes','pgf-ano','pgf-forn','pgf-prod','pgf-grupo','pgf-categoria','pgf-data-venc','pgf-data-pago','pgf-data-compra','pgf-tipo-pag','pgf-nf','pgf-cheque'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
   aplicarPeriodoAtual('pgf-mes','pgf-ano');
   renderPagas();
 }
@@ -12016,6 +12025,8 @@ function renderRecebido() {
   const dataVenda=document.getElementById('recf-data-venda').value;
   const tipoRecFR=document.getElementById('recf-tipo-pag') ? document.getElementById('recf-tipo-pag').value : '';
   const nfREC=document.getElementById('recf-nf') ? document.getElementById('recf-nf').value.trim().toLowerCase() : '';
+  const chqREC=document.getElementById('recf-cheque') ? document.getElementById('recf-cheque').value.trim() : '';
+  const _mapChqREC=(typeof _pgdMapaCheques === 'function') ? _pgdMapaCheques('receber') : new Map();
   const tb=document.getElementById('tb-recebido');
   let list=getParcelasReceber(true);
   list=list.filter(p=>{
@@ -12029,6 +12040,7 @@ function renderRecebido() {
       else if (p.tipoPag !== tipoRecFR) return false;
     }
     if(nfREC && !String(p.nf||'').toLowerCase().includes(nfREC)) return false;
+    if(chqREC && !_pgdFiltroCheque(_mapChqREC, p, chqREC)) return false;
     if(!dataVenc && !dataRec && !dataVenda) {
       const dateRef=p.venc||p.dtvenda;
       if(dateRef){
@@ -12080,15 +12092,15 @@ function renderRecebido() {
       <td>${fmtDate(p.venc)}</td>
       <td>${fmtDate(p.dtvenda)}</td>
       <td>${dtrecCell}</td>
-      <td>${p.tipoPag ? `<span class="badge badge-blue">${p.tipoPag}</span>` : '<span style="color:#a8a29e;font-size:12px">—</span>'}</td>
+      <td>${_pgdFormaCell('receber', p, _mapChqREC)}</td>
       <td style="font-size:12px">${p.nf||'—'}</td>
       <td>${finBadge}</td>
-      <td><button class="btn btn-danger btn-sm" onclick="estornarRecebido('${p.lancId}', ${p.parcIdx})" title="Desfazer recebimento">↩ Estornar</button></td>
+      <td style="white-space:nowrap"><button class="btn btn-secondary btn-sm" onclick="abrirDetalhesPgto('receber','${p.lancId}',${p.parcIdx})" title="Ver como foi recebido, cheques e auditoria">🔍 Detalhes</button> <button class="btn btn-danger btn-sm" onclick="estornarRecebido('${p.lancId}', ${p.parcIdx})" title="Desfazer recebimento">↩ Estornar</button></td>
     </tr>`;
   });
 }
 function clearRecebidoFiltros() {
-  ['recf-mes','recf-ano','recf-cliente','recf-categoria','recf-data-venc','recf-data-rec','recf-data-venda','recf-tipo-pag','recf-nf'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+  ['recf-mes','recf-ano','recf-cliente','recf-categoria','recf-data-venc','recf-data-rec','recf-data-venda','recf-tipo-pag','recf-nf','recf-cheque'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
   aplicarPeriodoAtual('recf-mes','recf-ano');
   renderRecebido();
 }
@@ -22680,6 +22692,756 @@ function ccImprimirFatura(orientacao) {
     rodapeDir: `${lista.length} lançamento(s)`
   });
 }
+</script>
+
+
+<!-- ══ DETALHES DO PAGAMENTO / RECEBIMENTO — fiscalização de cheques e auditoria ══ -->
+<style>
+.pgd-modal { width:1040px; padding:0; overflow:hidden; display:flex; flex-direction:column; max-height:92vh; }
+.pgd-head { padding:22px 28px 20px; background:linear-gradient(135deg,#1c1917 0%,#292524 60%,#431407 100%); color:#fff; display:flex; gap:20px; align-items:flex-start; flex-wrap:wrap; }
+.pgd-head-main { flex:1; min-width:260px; }
+.pgd-kicker { font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:#fdba74; font-weight:700; display:flex; align-items:center; gap:8px; }
+.pgd-nome { font-size:21px; font-weight:800; margin-top:6px; line-height:1.25; }
+.pgd-meta { font-size:12.5px; color:#d6d3d1; margin-top:8px; display:flex; gap:6px 16px; flex-wrap:wrap; }
+.pgd-meta b { color:#fff; font-weight:600; }
+.pgd-valor { text-align:right; }
+.pgd-valor .v { font-family:'DM Mono',monospace; font-size:28px; font-weight:700; letter-spacing:-.5px; }
+.pgd-status { display:inline-flex; align-items:center; gap:6px; margin-top:6px; padding:4px 11px; border-radius:20px; font-size:12px; font-weight:700; background:rgba(22,163,74,.18); color:#86efac; border:1px solid rgba(134,239,172,.35); }
+.pgd-x { background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.15); color:#fff; width:32px; height:32px; border-radius:8px; cursor:pointer; font-size:16px; line-height:1; }
+.pgd-x:hover { background:rgba(255,255,255,.18); }
+.pgd-body { padding:20px 28px 8px; overflow-y:auto; flex:1; background:#fafaf9; }
+.pgd-stats { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; margin-bottom:16px; }
+.pgd-stat { background:#fff; border:1px solid var(--border); border-radius:12px; padding:12px 14px; }
+.pgd-stat .l { font-size:10.5px; text-transform:uppercase; letter-spacing:.06em; color:#a8a29e; font-weight:700; }
+.pgd-stat .n { font-family:'DM Mono',monospace; font-size:17px; font-weight:700; color:#1f2937; margin-top:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.pgd-stat .n.txt { font-family:inherit; font-size:14.5px; }
+.pgd-sec { background:#fff; border:1px solid var(--border); border-radius:12px; margin-bottom:16px; overflow:hidden; }
+.pgd-sec-h { display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; padding:12px 16px; border-bottom:1px solid #f5f4f2; }
+.pgd-sec-t { font-weight:700; font-size:13.5px; color:#1f2937; display:flex; align-items:center; gap:8px; }
+.pgd-sec-t small { font-weight:500; color:#a8a29e; font-size:12px; }
+.pgd-sec table { font-size:12.5px; }
+.pgd-sec th { position:static; background:#fff; font-size:10.5px; padding:9px 12px; }
+.pgd-sec td { padding:10px 12px; vertical-align:top; border-bottom:1px solid #f5f4f2; }
+.pgd-sec tfoot td { font-weight:700; background:#fff7ed; border-top:1px solid #fed7aa; }
+.pgd-num { font-family:'DM Mono',monospace; white-space:nowrap; text-align:right; }
+.pgd-chqno { font-family:'DM Mono',monospace; font-weight:700; font-size:13.5px; color:#1f2937; }
+.pgd-mut { font-size:11.5px; color:#78716c; margin-top:2px; }
+.pgd-ico { display:inline-flex; width:26px; height:26px; border-radius:8px; align-items:center; justify-content:center; font-size:13px; background:#f5f4f2; margin-right:8px; vertical-align:middle; }
+.pgd-sit { display:inline-flex; align-items:center; gap:5px; padding:3px 9px; border-radius:20px; font-size:11px; font-weight:700; white-space:nowrap; }
+.pgd-sit.ok { background:#dcfce7; color:#166534; } .pgd-sit.info { background:#dbeafe; color:#1e40af; }
+.pgd-sit.warn { background:#fef3c7; color:#92400e; } .pgd-sit.bad { background:#fee2e2; color:#991b1b; }
+.pgd-link { background:none; border:none; padding:0; color:#ea580c; font:inherit; font-size:11.5px; font-weight:600; cursor:pointer; text-decoration:underline; text-underline-offset:2px; }
+.pgd-acts { display:flex; gap:6px; justify-content:flex-end; flex-wrap:wrap; }
+.pgd-alert { display:flex; gap:12px; align-items:flex-start; padding:12px 16px; border-radius:12px; margin-bottom:16px; font-size:13px; line-height:1.5; }
+.pgd-alert.warn { background:#fff7ed; border:1px solid #fed7aa; color:#7c2d12; }
+.pgd-alert.bad { background:#fef2f2; border:1px solid #fecaca; color:#991b1b; }
+.pgd-alert.info { background:#f0f9ff; border:1px solid #bae6fd; color:#0c4a6e; }
+.pgd-alert .btn { margin-left:auto; flex-shrink:0; }
+.pgd-tl { padding:6px 16px 10px; }
+.pgd-tl-i { display:flex; gap:14px; padding:10px 0; border-bottom:1px dashed #eeecea; }
+.pgd-tl-i:last-child { border-bottom:none; }
+.pgd-tl-dot { width:10px; height:10px; border-radius:50%; background:#d6d3d1; margin-top:5px; flex-shrink:0; box-shadow:0 0 0 3px #f5f4f2; }
+.pgd-tl-dot.m { background:#ea580c; box-shadow:0 0 0 3px #ffedd5; }
+.pgd-tl-dot.c { background:#2563eb; box-shadow:0 0 0 3px #dbeafe; }
+.pgd-tl-dot.r { background:#16a34a; box-shadow:0 0 0 3px #dcfce7; }
+.pgd-tl-q { min-width:118px; font-family:'DM Mono',monospace; font-size:11.5px; color:#57534e; padding-top:1px; }
+.pgd-tl-b { flex:1; font-size:12.5px; color:#44403c; }
+.pgd-tl-b b { color:#1f2937; }
+.pgd-tl-diff { margin-top:4px; font-size:11.5px; }
+.pgd-tl-diff .a { color:#a8a29e; text-decoration:line-through; } .pgd-tl-diff .d { color:#1f2937; font-weight:600; }
+.pgd-tl-mot { margin-top:4px; font-size:11.5px; color:#9a3412; background:#fff7ed; border-radius:6px; padding:3px 8px; display:inline-block; }
+.pgd-form { padding:16px; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px 16px; }
+.pgd-form .full { grid-column:1/-1; }
+.pgd-form .form-group { margin-bottom:0; }
+.pgd-form textarea { width:100%; min-height:60px; resize:vertical; }
+.pgd-form-foot { display:flex; gap:10px; justify-content:flex-end; align-items:center; padding:12px 16px; border-top:1px solid #f5f4f2; background:#fafaf9; }
+.pgd-form-foot .info { margin-right:auto; font-size:12px; color:#78716c; }
+.pgd-sec.edit { border-color:#fdba74; box-shadow:0 0 0 3px #fff7ed; }
+.pgd-sec.edit .pgd-sec-h { background:#fff7ed; }
+.pgd-pick { max-height:240px; overflow-y:auto; }
+.pgd-pick tr { cursor:pointer; }
+.pgd-pick tr.on td { background:#fff7ed; }
+.pgd-pick input[type=checkbox] { width:16px; height:16px; accent-color:var(--accent); }
+.pgd-novos input { width:100%; min-width:80px; }
+.pgd-foot { padding:14px 28px; border-top:1px solid var(--border); display:flex; gap:10px; align-items:center; flex-wrap:wrap; background:#fff; }
+.pgd-foot .esq { margin-right:auto; display:flex; gap:8px; align-items:center; flex-wrap:wrap; font-size:12px; color:#78716c; }
+.pgd-lock { display:inline-flex; align-items:center; gap:6px; }
+.pgd-chqmini { margin-top:4px; font-family:'DM Mono',monospace; font-size:11px; color:#1e40af; cursor:pointer; white-space:nowrap; }
+.pgd-chqmini:hover { text-decoration:underline; }
+.pgd-chqwarn { margin-top:4px; font-size:11px; font-weight:700; color:#b45309; cursor:pointer; white-space:nowrap; }
+.pgd-empty { padding:18px 16px; color:#a8a29e; font-size:13px; text-align:center; }
+@media (max-width:860px) {
+  .pgd-stats { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .pgd-form { grid-template-columns:1fr; }
+  .pgd-head, .pgd-body, .pgd-foot { padding-left:16px; padding-right:16px; }
+  .pgd-valor { text-align:left; }
+}
+</style>
+
+<div class="modal-overlay" id="modal-pgd" style="z-index:210">
+  <div class="modal pgd-modal" role="dialog" aria-modal="true" aria-labelledby="pgd-nome">
+    <div class="pgd-head" id="pgd-head"></div>
+    <div class="pgd-body" id="pgd-body"></div>
+    <div class="pgd-foot" id="pgd-foot"></div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════
+// DETALHES DO PAGAMENTO / RECEBIMENTO
+// Mostra como cada parcela de Contas Pagas / Contas Recebidas foi quitada:
+// formas, contas e QUAIS cheques foram usados (com a situação atual de cada
+// um e o caminho que ele fez). Traz a trilha de auditoria e, para o usuário
+// master, permite corrigir os dados e vincular/registrar cheques.
+// Auditoria gravada na tabela "auditoria_pagamentos" (script
+// auditoria_pagamentos.sql) — só inserção e leitura, nada é apagado.
+// ═══════════════════════════════════════════════════════════════════
+let _pgd = null;
+window._pgdAuditOk = null; // null = ainda não verificado
+
+const _PGD = {
+  pagar: {
+    lista: () => db.lancamentos, tabela: 'lancamentos', fl: 'pago', dtk: 'dtpago',
+    pessoa: l => getFornNome(l.forn), pessoaLbl: 'Fornecedor', titulo: 'Pagamento', verbo: 'Pago',
+    parcelas: () => getParcelas(true), dtParc: p => p.dtpago, formas: () => getFormasPagamento()
+  },
+  receber: {
+    lista: () => db.lancreceber, tabela: 'lancreceber', fl: 'recebido', dtk: 'dtrecebido',
+    pessoa: l => getClienteNome(l.cliente), pessoaLbl: 'Cliente', titulo: 'Recebimento', verbo: 'Recebido',
+    parcelas: () => getParcelasReceber(true), dtParc: p => p.dtrecebido, formas: () => getFormasRecebimento()
+  }
+};
+
+// Mapa "lancId|parcela" → nºs dos cheques (para a coluna Forma e o filtro)
+function _pgdMapaCheques(tipo) {
+  const m = new Map();
+  (db.composicoes || []).filter(c => c.tipo === tipo).forEach(c => {
+    const nums = c.linhas.filter(x => x.tipo === 'cheque').map(x => {
+      const q = db.cheques.find(z => z.id === x.id);
+      return String((q && q.numero) || x.numero || '').trim();
+    }).filter(Boolean);
+    if (!nums.length) return;
+    c.parcelas.forEach(i => m.set(c.lanc_id + '|' + i, nums));
+  });
+  return m;
+}
+function _pgdFiltroCheque(mapa, p, txt) {
+  if (!txt) return true;
+  const nums = mapa.get(p.lancId + '|' + p.parcIdx);
+  const t = normText(txt);
+  return !!(nums && nums.some(n => normText(n).includes(t)));
+}
+function _pgdFormaCell(tipo, p, mapa) {
+  const base = p.tipoPag ? `<span class="badge badge-blue">${_e(p.tipoPag)}</span>` : '<span style="color:#a8a29e;font-size:12px">—</span>';
+  const nums = mapa ? mapa.get(p.lancId + '|' + p.parcIdx) : null;
+  const abrir = `abrirDetalhesPgto('${tipo}','${p.lancId}',${p.parcIdx})`;
+  if (nums && nums.length) return base + `<div class="pgd-chqmini" onclick="${abrir}" title="Ver os cheques usados">🧾 nº ${nums.map(_e).join(', ')}</div>`;
+  if (/cheque/i.test(p.tipoPag || '')) return base + `<div class="pgd-chqwarn" onclick="${abrir}" title="A forma é Cheque, mas nenhum cheque foi vinculado">⚠ cheque não identificado</div>`;
+  return base;
+}
+
+function _pgdLanc() { return _pgd ? _PGD[_pgd.tipo].lista().find(x => x.id === _pgd.lancId) : null; }
+function _pgdParc() { return _pgd ? _PGD[_pgd.tipo].parcelas().find(p => p.lancId === _pgd.lancId && p.parcIdx === _pgd.parc) : null; }
+function _pgdDtHora(s) {
+  if (!s) return '—';
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return fmtDate(s);
+  const d = new Date(s);
+  if (isNaN(d)) return _e(s);
+  return d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+}
+// Detalhe da auditoria é texto puro ("Campo: antes → depois" por linha); a formatação é feita aqui
+function _pgdDifHtml(txt) {
+  return String(txt || '').split('\n').map(li => {
+    const m = li.match(/^([^:]{1,40}):\s(.*?)\s→\s(.*)$/);
+    return m ? `${_e(m[1])}: <span class="a">${_e(m[2])}</span> → <span class="d">${_e(m[3])}</span>` : _e(li);
+  }).join('<br>');
+}
+function _pgdOrdem(s) {
+  if (!s) return '';
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s + 'T00:00:00';
+  return String(s);
+}
+
+// ── Abertura ──────────────────────────────────────────────────────
+async function abrirDetalhesPgto(tipo, lancId, parc) {
+  if (!_PGD[tipo]) return;
+  _pgd = { tipo, lancId, parc: Number(parc) || 1, modo: null, logs: [], sel: new Set(), busca: '', novos: [], custodia: '', token: uid() };
+  if (!_pgdParc()) { alert('Parcela não encontrada ou não está mais quitada.'); _pgd = null; return; }
+  _pgdRender();
+  openModal('modal-pgd');
+  await _pgdCarregarLogs();
+  _pgdRender();
+}
+function fecharDetalhesPgto() { closeModal('modal-pgd'); _pgd = null; }
+
+async function _pgdCarregarLogs() {
+  if (!_pgd) return;
+  const tk = _pgd.token;
+  const r = await sbFetch('auditoria_pagamentos', 'GET', null,
+    `?tipo=eq.${_pgd.tipo}&lanc_id=eq.${encodeURIComponent(_pgd.lancId)}&order=data_hora.desc&limit=500`);
+  if (!_pgd || _pgd.token !== tk) return;
+  window._pgdAuditOk = r !== null;
+  const comp = _compDaParcela(_pgd.tipo, _pgd.lancId, _pgd.parc);
+  const parcs = comp ? comp.parcelas.map(Number) : [_pgd.parc];
+  _pgd.logs = (r || []).filter(x => x.parcela == null || parcs.includes(Number(x.parcela)));
+}
+
+async function _pgdLog(acao, detalhe, motivo, antes, depois) {
+  const l = _pgdLanc();
+  const reg = {
+    id: uid(), empresa_id: (l && l.empresa_id) || empresaAtual() || null,
+    tipo: _pgd.tipo, lanc_id: _pgd.lancId, parcela: _pgd.parc,
+    usuario: _quem() + (currentUser && currentUser.user && currentUser.nome ? ` (${currentUser.user})` : ''),
+    acao, detalhe: detalhe || '', motivo: motivo || '', antes: antes || null, depois: depois || null
+  };
+  return !!(await sbFetch('auditoria_pagamentos', 'POST', reg));
+}
+
+// ── Situação de cada cheque (para fiscalização) ───────────────────
+function _pgdChqSituacao(tipo, comp, q) {
+  if (!q) return { cls: 'bad', txt: 'Registro do cheque não encontrado', extra: '' };
+  if (q.status === 'carteira') {
+    if (q.devolvido) return { cls: 'bad', txt: '↩ Devolvido — voltou à carteira', extra: q.motivo_devolucao ? _e(q.motivo_devolucao) : '' };
+    return { cls: 'info', txt: '🗂 Em carteira', extra: 'Guardado em ' + _e(getBancoNome(q.banco_custodia) || '—') };
+  }
+  if (q.status === 'compensado') {
+    if (q.destino_tipo === 'pagamento') {
+      const cp = (db.composicoes || []).find(c => c.id === q.comp_pagar_id);
+      const mesmo = tipo === 'pagar' && comp && q.comp_pagar_id === comp.id;
+      const link = (!mesmo && q.destino_lanc)
+        ? ` · <button class="pgd-link" onclick="abrirDetalhesPgto('pagar','${q.destino_lanc}',${cp ? cp.parcelas[0] : 1})">ver pagamento →</button>` : '';
+      return { cls: 'ok', txt: mesmo ? '✓ Entregue ao fornecedor' : '🤝 Usado em pagamento',
+        extra: `${mesmo ? '' : 'Para <b>' + _e(getFornNome(q.destino_forn) || '—') + '</b> · '}em ${fmtDate(q.dt_compensacao)}${link}` };
+    }
+    return { cls: 'ok', txt: '✓ Compensado', extra: `${_chqDestinoTxt(q)} · em ${fmtDate(q.dt_compensacao)}` };
+  }
+  return { cls: 'warn', txt: _e(q.status || '—'), extra: '' };
+}
+function _pgdChqOrigem(q) {
+  if (!q) return '—';
+  if (typeof _ehChqSaldoInicial === 'function' && _ehChqSaldoInicial(q)) return `<span class="pgd-mut">Saldo inicial (já estava em mãos)</span>`;
+  const cr = (db.composicoes || []).find(c => c.id === q.comp_receber_id);
+  const link = q.lanc_receber_id
+    ? `<div><button class="pgd-link" onclick="abrirDetalhesPgto('receber','${q.lanc_receber_id}',${cr ? cr.parcelas[0] : 1})">ver recebimento →</button></div>` : '';
+  return `${_e(getClienteNome(q.cliente) || '—')}<div class="pgd-mut">entrou em ${fmtDate(q.dt_entrada)}</div>${link}`;
+}
+
+// ── Render ────────────────────────────────────────────────────────
+function _pgdRender() {
+  if (!_pgd) return;
+  const cfg = _PGD[_pgd.tipo];
+  const l = _pgdLanc(); const p = _pgdParc();
+  if (!l || !p) { fecharDetalhesPgto(); return; }
+  const ehRec = _pgd.tipo === 'receber';
+  const master = _ehMaster();
+  const comp = _compDaParcela(_pgd.tipo, _pgd.lancId, _pgd.parc);
+  const dtQ = cfg.dtParc(p);
+  const itens = comp ? comp.linhas.filter(x => x.tipo === 'cheque').map(x => ({ x, q: db.cheques.find(z => z.id === x.id) || null })) : [];
+  const ehCheque = /cheque/i.test(l.tipo_pag || '');
+  const semIdent = !comp && ehCheque;
+
+  // Cabeçalho
+  document.getElementById('pgd-head').innerHTML = `
+    <div class="pgd-head-main">
+      <div class="pgd-kicker">${ehRec ? '⬇' : '⬆'} Comprovante de ${cfg.titulo.toLowerCase()}</div>
+      <div class="pgd-nome" id="pgd-nome">${_e(cfg.pessoa(l) || '(sem ' + cfg.pessoaLbl.toLowerCase() + ')')}</div>
+      <div class="pgd-meta">
+        <span>Parcela <b>${p.parcIdx}/${p.totalParc}</b></span>
+        <span>Vencimento <b>${fmtDate(p.venc)}</b></span>
+        ${l.nf ? `<span>NF <b>${_e(l.nf)}</b></span>` : ''}
+        <span>${ehRec ? 'Venda' : 'Compra'} <b>${fmtDate(ehRec ? l.dtvenda : l.dtcompra)}</b></span>
+        ${comp && comp.parcelas.length > 1 ? `<span>Quitada junto com as parcelas <b>${comp.parcelas.join(', ')}</b></span>` : ''}
+      </div>
+    </div>
+    <div class="pgd-valor">
+      <div class="v">${fmtBRL(p.valParc)}</div>
+      <div class="pgd-status">✓ ${cfg.verbo} em ${fmtDate(dtQ)}</div>
+    </div>
+    <button class="pgd-x" onclick="fecharDetalhesPgto()" title="Fechar" aria-label="Fechar">✕</button>`;
+
+  // Indicadores
+  const somaChq = _r2(itens.reduce((s, i) => s + (Number(i.x.valor) || 0), 0));
+  const stats = comp ? [
+    ['Valor da conta', fmtBRL(comp.valor_conta)],
+    ['Total entregue', fmtBRL(comp.total)],
+    [`Em cheques (${itens.length})`, fmtBRL(somaChq)],
+    [comp.excedente > 0 ? (ehRec ? 'Excedente (a devolver)' : 'Crédito gerado') : 'Desconto', fmtBRL(comp.excedente > 0 ? comp.excedente : comp.desconto)]
+  ] : [
+    ['Valor', fmtBRL(p.valParc)],
+    ['Forma', _e(l.tipo_pag || 'Não informada'), 'txt'],
+    ['Conta', _e(getBancoNome(l.banco) || '—'), 'txt'],
+    ['Data', fmtDate(dtQ), 'txt']
+  ];
+  let h = `<div class="pgd-stats">${stats.map(s => `<div class="pgd-stat"><div class="l">${s[0]}</div><div class="n ${s[2] || ''}">${s[1]}</div></div>`).join('')}</div>`;
+
+  // Alertas de fiscalização
+  if (semIdent) h += `<div class="pgd-alert warn"><span style="font-size:18px">⚠️</span><div><b>Cheque não identificado.</b> Este ${cfg.titulo.toLowerCase()} foi lançado com a forma "${_e(l.tipo_pag)}", mas sem informar ${ehRec ? 'quais cheques foram recebidos' : 'qual cheque da carteira foi usado'}.${master ? '' : ' Peça ao usuário master para fazer o vínculo.'}</div>
+    ${master && _pgd.modo !== 'vincular' ? `<button class="btn btn-primary btn-sm" onclick="_pgdModo('vincular')">🧾 ${ehRec ? 'Registrar cheques' : 'Vincular cheques'}</button>` : ''}</div>`;
+  const devolvidos = itens.filter(i => i.q && i.q.devolvido && i.q.status === 'carteira');
+  if (devolvidos.length) h += `<div class="pgd-alert bad"><span style="font-size:18px">↩</span><div><b>${devolvidos.length} cheque(s) deste ${cfg.titulo.toLowerCase()} foram devolvidos</b> (nº ${devolvidos.map(i => _e(i.q.numero)).join(', ')}). Confira o saldo com o ${ehRec ? 'cliente' : 'fornecedor'} em ${ehRec ? 'Débitos com Clientes' : 'Créditos com Fornecedores'}.</div></div>`;
+  if (master && window._pgdAuditOk === false) h += `<div class="pgd-alert bad"><span style="font-size:18px">🔒</span><div><b>Tabela de auditoria não encontrada.</b> Rode o script <b>auditoria_pagamentos.sql</b> no SQL Editor do Supabase e recarregue (F5). As edições ficam bloqueadas até lá, para que toda alteração fique registrada.</div></div>`;
+
+  // Painéis de edição (master)
+  if (master && _pgd.modo === 'editar') h += _pgdHtmlEditar(l, p, comp);
+  if (master && _pgd.modo === 'vincular') h += ehRec ? _pgdHtmlRegistrar(l, p) : _pgdHtmlVincular(l, p);
+
+  // Cheques
+  if (itens.length) {
+    h += `<div class="pgd-sec"><div class="pgd-sec-h"><div class="pgd-sec-t">🧾 Cheques ${ehRec ? 'recebidos' : 'usados'} <small>${itens.length} cheque(s) · ${fmtBRL(somaChq)}</small></div></div>
+      <div style="overflow-x:auto"><table><thead><tr><th>Nº / Banco</th><th>Emitente</th><th>${ehRec ? 'Guardado em' : 'Recebido de'}</th><th>Bom para</th><th style="text-align:right">Valor</th><th>Situação hoje</th><th></th></tr></thead><tbody>
+      ${itens.map(({ x, q }) => {
+        const s = _pgdChqSituacao(_pgd.tipo, comp, q);
+        return `<tr>
+          <td><div class="pgd-chqno">${_e((q && q.numero) || x.numero || '—')}</div><div class="pgd-mut">${_e((q && q.banco_cheque) || x.banco_cheque || '')}</div></td>
+          <td>${_e((q && q.emitente) || x.emitente || '—')}</td>
+          <td>${ehRec ? _e(getBancoNome((q && q.banco_custodia) || x.banco) || '—') : _pgdChqOrigem(q)}</td>
+          <td>${fmtDate((q && q.bom_para) || x.bom_para)}</td>
+          <td class="pgd-num"><b>${fmtBRL(x.valor)}</b></td>
+          <td><span class="pgd-sit ${s.cls}">${s.txt}</span>${s.extra ? `<div class="pgd-mut">${s.extra}</div>` : ''}</td>
+          <td><div class="pgd-acts">${q ? `<button class="btn btn-secondary btn-sm" onclick="abrirHistoricoCheque('${q.id}')" title="Histórico completo do cheque">Histórico</button>` : ''}
+            ${q && master ? `<button class="btn btn-secondary btn-sm" onclick="_pgdModo('chq:${q.id}')" title="Corrigir dados do cheque">✎</button>` : ''}</div></td>
+        </tr>${_pgd.modo === 'chq:' + (q && q.id) ? `<tr><td colspan="7" style="padding:0;background:#fff7ed">${_pgdHtmlEditarCheque(q)}</td></tr>` : ''}`;
+      }).join('')}</tbody></table></div></div>`;
+  }
+
+  // Composição completa
+  const linhasComp = comp ? comp.linhas : [{ tipo: 'forma', forma: l.tipo_pag || 'Não informada', banco: l.banco, valor: p.valParc }];
+  const ico = { cheque: '🧾', forma: '💳', saldo: '⇄', desconto: '％' };
+  const descLinha = x => x.tipo === 'cheque' ? `Cheque nº <b>${_e(x.numero || (db.cheques.find(z => z.id === x.id) || {}).numero || '—')}</b>`
+    : x.tipo === 'forma' ? `<b>${_e(x.forma || '—')}</b>`
+    : x.tipo === 'saldo' ? `<b>${ehRec ? 'Saldo do cliente abatido' : 'Crédito do fornecedor usado'}</b>`
+    : '<b>Desconto concedido</b>';
+  h += `<div class="pgd-sec"><div class="pgd-sec-h"><div class="pgd-sec-t">💰 Como foi ${ehRec ? 'recebido' : 'pago'} <small>${comp ? 'composição registrada' : 'lançamento simples'}</small></div></div>
+    <table><thead><tr><th>Forma</th><th>Conta</th><th style="text-align:right">Valor</th></tr></thead><tbody>
+    ${linhasComp.map(x => `<tr><td><span class="pgd-ico">${ico[x.tipo] || '•'}</span>${descLinha(x)}</td><td>${x.banco ? _e(getBancoNome(x.banco)) : '<span style="color:#a8a29e">—</span>'}</td><td class="pgd-num" style="${x.tipo === 'desconto' ? 'color:#dc2626' : ''}">${x.tipo === 'desconto' ? '− ' : ''}${fmtBRL(x.valor)}</td></tr>`).join('')}
+    </tbody><tfoot><tr><td colspan="2">Total ${comp && comp.excedente > 0 ? `<span style="font-weight:500;color:#9a3412">· excedente ${fmtBRL(comp.excedente)}</span>` : ''}</td><td class="pgd-num">${fmtBRL(comp ? comp.total : p.valParc)}</td></tr></tfoot></table></div>`;
+
+  // Movimentos gerados (transferências e saldos com terceiros)
+  if (comp) {
+    const trs = comp.transf_ids.map(id => db.transferencias.find(t => t.id === id)).filter(Boolean);
+    const leds = db.conta_terceiros.filter(e => e.comp_id === comp.id || comp.ledger_ids.includes(e.id));
+    if (trs.length || leds.length) {
+      h += `<div class="pgd-sec"><div class="pgd-sec-h"><div class="pgd-sec-t">🔁 Movimentos gerados automaticamente</div></div>
+        <table><thead><tr><th>Data</th><th>Movimento</th><th style="text-align:right">Valor</th></tr></thead><tbody>
+        ${trs.map(t => `<tr><td>${fmtDate(t.data)}</td><td>Transferência <b>${_e(getBancoNome(t.origem))}</b> → <b>${_e(getBancoNome(t.destino))}</b></td><td class="pgd-num">${fmtBRL(t.valor)}</td></tr>`).join('')}
+        ${leds.map(e => `<tr><td>${fmtDate(e.data)}</td><td>${_e(e.descricao || '')}<div class="pgd-mut">${ehRec ? 'Débitos com Clientes' : 'Créditos com Fornecedores'}${e.usuario ? ' · ' + _e(e.usuario) : ''}</div></td><td class="pgd-num">${fmtBRL(Math.abs(e.valor))}</td></tr>`).join('')}
+        </tbody></table></div>`;
+    }
+  }
+
+  // Trilha de auditoria
+  const ev = [];
+  if (comp) ev.push({ q: comp.created_at || comp.data, cls: 'r', t: `<b>${cfg.titulo} registrado</b> — ${_e(_rotuloFormasComp(_pgd.tipo, comp.linhas))} · ${fmtBRL(comp.total)}`, u: comp.usuario });
+  else ev.push({ q: dtQ, cls: 'r', t: `<b>${cfg.titulo} registrado</b> — ${_e(l.tipo_pag || 'forma não informada')} · ${_e(getBancoNome(l.banco) || 'sem conta')}`, u: '' , nota: 'Lançamento simples: o sistema não guardou o usuário que deu a baixa.' });
+  itens.forEach(({ q }) => (q && q.historico || []).forEach(hh => ev.push({ q: hh.data, cls: 'c', t: `<b>Cheque nº ${_e(q.numero)}</b> — ${_e(hh.evento)}${hh.detalhe ? `<div class="pgd-mut">${_e(hh.detalhe)}</div>` : ''}`, u: hh.usuario })));
+  _pgd.logs.forEach(a => ev.push({ q: a.data_hora, cls: 'm', t: `<b>${_e(a.acao)}</b>${a.detalhe ? `<div class="pgd-tl-diff">${_pgdDifHtml(a.detalhe)}</div>` : ''}${a.motivo ? `<div class="pgd-tl-mot">Motivo: ${_e(a.motivo)}</div>` : ''}`, u: a.usuario }));
+  ev.sort((a, b) => _pgdOrdem(b.q).localeCompare(_pgdOrdem(a.q)));
+  h += `<div class="pgd-sec"><div class="pgd-sec-h"><div class="pgd-sec-t">🛡 Trilha de auditoria <small>${ev.length} evento(s)</small></div>
+      <div style="font-size:11.5px;color:#a8a29e"><span style="color:#16a34a">●</span> lançamento &nbsp; <span style="color:#2563eb">●</span> cheque &nbsp; <span style="color:#ea580c">●</span> alteração do master</div></div>
+    <div class="pgd-tl">${ev.map(e => `<div class="pgd-tl-i"><div class="pgd-tl-dot ${e.cls}"></div><div class="pgd-tl-q">${_pgdDtHora(e.q)}</div>
+      <div class="pgd-tl-b">${e.t}${e.u ? `<div class="pgd-mut">👤 ${_e(e.u)}</div>` : ''}${e.nota ? `<div class="pgd-mut">${e.nota}</div>` : ''}</div></div>`).join('')}</div></div>`;
+
+  document.getElementById('pgd-body').innerHTML = h;
+
+  // Rodapé
+  const podeEditar = master && window._pgdAuditOk === true;
+  const esq = master
+    ? (podeEditar ? `<button class="btn btn-secondary btn-sm" onclick="_pgdModo('editar')" ${_pgd.modo === 'editar' ? 'disabled' : ''}>✎ Editar dados</button>
+        ${!comp ? `<button class="btn btn-secondary btn-sm" onclick="_pgdModo('vincular')" ${_pgd.modo === 'vincular' ? 'disabled' : ''}>🧾 ${ehRec ? 'Registrar cheques' : 'Vincular cheques'}</button>` : ''}`
+      : (window._pgdAuditOk === null ? '<span>Verificando auditoria…</span>' : '<span class="pgd-lock">🔒 Edição bloqueada — falta a tabela de auditoria</span>'))
+    : '<span class="pgd-lock">🔒 Somente o usuário master pode alterar estes dados</span>';
+  document.getElementById('pgd-foot').innerHTML = `<div class="esq">${esq}</div>
+    <button class="btn btn-secondary" onclick="_pgdImprimir()">🖨 Imprimir comprovante</button>
+    <button class="btn btn-primary" onclick="fecharDetalhesPgto()">Fechar</button>`;
+}
+
+function _pgdModo(m) {
+  if (!_pgd) return;
+  if (m && !_ehMaster()) return;
+  if (m && window._pgdAuditOk !== true) { alert('Rode o script auditoria_pagamentos.sql no Supabase antes de editar — toda alteração precisa ficar registrada.'); return; }
+  _pgd.modo = m || null;
+  _pgd.sel = new Set(); _pgd.busca = '';
+  if (m === 'vincular' && _pgd.tipo === 'receber') {
+    const l = _pgdLanc(); const p = _pgdParc();
+    _pgd.custodia = _bancoCustodiaPadrao(l && l.banco);
+    _pgd.novos = [{ id: uid(), numero: '', banco_cheque: '', emitente: '', bom_para: (p && p.dtrecebido) || today(), valor: p ? _r2(p.valParc) : '' }];
+  }
+  _pgdRender();
+  const alvo = document.querySelector('#pgd-body .pgd-sec.edit, #pgd-body .pgd-edit-chq');
+  if (alvo) alvo.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+// ── Editar dados (data, forma, conta) ─────────────────────────────
+function _pgdOptsBancos(atual) {
+  return '<option value="">— sem conta —</option>' + db.bancos.map(b => `<option value="${b.id}" ${b.id === atual ? 'selected' : ''}>${_e(b.nome)}</option>`).join('');
+}
+function _pgdHtmlEditar(l, p, comp) {
+  const cfg = _PGD[_pgd.tipo];
+  const formas = cfg.formas().slice();
+  if (l.tipo_pag && !formas.includes(l.tipo_pag)) formas.unshift(l.tipo_pag);
+  const n = l.parcelas || 1;
+  const nota = comp
+    ? `Este ${cfg.titulo.toLowerCase()} foi feito com cheques / várias formas: a forma e a conta vêm da composição. Para trocá-las, estorne e lance de novo. A nova data também é aplicada aos cheques, transferências e saldos gerados${comp.parcelas.length > 1 ? ` e às parcelas ${comp.parcelas.join(', ')}` : ''}.`
+    : (n > 1 ? `Forma e conta valem para o lançamento inteiro (todas as ${n} parcelas). A data vale só para esta parcela.` : '');
+  return `<div class="pgd-sec edit"><div class="pgd-sec-h"><div class="pgd-sec-t">✎ Editar dados do ${cfg.titulo.toLowerCase()} <small>usuário master</small></div></div>
+    <div class="pgd-form">
+      <div class="form-group"><label>Data do ${cfg.titulo.toLowerCase()} *</label><input type="date" id="pgd-ed-data" value="${cfg.dtParc(p) || ''}" /></div>
+      <div class="form-group"><label>Forma</label><select id="pgd-ed-forma" ${comp ? 'disabled' : ''}><option value="">Não informada</option>${formas.map(f => `<option value="${_e(f)}" ${f === (l.tipo_pag || '') ? 'selected' : ''}>${_e(f)}</option>`).join('')}</select></div>
+      <div class="form-group"><label>Conta</label><select id="pgd-ed-banco" ${comp ? 'disabled' : ''}>${_pgdOptsBancos(l.banco || '')}</select></div>
+      <div class="form-group full"><label>Motivo da alteração * <span style="font-weight:400;color:#a8a29e">(fica registrado na auditoria)</span></label><textarea id="pgd-ed-motivo" placeholder="Ex.: data lançada errada — conferido com o extrato"></textarea></div>
+      ${nota ? `<div class="full pgd-mut" style="font-size:12px">ℹ️ ${nota}</div>` : ''}
+    </div>
+    <div class="pgd-form-foot"><button class="btn btn-secondary" onclick="_pgdModo(null)">Cancelar</button><button class="btn btn-primary" id="pgd-ed-ok" onclick="_pgdSalvarEdicao()">Salvar alteração</button></div></div>`;
+}
+
+async function _pgdSalvarEdicao() {
+  if (!_pgd || !_ehMaster()) return;
+  const cfg = _PGD[_pgd.tipo]; const tipo = _pgd.tipo;
+  const l = _pgdLanc(); const p = _pgdParc(); if (!l || !p) return;
+  const comp = _compDaParcela(tipo, l.id, _pgd.parc);
+  const novaData = document.getElementById('pgd-ed-data').value;
+  const motivo = document.getElementById('pgd-ed-motivo').value.trim();
+  const antes = { data: cfg.dtParc(p) || '', forma: l.tipo_pag || '', banco: l.banco || '' };
+  const depois = {
+    data: novaData,
+    forma: comp ? antes.forma : document.getElementById('pgd-ed-forma').value,
+    banco: comp ? antes.banco : document.getElementById('pgd-ed-banco').value
+  };
+  if (!novaData) { alert('Informe a data.'); return; }
+  if (antes.data === depois.data && antes.forma === depois.forma && antes.banco === depois.banco) { alert('Nada foi alterado.'); return; }
+  if (!motivo) { alert('Informe o motivo da alteração — ele fica registrado na auditoria.'); document.getElementById('pgd-ed-motivo').focus(); return; }
+  const btn = document.getElementById('pgd-ed-ok'); if (btn) btn.disabled = true;
+
+  const n = l.parcelas || 1;
+  const patch = {};
+  if (antes.data !== depois.data) {
+    if (n <= 1) patch[cfg.dtk] = depois.data;
+    else {
+      const tmp = { parcelas: n, parcela_datas: l.parcela_datas };
+      (comp ? comp.parcelas : [_pgd.parc]).forEach(i => { tmp.parcela_datas = _setParcelaPagoStatus(tmp, i, true, depois.data); });
+      patch.parcela_datas = tmp.parcela_datas;
+      if (l[cfg.fl] === 'sim') patch[cfg.dtk] = _parseParcelas(patch.parcela_datas).dtpagos.filter(Boolean).sort().slice(-1)[0] || depois.data;
+    }
+  }
+  if (!comp) {
+    if (antes.forma !== depois.forma) patch.tipo_pag = depois.forma;
+    if (antes.banco !== depois.banco) patch.banco = depois.banco;
+  }
+  if (!(await sbFetch(cfg.tabela, 'PATCH', patch, `?id=eq.${l.id}`))) {
+    alert('❌ Não foi possível salvar. Nada foi alterado.' + sbErroDetalhe());
+    if (btn) btn.disabled = false; return;
+  }
+  Object.assign(l, patch);
+
+  const falhas = [];
+  if (comp && antes.data !== depois.data) {
+    if (await sbFetch('pagamentos_compostos', 'PATCH', { data: depois.data }, `?id=eq.${comp.id}`)) comp.data = depois.data; else falhas.push('registro da composição');
+    for (const tid of comp.transf_ids) {
+      const t = db.transferencias.find(x => x.id === tid); if (!t) continue;
+      if (await sbFetch('transferencias', 'PATCH', { data: depois.data }, `?id=eq.${tid}`)) t.data = depois.data; else falhas.push('transferência');
+    }
+    for (const e of db.conta_terceiros.filter(e => comp.ledger_ids.includes(e.id))) {
+      if (await sbFetch('conta_terceiros', 'PATCH', { data: depois.data }, `?id=eq.${e.id}`)) e.data = depois.data; else falhas.push('saldo com terceiros');
+    }
+    const ent = { data: today(), evento: 'Data ajustada pelo master', detalhe: `${fmtDate(antes.data)} → ${fmtDate(depois.data)} · ${motivo}`, usuario: _quem() };
+    const chqs = tipo === 'pagar'
+      ? db.cheques.filter(q => q.comp_pagar_id === comp.id && q.status === 'compensado' && q.destino_lanc === l.id)
+      : db.cheques.filter(q => comp.cheque_ids.includes(q.id) && q.dt_entrada === antes.data);
+    for (const q of chqs) {
+      const cp = tipo === 'pagar' ? { dt_compensacao: depois.data } : { dt_entrada: depois.data };
+      cp.historico = (q.historico || []).concat([ent]);
+      if (await sbFetch('cheques', 'PATCH', cp, `?id=eq.${q.id}`)) Object.assign(q, cp); else falhas.push('cheque nº ' + q.numero);
+    }
+  }
+
+  const dif = [];
+  if (antes.data !== depois.data) dif.push(`Data: ${fmtDate(antes.data)} → ${fmtDate(depois.data)}`);
+  if (antes.forma !== depois.forma) dif.push(`Forma: ${antes.forma || '—'} → ${depois.forma || '—'}`);
+  if (antes.banco !== depois.banco) dif.push(`Conta: ${getBancoNome(antes.banco) || '—'} → ${getBancoNome(depois.banco) || '—'}`);
+  if (!(await _pgdLog('Dados do ' + cfg.titulo.toLowerCase() + ' alterados', dif.join('\n'), motivo, antes, depois))) falhas.push('registro na auditoria');
+
+  _chqPosAlteracao(tipo, l.id);
+  if (falhas.length) alert('⚠️ Alteração salva, mas houve falha em: ' + [...new Set(falhas)].join(', ') + '. Verifique a conexão.');
+  if (!_pgd) return;
+  _pgd.modo = null;
+  await _pgdCarregarLogs();
+  _pgdRender();
+}
+
+// ── Editar dados de um cheque (nº, banco, emitente, bom para) ─────
+function _pgdHtmlEditarCheque(q) {
+  return `<div class="pgd-edit-chq"><div class="pgd-form" style="grid-template-columns:repeat(4,minmax(0,1fr))">
+      <div class="form-group"><label>Nº do cheque *</label><input id="pgd-cq-numero" type="text" value="${_e(q.numero || '')}" /></div>
+      <div class="form-group"><label>Banco do cheque</label><input id="pgd-cq-banco" type="text" list="chq-bancos-lista" value="${_e(q.banco_cheque || '')}" /></div>
+      <div class="form-group"><label>Emitente</label><input id="pgd-cq-emitente" type="text" list="chq-emitentes" value="${_e(q.emitente || '')}" /></div>
+      <div class="form-group"><label>Bom para</label><input id="pgd-cq-bompara" type="date" value="${q.bom_para || ''}" /></div>
+      <div class="form-group full"><label>Motivo da alteração *</label><input id="pgd-cq-motivo" type="text" placeholder="Ex.: número digitado errado" /></div>
+      <div class="full pgd-mut">O valor (${fmtBRL(q.valor)}) não muda aqui: ele faz parte do ${_pgd.tipo === 'receber' ? 'recebimento' : 'recebimento de origem'}. Para corrigi-lo, estorne e lance de novo.</div>
+    </div>
+    <div class="pgd-form-foot"><button class="btn btn-secondary btn-sm" onclick="_pgdModo(null)">Cancelar</button><button class="btn btn-primary btn-sm" id="pgd-cq-ok" onclick="_pgdSalvarCheque('${q.id}')">Salvar cheque</button></div></div>`;
+}
+async function _pgdSalvarCheque(id) {
+  if (!_pgd || !_ehMaster()) return;
+  const q = db.cheques.find(x => x.id === id); if (!q) return;
+  const v = k => document.getElementById('pgd-cq-' + k).value.trim();
+  const novo = { numero: v('numero'), banco_cheque: v('banco'), emitente: v('emitente'), bom_para: v('bompara') || null };
+  const motivo = v('motivo');
+  if (!novo.numero) { alert('Informe o número do cheque.'); return; }
+  const rot = { numero: 'Nº', banco_cheque: 'Banco', emitente: 'Emitente', bom_para: 'Bom para' };
+  const antes = {}, depois = {}, dif = [];
+  Object.keys(novo).forEach(k => {
+    const a = q[k] || '', d = novo[k] || '';
+    if (a !== d) {
+      antes[k] = a; depois[k] = d;
+      const f = k === 'bom_para' ? fmtDate : (s => s || '—');
+      dif.push(`${rot[k]}: ${f(a)} → ${f(d)}`);
+    }
+  });
+  if (!dif.length) { alert('Nada foi alterado.'); return; }
+  if (!motivo) { alert('Informe o motivo da alteração.'); document.getElementById('pgd-cq-motivo').focus(); return; }
+  const btn = document.getElementById('pgd-cq-ok'); if (btn) btn.disabled = true;
+  const txt = Object.keys(depois).map(k => `${rot[k]}: ${antes[k] || '—'} → ${depois[k] || '—'}`).join('; ');
+  const patch = Object.assign({}, novo, { historico: (q.historico || []).concat([{ data: today(), evento: 'Dados corrigidos pelo master', detalhe: `${txt} · ${motivo}`, usuario: _quem() }]) });
+  if (!(await sbFetch('cheques', 'PATCH', patch, `?id=eq.${id}`))) { alert('❌ Erro ao salvar o cheque.' + sbErroDetalhe()); if (btn) btn.disabled = false; return; }
+  Object.assign(q, patch);
+  const ok = await _pgdLog(`Cheque nº ${antes.numero || q.numero} corrigido`, dif.join('\n'), motivo, antes, depois);
+  _chqPosAlteracao(_pgd.tipo, _pgd.lancId);
+  if (!ok) alert('⚠️ Cheque salvo, mas não foi possível gravar na auditoria.' + sbErroDetalhe());
+  if (!_pgd) return;
+  _pgd.modo = null;
+  await _pgdCarregarLogs();
+  _pgdRender();
+}
+
+// ── Vincular cheques da carteira a um pagamento já feito ──────────
+function _pgdHtmlVincular(l, p) {
+  const t = normText(_pgd.busca);
+  const cart = db.cheques.filter(q => q.status === 'carteira')
+    .filter(q => !t || normText(`${q.numero} ${q.emitente} ${q.banco_cheque} ${getClienteNome(q.cliente)} ${String(q.valor).replace('.', ',')}`).includes(t))
+    .sort((a, b) => Math.abs(a.valor - p.valParc) - Math.abs(b.valor - p.valParc));
+  const soma = _r2([..._pgd.sel].reduce((s, id) => s + ((db.cheques.find(q => q.id === id) || {}).valor || 0), 0));
+  const resto = _r2(p.valParc - soma);
+  const st = !_pgd.sel.size ? `<span>Selecione os cheques entregues ao fornecedor.</span>`
+    : resto < -0.004 ? `<span style="color:#dc2626;font-weight:700">Passa ${fmtBRL(-resto)} do valor da parcela</span>`
+    : resto > 0.004 ? `<span style="color:#b45309;font-weight:700">Faltam ${fmtBRL(resto)} — ficam como "${_e(l.tipo_pag && !/cheque/i.test(l.tipo_pag) ? l.tipo_pag : 'Não identificado')}"</span>`
+    : `<span style="color:#166534;font-weight:700">✓ Fecha o valor da parcela</span>`;
+  return `<div class="pgd-sec edit"><div class="pgd-sec-h"><div class="pgd-sec-t">🧾 Vincular cheques da carteira <small>valor da parcela ${fmtBRL(p.valParc)}</small></div>
+      <div class="chq-busca" style="min-width:260px"><span>🔍</span><input id="pgd-vc-busca" type="text" placeholder="Nº, emitente, cliente ou valor…" value="${_e(_pgd.busca)}" oninput="_pgdBuscaVinc(this.value)" /></div></div>
+    <div class="pgd-pick"><table><thead><tr><th style="width:34px"></th><th>Nº / Banco</th><th>Emitente</th><th>Recebido de</th><th>Bom para</th><th>Guardado em</th><th style="text-align:right">Valor</th></tr></thead><tbody>
+    ${cart.length ? cart.map(q => `<tr class="${_pgd.sel.has(q.id) ? 'on' : ''}" onclick="_pgdToggleSel('${q.id}')">
+      <td><input type="checkbox" ${_pgd.sel.has(q.id) ? 'checked' : ''} onclick="event.stopPropagation();_pgdToggleSel('${q.id}')" /></td>
+      <td><span class="pgd-chqno">${_e(q.numero)}</span><div class="pgd-mut">${_e(q.banco_cheque || '')}</div></td>
+      <td>${_e(q.emitente || '—')}</td><td>${_e(getClienteNome(q.cliente) || '—')}${q.devolvido ? ' <span class="pgd-sit bad">devolvido</span>' : ''}</td>
+      <td>${fmtDate(q.bom_para)}</td><td>${_e(getBancoNome(q.banco_custodia) || '—')}</td>
+      <td class="pgd-num"><b>${fmtBRL(q.valor)}</b></td></tr>`).join('')
+      : `<tr><td colspan="7" class="pgd-empty">Nenhum cheque em carteira${t ? ' para esta busca' : ''}.</td></tr>`}
+    </tbody></table></div>
+    <div class="pgd-form" style="grid-template-columns:1fr"><div class="form-group"><label>Motivo / observação *</label><input id="pgd-vc-motivo" type="text" placeholder="Ex.: pagamento lançado sem informar o cheque — conferido com o canhoto" /></div></div>
+    <div class="pgd-form-foot"><div class="info">${_pgd.sel.size} selecionado(s) · <b style="font-family:'DM Mono',monospace">${fmtBRL(soma)}</b> · ${st}</div>
+      <button class="btn btn-secondary" onclick="_pgdModo(null)">Cancelar</button><button class="btn btn-primary" id="pgd-vc-ok" onclick="_pgdSalvarVinculo()">Vincular</button></div></div>`;
+}
+function _pgdBuscaVinc(v) {
+  _pgd.busca = v; const mot = document.getElementById('pgd-vc-motivo'); const m = mot ? mot.value : '';
+  _pgdRender();
+  const i = document.getElementById('pgd-vc-busca'); if (i) { i.focus(); i.setSelectionRange(v.length, v.length); }
+  const mo = document.getElementById('pgd-vc-motivo'); if (mo) mo.value = m;
+}
+function _pgdToggleSel(id) {
+  if (_pgd.sel.has(id)) _pgd.sel.delete(id); else _pgd.sel.add(id);
+  const mot = document.getElementById('pgd-vc-motivo'); const m = mot ? mot.value : '';
+  const sc = document.querySelector('#pgd-body .pgd-pick'); const top = sc ? sc.scrollTop : 0;
+  const body = document.getElementById('pgd-body'); const bt = body.scrollTop;
+  _pgdRender();
+  const sc2 = document.querySelector('#pgd-body .pgd-pick'); if (sc2) sc2.scrollTop = top;
+  body.scrollTop = bt;
+  const mo = document.getElementById('pgd-vc-motivo'); if (mo) mo.value = m;
+}
+
+// ── Registrar cheques recebidos num recebimento já feito ──────────
+function _pgdHtmlRegistrar(l, p) {
+  const soma = _r2(_pgd.novos.reduce((s, q) => s + _r2(q.valor), 0));
+  const resto = _r2(p.valParc - soma);
+  const st = resto < -0.004 ? `<span style="color:#dc2626;font-weight:700">Passa ${fmtBRL(-resto)} do valor</span>`
+    : resto > 0.004 ? `<span style="color:#b45309;font-weight:700">Faltam ${fmtBRL(resto)} — ficam como "${_e(l.tipo_pag && !/cheque/i.test(l.tipo_pag) ? l.tipo_pag : 'Não identificado')}"</span>`
+    : `<span style="color:#166534;font-weight:700">✓ Fecha o valor da parcela</span>`;
+  const custs = db.bancos.filter(b => _bancoEhCustodia(b));
+  const listaCust = (custs.length ? custs : db.bancos);
+  return `<div class="pgd-sec edit"><div class="pgd-sec-h"><div class="pgd-sec-t">🧾 Registrar cheques recebidos <small>valor da parcela ${fmtBRL(p.valParc)}</small></div>
+      <div class="comp-custodia"><div><label>Guardar os cheques em</label><select id="pgd-rg-cust" onchange="_pgd.custodia=this.value">${listaCust.map(b => `<option value="${b.id}" ${b.id === _pgd.custodia ? 'selected' : ''}>${_e(b.nome)}</option>`).join('')}</select></div></div></div>
+    <div style="overflow-x:auto;padding:8px 12px"><table class="comp-tab pgd-novos"><thead><tr><th>Nº do cheque *</th><th>Banco</th><th>Emitente</th><th>Bom para *</th><th>Valor (R$) *</th><th></th></tr></thead><tbody>
+    ${_pgd.novos.map((q, i) => `<tr>
+      <td><input type="text" value="${_e(q.numero)}" oninput="_pgd.novos[${i}].numero=this.value" /></td>
+      <td><input type="text" list="chq-bancos-lista" value="${_e(q.banco_cheque)}" oninput="_pgd.novos[${i}].banco_cheque=this.value" /></td>
+      <td><input type="text" list="chq-emitentes" value="${_e(q.emitente)}" oninput="_pgd.novos[${i}].emitente=this.value" /></td>
+      <td><input type="date" value="${q.bom_para || ''}" onchange="_pgd.novos[${i}].bom_para=this.value" /></td>
+      <td><input type="number" step="0.01" min="0" value="${q.valor === '' ? '' : q.valor}" onchange="_pgd.novos[${i}].valor=this.value;_pgdRerenderReg()" /></td>
+      <td>${_pgd.novos.length > 1 ? `<button class="btn btn-danger btn-sm" onclick="_pgd.novos.splice(${i},1);_pgdRerenderReg()">×</button>` : ''}</td></tr>`).join('')}
+    </tbody></table>
+    <button class="btn btn-secondary btn-sm" onclick="_pgd.novos.push({id:uid(),numero:'',banco_cheque:'',emitente:'',bom_para:'${(p.dtrecebido || today())}',valor:''});_pgdRerenderReg()">+ Adicionar cheque</button></div>
+    <div class="pgd-form" style="grid-template-columns:1fr"><div class="form-group"><label>Motivo / observação *</label><input id="pgd-rg-motivo" type="text" placeholder="Ex.: recebimento lançado sem os dados do cheque" /></div></div>
+    <div class="pgd-form-foot"><div class="info">${_pgd.novos.length} cheque(s) · <b style="font-family:'DM Mono',monospace">${fmtBRL(soma)}</b> · ${st}</div>
+      <button class="btn btn-secondary" onclick="_pgdModo(null)">Cancelar</button><button class="btn btn-primary" id="pgd-rg-ok" onclick="_pgdSalvarRegistro()">Registrar cheques</button></div></div>`;
+}
+function _pgdRerenderReg() {
+  const mot = document.getElementById('pgd-rg-motivo'); const m = mot ? mot.value : '';
+  const body = document.getElementById('pgd-body'); const bt = body.scrollTop;
+  _pgdRender(); body.scrollTop = bt;
+  const mo = document.getElementById('pgd-rg-motivo'); if (mo) mo.value = m;
+}
+
+// Cria a composição de um pagamento/recebimento que já estava quitado sem
+// identificar os cheques. Os saldos das contas ficam corretos: se o cheque
+// está (ou vai ficar) numa conta diferente da do lançamento, é gerada a
+// mesma transferência que o "Várias formas / cheques" geraria.
+async function _pgdGravarComposicaoRetro(l, p, linhasChq, motivo, chequesNovos, chequesUsados) {
+  const tipo = _pgd.tipo; const ehRec = tipo === 'receber'; const cfg = _PGD[tipo];
+  const data = cfg.dtParc(p) || today();
+  const compId = uid();
+  const principal = l.banco || (linhasChq[0] && linhasChq[0].banco) || '';
+  const linhas = linhasChq.slice();
+  const soma = _r2(linhas.reduce((s, x) => s + x.valor, 0));
+  const resto = _r2(p.valParc - soma);
+  if (resto > 0.004) linhas.push({ tipo: 'forma', forma: (l.tipo_pag && !/cheque/i.test(l.tipo_pag)) ? l.tipo_pag : 'Não identificado', banco: principal, valor: resto });
+  const porBanco = {};
+  linhasChq.filter(x => x.banco && principal && x.banco !== principal).forEach(x => { porBanco[x.banco] = _r2((porBanco[x.banco] || 0) + x.valor); });
+  const desc = _descLancComp(tipo, l);
+  const transfs = Object.keys(porBanco).map(b => ({
+    id: uid(), data, origem: ehRec ? principal : b, destino: ehRec ? b : principal, valor: porBanco[b],
+    obs: `${ehRec ? 'Cheques registrados no recebimento' : 'Cheques vinculados ao pagamento'} — ${desc}`
+  }));
+  const comp = {
+    id: compId, empresa_id: l.empresa_id || empresaAtual() || null, tipo, lanc_id: l.id,
+    parcelas: [_pgd.parc], data, valor_conta: _r2(p.valParc), total: _r2(p.valParc), desconto: 0,
+    excedente: 0, saldo_usado: 0, banco_principal: principal, linhas,
+    transf_ids: transfs.map(t => t.id), ledger_ids: [], cheque_ids: linhasChq.map(x => x.id),
+    ajuste: { valor: l.valor }, usuario: _quem()
+  };
+  if (!(await sbFetch('pagamentos_compostos', 'POST', comp))) { alert('❌ Não foi possível registrar. Nada foi alterado.' + sbErroDetalhe()); return false; }
+  db.composicoes.push(comp);
+  const falhas = [];
+  if (chequesNovos.length) {
+    chequesNovos.forEach(q => { q.comp_receber_id = compId; });
+    if (await sbFetch('cheques', 'POST', chequesNovos)) db.cheques.push(...chequesNovos); else falhas.push('cadastro dos cheques');
+  }
+  for (const q of chequesUsados) {
+    const hist = (q.historico || []).concat([{ data, evento: 'Usado em pagamento', detalhe: `Vinculado pelo master — ${desc} · ${motivo}`, usuario: _quem() }]);
+    const patch = { status: 'compensado', destino_tipo: 'pagamento', destino_banco: null, destino_forn: l.forn || null, destino_lanc: l.id, dt_compensacao: data, comp_pagar_id: compId, transf_id: null, historico: hist };
+    if (await sbFetch('cheques', 'PATCH', patch, `?id=eq.${q.id}`)) Object.assign(q, patch); else falhas.push('cheque nº ' + q.numero);
+  }
+  if (transfs.length) {
+    if (await sbFetch('transferencias', 'POST', transfs)) db.transferencias.push(...transfs); else falhas.push('transferências entre contas');
+  }
+  const pl = { tipo_pag: _rotuloFormasComp(tipo, linhas) };
+  if (!l.banco && principal) pl.banco = principal;
+  if (await sbFetch(cfg.tabela, 'PATCH', pl, `?id=eq.${l.id}`)) Object.assign(l, pl); else falhas.push('forma do lançamento');
+  const dif = linhasChq.map(x => `Cheque nº ${x.numero} · ${fmtBRL(x.valor)}${x.banco ? ' · ' + getBancoNome(x.banco) : ''}`)
+    .concat(transfs.map(t => `Transferência gerada de ${getBancoNome(t.origem)} para ${getBancoNome(t.destino)} · ${fmtBRL(t.valor)}`));
+  if (!(await _pgdLog(ehRec ? 'Cheques registrados no recebimento' : 'Cheques vinculados ao pagamento', dif.join('\n'), motivo,
+    { forma: l.tipo_pag || '', banco: l.banco || '' }, { comp_id: compId, cheques: linhasChq.map(x => ({ id: x.id, numero: x.numero, valor: x.valor })) }))) falhas.push('registro na auditoria');
+  _chqPosAlteracao(tipo, l.id);
+  if (falhas.length) alert('⚠️ Registrado, mas houve falha em: ' + falhas.join(', ') + '. Verifique a conexão e confira os dados.');
+  return true;
+}
+
+async function _pgdSalvarVinculo() {
+  if (!_pgd || !_ehMaster()) return;
+  const l = _pgdLanc(); const p = _pgdParc(); if (!l || !p) return;
+  if (_compDaParcela('pagar', l.id, _pgd.parc)) { alert('Esta parcela já tem cheques/composição registrados.'); return; }
+  const qs = [..._pgd.sel].map(id => db.cheques.find(q => q.id === id)).filter(Boolean);
+  if (!qs.length) { alert('Selecione ao menos um cheque.'); return; }
+  const fora = qs.filter(q => q.status !== 'carteira');
+  if (fora.length) { alert(`O cheque nº ${fora[0].numero} não está mais em carteira.`); return; }
+  const soma = _r2(qs.reduce((s, q) => s + (Number(q.valor) || 0), 0));
+  if (soma > _r2(p.valParc) + 0.004) {
+    alert(`Os cheques somam ${fmtBRL(soma)}, mais que o valor da parcela (${fmtBRL(p.valParc)}).\n\nPara registrar a diferença como crédito com o fornecedor, estorne o pagamento e lance de novo usando "Várias formas / cheques".`);
+    return;
+  }
+  const motivo = document.getElementById('pgd-vc-motivo').value.trim();
+  if (!motivo) { alert('Informe o motivo / observação — fica registrado na auditoria.'); document.getElementById('pgd-vc-motivo').focus(); return; }
+  if (!confirm(`Vincular ${qs.length} cheque(s) (${fmtBRL(soma)}) a este pagamento?\n\nOs cheques saem da carteira como "Usado em pagamento".`)) return;
+  const btn = document.getElementById('pgd-vc-ok'); if (btn) btn.disabled = true;
+  const linhas = qs.map(q => ({ tipo: 'cheque', id: q.id, numero: q.numero, valor: _r2(q.valor), banco: q.banco_custodia || '' }));
+  const ok = await _pgdGravarComposicaoRetro(l, p, linhas, motivo, [], qs);
+  if (btn) btn.disabled = false;
+  if (ok && _pgd) { _pgd.modo = null; _pgd.sel = new Set(); await _pgdCarregarLogs(); _pgdRender(); }
+}
+
+async function _pgdSalvarRegistro() {
+  if (!_pgd || !_ehMaster()) return;
+  const l = _pgdLanc(); const p = _pgdParc(); if (!l || !p) return;
+  if (_compDaParcela('receber', l.id, _pgd.parc)) { alert('Esta parcela já tem cheques/composição registrados.'); return; }
+  const cust = (document.getElementById('pgd-rg-cust') || {}).value || _pgd.custodia;
+  if (!cust) { alert('Escolha a conta onde os cheques ficam guardados.'); return; }
+  const preench = _pgd.novos.filter(q => String(q.numero || '').trim() || _r2(q.valor) > 0);
+  if (!preench.length) { alert('Informe ao menos um cheque.'); return; }
+  for (let i = 0; i < preench.length; i++) {
+    const q = preench[i];
+    if (!String(q.numero || '').trim()) { alert(`Informe o número do cheque ${i + 1}.`); return; }
+    if (_r2(q.valor) <= 0) { alert(`Informe o valor do cheque nº ${q.numero}.`); return; }
+    if (!q.bom_para) { alert(`Informe a data "bom para" do cheque nº ${q.numero}.`); return; }
+    const dup = db.cheques.find(x => normText(x.numero) === normText(q.numero) && normText(x.banco_cheque) === normText(q.banco_cheque || ''));
+    if (dup && !confirm(`Já existe um cheque nº ${q.numero}${q.banco_cheque ? ' do ' + q.banco_cheque : ''} (${fmtBRL(dup.valor)}) no sistema. Continuar mesmo assim?`)) return;
+  }
+  const soma = _r2(preench.reduce((s, q) => s + _r2(q.valor), 0));
+  if (soma > _r2(p.valParc) + 0.004) {
+    alert(`Os cheques somam ${fmtBRL(soma)}, mais que o valor da parcela (${fmtBRL(p.valParc)}).\n\nPara registrar a diferença como débito com o cliente, estorne o recebimento e lance de novo usando "Várias formas / cheques".`);
+    return;
+  }
+  const motivo = document.getElementById('pgd-rg-motivo').value.trim();
+  if (!motivo) { alert('Informe o motivo / observação — fica registrado na auditoria.'); document.getElementById('pgd-rg-motivo').focus(); return; }
+  const btn = document.getElementById('pgd-rg-ok'); if (btn) btn.disabled = true;
+  const data = p.dtrecebido || today();
+  const desc = _descLancComp('receber', l);
+  const linhas = preench.map(q => ({ tipo: 'cheque', id: q.id, numero: String(q.numero).trim(), banco_cheque: (q.banco_cheque || '').trim(), emitente: (q.emitente || '').trim(), bom_para: q.bom_para, valor: _r2(q.valor), banco: cust }));
+  const novos = linhas.map(x => ({
+    id: x.id, empresa_id: l.empresa_id || empresaAtual() || null,
+    numero: x.numero, banco_cheque: x.banco_cheque, emitente: x.emitente,
+    cliente: l.cliente || null, valor: x.valor, bom_para: x.bom_para,
+    dt_entrada: data, banco_custodia: cust, status: 'carteira',
+    comp_receber_id: null, lanc_receber_id: l.id, devolvido: false,
+    historico: [{ data, evento: 'Entrada na carteira', detalhe: `Registrado pelo master depois do recebimento — ${desc} · ${motivo}`, usuario: _quem() }],
+    obs: ''
+  }));
+  const ok = await _pgdGravarComposicaoRetro(l, p, linhas, motivo, novos, []);
+  if (btn) btn.disabled = false;
+  if (ok && _pgd) { _pgd.modo = null; _pgd.novos = []; await _pgdCarregarLogs(); _pgdRender(); }
+}
+
+// ── Comprovante impresso ──────────────────────────────────────────
+function _pgdImprimir() {
+  if (!_pgd) return;
+  const cfg = _PGD[_pgd.tipo]; const ehRec = _pgd.tipo === 'receber';
+  const l = _pgdLanc(); const p = _pgdParc(); if (!l || !p) return;
+  const comp = _compDaParcela(_pgd.tipo, l.id, _pgd.parc);
+  const linhasComp = comp ? comp.linhas : [{ tipo: 'forma', forma: l.tipo_pag || 'Não informada', banco: l.banco, valor: p.valParc }];
+  const linhas = linhasComp.map(x => {
+    const q = x.tipo === 'cheque' ? db.cheques.find(z => z.id === x.id) : null;
+    const nome = x.tipo === 'cheque' ? 'Cheque' : x.tipo === 'forma' ? (x.forma || '—') : x.tipo === 'saldo' ? (ehRec ? 'Saldo do cliente' : 'Crédito do fornecedor') : 'Desconto';
+    const det = x.tipo === 'cheque'
+      ? `<b>nº ${_e((q && q.numero) || x.numero || '—')}</b>${q && q.banco_cheque ? ' · ' + _e(q.banco_cheque) : ''}<div class="mut">Emitente: ${_e((q && q.emitente) || '—')} · Bom para ${fmtDate(q && q.bom_para)}${!ehRec && q ? ' · Recebido de ' + _e(getClienteNome(q.cliente) || '—') : ''}</div>`
+      : '';
+    return `<tr><td>${_e(nome)}</td><td>${det}</td><td>${_e(getBancoNome(x.banco) || '—')}</td><td class="num">${x.tipo === 'desconto' ? '− ' : ''}${fmtBRL(x.valor)}</td></tr>`;
+  });
+  const logs = _pgd.logs.slice().reverse();
+  _relAbrir({
+    titulo: 'Comprovante de ' + cfg.titulo, docTitulo: `Comprovante ${cfg.titulo} ${cfg.pessoa(l) || ''} ${cfg.dtParc(p) || ''}`,
+    blocoHtml: `<div class="bloco"><div><div class="bloco-nome">${_e(cfg.pessoa(l) || '—')}</div><div class="bloco-sub">${cfg.pessoaLbl} · Parcela ${p.parcIdx}/${p.totalParc} · Vencimento ${fmtDate(p.venc)}${l.nf ? ' · NF ' + _e(l.nf) : ''}</div></div>
+      <div class="bloco-dir">${cfg.verbo} em<b>${fmtDate(cfg.dtParc(p))}</b></div></div>`,
+    resumo: [['Valor da parcela', fmtBRL(p.valParc)], ['Total entregue', fmtBRL(comp ? comp.total : p.valParc), 'cred'], ['Desconto', fmtBRL(comp ? comp.desconto : 0)], ['Excedente', fmtBRL(comp ? comp.excedente : 0)]],
+    cabec: [['Forma', '', '120px'], ['Detalhe', '', ''], ['Conta', '', '150px'], ['Valor', 'num', '110px']],
+    linhas,
+    rodapeTabela: `<tfoot><tr><td colspan="3">TOTAL</td><td class="num">${fmtBRL(comp ? comp.total : p.valParc)}</td></tr></tfoot>`,
+    extraHtml: logs.length ? `<h3>Alterações registradas (auditoria)</h3><table><thead><tr><th style="width:120px">Data/hora</th><th>Alteração</th><th style="width:160px">Usuário</th></tr></thead><tbody>
+      ${logs.map(a => `<tr><td>${_pgdDtHora(a.data_hora)}</td><td><b>${_e(a.acao)}</b><div class="mut">${_e(a.detalhe || '').replace(/\n/g, '<br>')}</div>${a.motivo ? `<div class="mut">Motivo: ${_e(a.motivo)}</div>` : ''}</td><td>${_e(a.usuario || '')}</td></tr>`).join('')}</tbody></table>` : '',
+    rodapeEsq: comp && comp.usuario ? `Registrado por ${_e(comp.usuario)}` : 'Documento gerado pelo sistema financeiro',
+    rodapeDir: `${cfg.titulo} · ${fmtDate(cfg.dtParc(p))}`
+  });
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && _pgd && document.getElementById('modal-pgd').classList.contains('open')
+      && !document.querySelector('#modal-chq-hist.open')) fecharDetalhesPgto();
+});
 </script>
 
 </body>
