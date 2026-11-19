@@ -4838,7 +4838,8 @@ body.menu-oculto .sidebar { transform:translateX(-248px); }
   <div class="modal" style="width:1000px">
     <div class="modal-title" id="chqsi-titulo">Cheques em carteira</div>
     <div class="comp-resumo">Lance aqui os cheques de terceiros que <b>já estavam em mãos</b> antes de usar o sistema. Eles entram no <b>Controle de Cheques</b> e compõem o saldo inicial desta conta — sem criar lançamento de venda.</div>
-    <div class="comp-sec">
+    <div id="chqsi-bloqueio" class="comp-resumo" style="display:none;background:#fef2f2;border-color:#fecaca;color:#991b1b">🔒 Seu usuário não tem permissão para incluir cheques direto na conta. Cheques só podem entrar através do recebimento de uma venda de cliente.</div>
+    <div class="comp-sec" id="chqsi-sec-incluir">
       <div class="comp-sec-head"><div class="comp-sec-tit">🧾 Cheques recebidos</div></div>
       <div style="overflow-x:auto"><table class="comp-tab">
         <thead><tr><th>Nº do cheque</th><th>Banco</th><th>De quem é (emitente)</th><th>Recebido de (cliente)</th><th>Data de entrada</th><th>Bom para</th><th>Valor (R$)</th><th></th></tr></thead>
@@ -4850,7 +4851,7 @@ body.menu-oculto .sidebar { transform:translateX(-248px); }
     <div id="chqsi-ja"></div>
     <div class="modal-footer">
       <button class="btn btn-secondary" onclick="closeModal('modal-chq-saldo')">Fechar</button>
-      <button class="btn btn-primary" onclick="salvarChequesSaldoInicial()">Lançar cheques</button>
+      <button class="btn btn-primary" id="chqsi-btn-lancar" onclick="salvarChequesSaldoInicial()">Lançar cheques</button>
     </div>
   </div>
 </div>
@@ -22100,8 +22101,16 @@ function _bancoEhCustodia(b) {
 function _novaLinhaChqSI() {
   return { id: uid(), numero: '', banco_cheque: '', emitente: '', cliente: '', dt_entrada: today(), bom_para: today(), valor: '' };
 }
+// Usuários que NÃO podem incluir cheques direto na conta (só via recebimento de venda)
+const CHQ_SI_USUARIOS_BLOQUEADOS = ['financeiro@stoeck.com'];
+function _chqSIBloqueado() {
+  return !!(currentUser && CHQ_SI_USUARIOS_BLOQUEADOS.includes(String(currentUser.user || '').trim().toLowerCase()));
+}
 function abrirChequesSaldoInicial(bancoId) {
   if (!_chqExigeTabelas()) return;
+  const _bloq = _chqSIBloqueado();
+  ['chqsi-sec-incluir', 'chqsi-total', 'chqsi-btn-lancar'].forEach(id => { const el = document.getElementById(id); if (el) el.style.display = _bloq ? 'none' : ''; });
+  const _avBloq = document.getElementById('chqsi-bloqueio'); if (_avBloq) _avBloq.style.display = _bloq ? '' : 'none';
   _chqSI = { banco: bancoId, linhas: [_novaLinhaChqSI()] };
   document.getElementById('chqsi-titulo').textContent = '🧾 Cheques em carteira — ' + getBancoNome(bancoId);
   // listas de apoio (emitentes / bancos)
@@ -22164,6 +22173,7 @@ function _chqSITotal() {
 function _chqSIAdd() { _chqSI.linhas.push(_novaLinhaChqSI()); _renderChqSI(); }
 async function salvarChequesSaldoInicial() {
   const st = _chqSI; if (!st) return;
+  if (_chqSIBloqueado()) { alert('🔒 Seu usuário não tem permissão para incluir cheques direto na conta. Lance o cheque pelo recebimento da venda do cliente.'); return; }
   const preench = st.linhas.filter(q => String(q.numero || '').trim() || _r2(q.valor) > 0);
   if (!preench.length) { alert('Informe ao menos um cheque.'); return; }
   for (let i = 0; i < preench.length; i++) {
