@@ -444,6 +444,60 @@ th.ef-th { padding:8px 8px 8px 12px; }
 
 
 
+/* ── COBRANÇA ── */
+.nav-sub-item.nav-cob { color:#15803d; font-weight:700; background:#f0fdf4; border:1px solid #bbf7d0; margin:3px 0; }
+.nav-sub-item.nav-cob:hover { background:#dcfce7; color:#166534; }
+.nav-sub-item.nav-cob.active { background:#16a34a; color:#fff; border-color:#16a34a; }
+.nav-cob-badge { margin-left:auto; background:#16a34a; color:#fff; font-size:10.5px; font-weight:800; border-radius:10px; padding:1px 7px; min-width:20px; text-align:center; }
+.nav-sub-item.nav-cob.active .nav-cob-badge { background:#fff; color:#15803d; }
+.cob-hero { background:linear-gradient(135deg,#14532d 0%,#166534 55%,#15803d 100%); color:#fff; border-radius:16px; padding:20px 24px; margin-bottom:16px; display:flex; justify-content:space-between; align-items:flex-end; gap:16px; flex-wrap:wrap; box-shadow:0 8px 24px rgba(22,101,52,.25); }
+.cob-hero h1 { margin:0; font-size:22px; font-weight:800; display:flex; align-items:center; gap:10px; }
+.cob-hero p { margin:4px 0 0; font-size:12.5px; color:#bbf7d0; max-width:620px; }
+.cob-hero .tot { text-align:right; }
+.cob-hero .tot span { font-size:11px; text-transform:uppercase; letter-spacing:.7px; color:#bbf7d0; font-weight:700; }
+.cob-hero .tot b { display:block; font-family:'DM Mono',monospace; font-size:28px; }
+.cob-kpis { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:16px; }
+.cob-kpi { background:#fff; border:1px solid #e5e7eb; border-radius:12px; padding:13px 16px; }
+.cob-kpi .l { font-size:10.5px; text-transform:uppercase; letter-spacing:.6px; color:#6b7280; font-weight:700; }
+.cob-kpi .v { font-family:'DM Mono',monospace; font-size:19px; font-weight:700; margin-top:4px; color:#111827; }
+.cob-kpi .s { font-size:12px; color:#6b7280; }
+.cob-aging { background:#fff; border:1px solid #e5e7eb; border-radius:12px; padding:14px 16px; margin-bottom:16px; }
+.cob-aging-t { font-size:11px; text-transform:uppercase; letter-spacing:.6px; color:#6b7280; font-weight:700; margin-bottom:10px; }
+.cob-aging-bar { display:flex; height:12px; border-radius:6px; overflow:hidden; background:#f1f5f9; margin-bottom:10px; }
+.cob-aging-leg { display:grid; grid-template-columns:repeat(6,1fr); gap:8px; }
+.cob-aging-leg button { text-align:left; border:1px solid #e5e7eb; background:#fff; border-radius:8px; padding:7px 10px; cursor:pointer; font-size:11.5px; color:#475569; }
+.cob-aging-leg button.on { border-color:#16a34a; box-shadow:0 0 0 2px #bbf7d0; }
+.cob-aging-leg button i { display:inline-block; width:8px; height:8px; border-radius:2px; margin-right:6px; }
+.cob-aging-leg button b { display:block; font-family:'DM Mono',monospace; color:#111827; font-size:13px; margin-top:2px; }
+.cob-filtros { display:flex; gap:8px; align-items:center; margin-bottom:12px; flex-wrap:wrap; }
+.cob-filtros input, .cob-filtros select { width:auto; padding:7px 10px; font-size:13px; }
+.cob-filtros input { min-width:260px; }
+.cob-cli { background:#fff; border:1px solid #e5e7eb; border-radius:12px; margin-bottom:10px; overflow:hidden; }
+.cob-cli-h { display:grid; grid-template-columns:28px 1fr auto auto auto auto; align-items:center; gap:14px; padding:12px 16px; cursor:pointer; }
+.cob-cli-h:hover { background:#f9fafb; }
+.cob-cli-h .seta { color:#94a3b8; transition:transform .15s; }
+.cob-cli.aberto .cob-cli-h .seta { transform:rotate(90deg); }
+.cob-cli-nome { font-weight:700; color:#111827; font-size:14px; }
+.cob-cli-nome small { display:block; font-weight:500; color:#64748b; font-size:11.5px; margin-top:1px; }
+.cob-cli-num { text-align:right; font-family:'DM Mono',monospace; font-size:13px; white-space:nowrap; }
+.cob-cli-num span { display:block; font-family:inherit; font-size:10px; color:#94a3b8; text-transform:uppercase; letter-spacing:.5px; font-weight:700; }
+.cob-cli-acts { display:flex; gap:6px; }
+.cob-cli-body { display:none; border-top:1px solid #eef0f3; }
+.cob-cli.aberto .cob-cli-body { display:block; }
+.cob-cli-body table { width:100%; border-collapse:collapse; font-size:12.5px; }
+.cob-cli-body th { background:#f8fafc; color:#64748b; font-size:10.5px; text-transform:uppercase; letter-spacing:.5px; text-align:left; padding:7px 12px; font-weight:700; }
+.cob-cli-body th.r, .cob-cli-body td.r { text-align:right; }
+.cob-cli-body td { padding:8px 12px; border-top:1px solid #f1f5f9; }
+.cob-cli-body td.m { font-family:'DM Mono',monospace; white-space:nowrap; }
+.cob-pill { display:inline-block; font-size:11px; font-weight:700; padding:2px 8px; border-radius:20px; white-space:nowrap; }
+.cob-pill.atr { background:#fee2e2; color:#b91c1c; } .cob-pill.hoje { background:#ffedd5; color:#c2410c; } .cob-pill.ven { background:#f1f5f9; color:#475569; }
+.cob-btn { border:1px solid #e5e7eb; background:#fff; border-radius:7px; padding:5px 10px; font-size:12px; font-weight:600; cursor:pointer; color:#334155; white-space:nowrap; text-decoration:none; display:inline-block; }
+.cob-btn:hover { background:#f8fafc; }
+.cob-btn.g { background:#16a34a; color:#fff; border-color:#16a34a; } .cob-btn.g:hover { background:#15803d; }
+.cob-btn.w { color:#15803d; border-color:#bbf7d0; }
+.cob-vazio { background:#fff; border:1px dashed #bbf7d0; border-radius:12px; padding:40px; text-align:center; color:#64748b; }
+.cob-vazio b { display:block; font-size:30px; color:#16a34a; }
+@media (max-width:900px) { .cob-kpis { grid-template-columns:1fr 1fr; } .cob-aging-leg { grid-template-columns:repeat(3,1fr); } .cob-cli-h { grid-template-columns:20px 1fr auto; } .cob-cli-h .cob-cli-num.hm { display:none; } }
 /* ── AVISOS DE VENCIMENTO (janela ao entrar) ── */
 #modal-avisos { z-index:190; backdrop-filter:blur(2px); }
 #modal-avisos .modal { max-width:1180px; width:96vw; max-height:92vh; padding:0; overflow:hidden; display:flex; flex-direction:column; border-radius:16px; box-shadow:0 24px 60px rgba(15,23,42,.35); }
@@ -1715,6 +1769,10 @@ body.menu-oculto .sidebar { transform:translateX(-248px); }
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
           Contas a Receber
         </div>
+        <div class="nav-sub-item nav-cob" onclick="showPage('cobranca')" id="nav-cobranca">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          Cobrança <span class="nav-cob-badge" id="nav-cob-badge" style="display:none">0</span>
+        </div>
         <div class="nav-sub-item" onclick="showPage('recebido')" id="nav-recebido">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
           Contas Recebidas
@@ -2458,6 +2516,30 @@ body.menu-oculto .sidebar { transform:translateX(-248px); }
     </div>
 
     <!-- ══ RECEBIDO ══ -->
+    <div class="page" id="page-cobranca">
+      <div class="cob-hero">
+        <div>
+          <h1>💰 Cobrança <span class="empresa-tag"></span></h1>
+          <p>Todo lançamento de cliente com parcela vencida e não recebida entra aqui automaticamente — e só sai quando o cliente quitar o lançamento por completo (todas as parcelas).</p>
+        </div>
+        <div class="tot"><span>Total em cobrança</span><b id="cob-total">R$ 0,00</b></div>
+      </div>
+      <div class="cob-kpis" id="cob-kpis"></div>
+      <div class="cob-aging" id="cob-aging"></div>
+      <div class="cob-filtros">
+        <input type="text" id="cob-busca" placeholder="🔎 Buscar cliente, NF ou produto..." oninput="renderCobranca()" />
+        <select id="cob-ordem" onchange="renderCobranca()">
+          <option value="vencido">Ordenar: maior valor vencido</option>
+          <option value="atraso">Ordenar: maior atraso</option>
+          <option value="total">Ordenar: maior saldo total</option>
+          <option value="nome">Ordenar: nome do cliente</option>
+        </select>
+        <button class="cob-btn" onclick="_cobExpandirTodos(true)">Expandir todos</button>
+        <button class="cob-btn" onclick="_cobExpandirTodos(false)">Recolher todos</button>
+      </div>
+      <div id="cob-lista"></div>
+    </div>
+
     <div class="page" id="page-recebido">
       <div class="page-header"><div><div class="page-title">Contas Recebidas</div><div class="page-sub" style="margin-bottom:0">Histórico de recebimentos realizados</div></div><div style="display:flex;gap:8px"><button class="btn-pdf" onclick="abrirPdfDia('recebido')" style="background:#0f766e">📅 PDF por Dia</button><button class="btn-pdf" onclick="imprimirPagina('recebido')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg> PDF</button></div></div>
       <div id="recebido-kpis" class="grid4 kpis-compact" style="margin-bottom:20px;"></div>
@@ -5134,6 +5216,7 @@ const PAGES_CONFIG = [
   { id:'prodvenda',         label:'Produtos de Venda',   grupo:'receber' },
   { id:'lancreceber',       label:'Lançamentos (Venda)', grupo:'receber' },
   { id:'areceber',          label:'Contas a Receber',    grupo:'receber' },
+  { id:'cobranca',          label:'Cobrança',            grupo:'receber' },
   { id:'recebido',          label:'Contas Recebidas',    grupo:'receber' },
   { id:'cheques',           label:'Controle de Cheques', grupo:'cheques' },
   { id:'cheques-compensados', label:'Cheques Compensados', grupo:'cheques' },
@@ -5725,7 +5808,7 @@ function showPage(p) {
   // Verificar permissão (exceto admin e páginas de administração)
   if (p !== 'usuarios' && p !== 'empresas' && p !== 'aprovacoes' && currentUser && currentUser.role !== 'admin') {
     const allowed = currentUser.pages || [];
-    if (!allowed.includes(p)) { alert('Acesso não permitido para seu perfil.'); return; }
+    if (!allowed.includes(p) && !(p === 'cobranca' && allowed.includes('areceber'))) { alert('Acesso não permitido para seu perfil.'); return; }
   }
   document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
   document.querySelectorAll('.nav-item, .nav-sub-item').forEach(el => el.classList.remove('active'));
@@ -5749,6 +5832,7 @@ function showPage(p) {
   if (p === 'prodvenda')      renderProdVenda();
   if (p === 'lancreceber')    renderLancReceber();
   if (p === 'areceber')       renderAReceber();
+  if (p === 'cobranca')       renderCobranca();
   if (p === 'recebido')       renderRecebido();
   if (p === 'cheques')             renderCheques();
   if (p === 'cheques-compensados') renderChequesCompensados();
@@ -5797,6 +5881,7 @@ function renderPaginaAtual() {
   if (p === 'prodvenda')      renderProdVenda();
   if (p === 'lancreceber')    renderLancReceber();
   if (p === 'areceber')       renderAReceber();
+  if (p === 'cobranca')       renderCobranca();
   if (p === 'recebido')       renderRecebido();
   if (p === 'cheques')             renderCheques();
   if (p === 'cheques-compensados') renderChequesCompensados();
@@ -11302,7 +11387,7 @@ function applyNavPermissions() {
     const pg = match[1];
     if (pg === 'usuarios' || pg === 'empresas' || pg === 'aprovacoes') return;
     if (isAdmin) { item.style.display = ''; return; }
-    item.style.display = allowed.includes(pg) ? '' : 'none';
+    item.style.display = (allowed.includes(pg) || (pg === 'cobranca' && allowed.includes('areceber'))) ? '' : 'none';
   });
   // Ocultar cabeçalho do grupo se todos os itens estiverem ocultos
   ['grp-pagar','grp-receber','grp-cheques','grp-saldos','grp-dfc','grp-dre'].forEach(grpId => {
@@ -17485,6 +17570,185 @@ function _depoisDecisaoAprov(tipo) {
   if (tipo === 'receber') { renderLancReceber(); renderAReceber(); renderRecebido(); }
   if (tipo) _rerenderDemonstrativoAtual();
 }
+
+// ══════════════════════════════════════════════════════════
+// COBRANÇA — lançamentos a receber que entraram em atraso.
+// Entra: lançamento com alguma parcela vencida e não recebida (ou que já teve
+//        parcela recebida com atraso e ainda tem parcelas em aberto).
+// Sai:   só quando TODAS as parcelas do lançamento foram recebidas.
+// ══════════════════════════════════════════════════════════
+const _cobAbertos = new Set();
+let _cobFaixa = '';
+const _COB_FAIXAS = [
+  { id: 'f1', lbl: '1 a 15 dias',  de: 1,  ate: 15,  cor: '#fbbf24' },
+  { id: 'f2', lbl: '16 a 30 dias', de: 16, ate: 30,  cor: '#f97316' },
+  { id: 'f3', lbl: '31 a 60 dias', de: 31, ate: 60,  cor: '#ef4444' },
+  { id: 'f4', lbl: '61 a 90 dias', de: 61, ate: 90,  cor: '#b91c1c' },
+  { id: 'f5', lbl: 'Mais de 90',   de: 91, ate: Infinity, cor: '#7f1d1d' },
+  { id: 'av', lbl: 'A vencer',     de: -Infinity, ate: 0, cor: '#94a3b8' }
+];
+function _cobFaixaDe(dAtraso) { return _COB_FAIXAS.find(f => dAtraso >= f.de && dAtraso <= f.ate) || _COB_FAIXAS[5]; }
+function _cobDados() {
+  if (typeof _parcCache !== 'undefined') _parcCache.ver = -1;
+  const hoje = today();
+  const todas = getParcelasReceber(false).concat(getParcelasReceber(true));
+  const porLanc = new Map();
+  todas.forEach(p => { if (!porLanc.has(p.lancId)) porLanc.set(p.lancId, []); porLanc.get(p.lancId).push(p); });
+  const lancs = [];
+  porLanc.forEach((ps, lancId) => {
+    const abertas = ps.filter(p => !p.isRecebido);
+    if (!abertas.length) return; // quitado por completo → sai da cobrança
+    const temVencida = abertas.some(p => p.venc && p.venc < hoje);
+    const pagouAtrasado = ps.some(p => p.isRecebido && p.venc && p.dtrecebido && p.dtrecebido > p.venc);
+    if (!temVencida && !pagouAtrasado) return;
+    const l = db.lancreceber.find(x => x.id === lancId);
+    if (!l) return;
+    lancs.push({ l, abertas: abertas.sort((a, b) => (a.venc || '').localeCompare(b.venc || '')), recebidas: ps.filter(p => p.isRecebido).length, total: ps.length });
+  });
+  return lancs;
+}
+function _cobDiasAtraso(venc) { return venc ? -_avDias(venc) : 0; }
+function _cobWhats(tel, msg) {
+  let d = String(tel || '').replace(/\D/g, '');
+  if (d.length < 10) return '';
+  if (d.length <= 11) d = '55' + d;
+  return `https://wa.me/${d}?text=${encodeURIComponent(msg)}`;
+}
+function _cobMensagem(cli) {
+  const linhas = cli.parcelas.filter(x => x.atraso > 0).map(x => `• ${fmtDate(x.p.venc)} — ${fmtBRL(x.p.valParc || 0)}${x.p.nf ? ' (NF ' + x.p.nf + ')' : ''}`);
+  return `Olá${cli.nome ? ', ' + cli.nome : ''}! Tudo bem?\n\nIdentificamos em nosso sistema ${linhas.length > 1 ? 'as seguintes parcelas em aberto' : 'a seguinte parcela em aberto'}:\n${linhas.join('\n')}\n\nTotal vencido: ${fmtBRL(cli.vencido)}\n\nPodemos combinar o pagamento? Se já pagou, por favor desconsidere esta mensagem e nos envie o comprovante. Obrigado!`;
+}
+function _cobCopiar(cid) {
+  const cli = (window._cobClientes || []).find(c => c.id === cid);
+  if (!cli) return;
+  const txt = _cobMensagem(cli);
+  (navigator.clipboard ? navigator.clipboard.writeText(txt) : Promise.reject()).then(
+    () => alert('Mensagem de cobrança copiada. É só colar no WhatsApp ou e-mail.'),
+    () => prompt('Copie a mensagem:', txt));
+}
+function _cobToggle(cid) { _cobAbertos.has(cid) ? _cobAbertos.delete(cid) : _cobAbertos.add(cid); renderCobranca(); }
+function _cobExpandirTodos(abrir) { _cobAbertos.clear(); if (abrir) (window._cobClientes || []).forEach(c => _cobAbertos.add(c.id)); renderCobranca(); }
+function _cobSetFaixa(f) { _cobFaixa = _cobFaixa === f ? '' : f; renderCobranca(); }
+function _cobReceberVencidas(cid) {
+  const cli = (window._cobClientes || []).find(c => c.id === cid);
+  if (!cli) return;
+  const itens = cli.parcelas.filter(x => x.atraso > 0).map(x => ({ lancId: x.p.lancId, parcIdx: x.p.parcIdx }));
+  if (!itens.length) { alert('Este cliente não tem parcelas vencidas em aberto.'); return; }
+  if (typeof _bxAbrir === 'function') _bxAbrir('receber', itens);
+  else marcarRecebido(itens[0].lancId, itens[0].parcIdx);
+}
+function renderCobranca() {
+  const lista = document.getElementById('cob-lista');
+  if (!lista) return;
+  const lancs = _cobDados();
+  const busca = normText((document.getElementById('cob-busca') || {}).value || '');
+  const ordem = (document.getElementById('cob-ordem') || {}).value || 'vencido';
+
+  const mapa = new Map();
+  lancs.forEach(({ l, abertas, recebidas, total }) => {
+    const cid = l.cliente || '__sem__';
+    if (!mapa.has(cid)) {
+      const c = db.clientes.find(x => x.id === l.cliente) || {};
+      mapa.set(cid, { id: cid, nome: getClienteNome(l.cliente) || 'Sem cliente', tel: c.tel || '', contato: c.contato || '', parcelas: [], lancs: new Set() });
+    }
+    const cli = mapa.get(cid);
+    cli.lancs.add(l.id);
+    abertas.forEach(p => cli.parcelas.push({ p, l, atraso: _cobDiasAtraso(p.venc), recebidas, total }));
+  });
+  const aging = {}; _COB_FAIXAS.forEach(f => aging[f.id] = { v: 0, n: 0 });
+  let maior = 0;
+  mapa.forEach(c => c.parcelas.forEach(x => { const f = _cobFaixaDe(x.atraso); aging[f.id].v += x.p.valParc || 0; aging[f.id].n++; maior = Math.max(maior, x.atraso); }));
+  const nCli = mapa.size, nLanc = lancs.length;
+
+  let clientes = [...mapa.values()].map(c => {
+    const parcelas = c.parcelas.filter(x => {
+      if (_cobFaixa && _cobFaixaDe(x.atraso).id !== _cobFaixa) return false;
+      if (busca) {
+        const alvo = normText([c.nome, x.p.nf, x.p.prod ? getProdVendaNome(x.p.prod) : '', x.l.obs].join(' '));
+        if (!alvo.includes(busca)) return false;
+      }
+      return true;
+    });
+    const vencido = parcelas.filter(x => x.atraso > 0).reduce((s, x) => s + (x.p.valParc || 0), 0);
+    const aVencer = parcelas.filter(x => x.atraso <= 0).reduce((s, x) => s + (x.p.valParc || 0), 0);
+    return Object.assign({}, c, { parcelas, vencido, aVencer, total: vencido + aVencer, maiorAtraso: parcelas.reduce((m, x) => Math.max(m, x.atraso), 0) });
+  }).filter(c => c.parcelas.length);
+  const ord = {
+    vencido: (a, b) => b.vencido - a.vencido,
+    atraso: (a, b) => b.maiorAtraso - a.maiorAtraso,
+    total: (a, b) => b.total - a.total,
+    nome: (a, b) => a.nome.localeCompare(b.nome)
+  }[ordem];
+  clientes.sort(ord);
+  window._cobClientes = clientes;
+
+  const nVenc = _COB_FAIXAS.filter(f => f.id !== 'av').reduce((s, f) => s + aging[f.id].n, 0);
+  const totVenc = _COB_FAIXAS.filter(f => f.id !== 'av').reduce((s, f) => s + aging[f.id].v, 0);
+  const totAv = aging.av.v;
+  document.getElementById('cob-total').textContent = fmtBRL(totVenc + totAv);
+  document.getElementById('cob-kpis').innerHTML = `
+    <div class="cob-kpi"><div class="l">Vencido</div><div class="v" style="color:#b91c1c">${fmtBRL(totVenc)}</div><div class="s">${nVenc} parcela(s) em atraso</div></div>
+    <div class="cob-kpi"><div class="l">A vencer (mesmos lançamentos)</div><div class="v" style="color:#475569">${fmtBRL(totAv)}</div><div class="s">${aging.av.n} parcela(s) ainda no prazo</div></div>
+    <div class="cob-kpi"><div class="l">Clientes em cobrança</div><div class="v">${nCli}</div><div class="s">${nLanc} lançamento(s)</div></div>
+    <div class="cob-kpi"><div class="l">Maior atraso</div><div class="v" style="color:${maior > 90 ? '#7f1d1d' : maior > 30 ? '#b91c1c' : '#c2410c'}">${maior} dia(s)</div><div class="s">parcela mais antiga em aberto</div></div>`;
+  const totAging = Object.values(aging).reduce((s, a) => s + a.v, 0) || 1;
+  document.getElementById('cob-aging').innerHTML = `
+    <div class="cob-aging-t">Distribuição por tempo de atraso <span style="text-transform:none;letter-spacing:0;font-weight:500;color:#94a3b8">— clique numa faixa para filtrar</span></div>
+    <div class="cob-aging-bar">${_COB_FAIXAS.map(f => aging[f.id].v > 0 ? `<div style="width:${(aging[f.id].v / totAging * 100).toFixed(2)}%;background:${f.cor}" title="${f.lbl}: ${fmtBRL(aging[f.id].v)}"></div>` : '').join('')}</div>
+    <div class="cob-aging-leg">${_COB_FAIXAS.map(f => `<button class="${_cobFaixa === f.id ? 'on' : ''}" onclick="_cobSetFaixa('${f.id}')"><i style="background:${f.cor}"></i>${f.lbl} (${aging[f.id].n})<b>${fmtBRL(aging[f.id].v)}</b></button>`).join('')}</div>`;
+
+  _cobAtualizarBadge(nCli);
+  if (!clientes.length) {
+    lista.innerHTML = `<div class="cob-vazio"><b>✓</b>${nCli ? 'Nenhum resultado para o filtro.' : 'Nenhum cliente em cobrança. Todos os recebimentos estão em dia!'}</div>`;
+    return;
+  }
+  const pill = d => d > 0 ? `<span class="cob-pill atr">${d} dia${d === 1 ? '' : 's'} em atraso</span>` : d === 0 ? '<span class="cob-pill hoje">vence hoje</span>' : `<span class="cob-pill ven">vence em ${-d} dia${d === -1 ? '' : 's'}</span>`;
+  lista.innerHTML = clientes.map(c => {
+    const aberto = _cobAbertos.has(c.id);
+    const wa = c.vencido > 0 ? _cobWhats(c.tel, _cobMensagem(c)) : '';
+    const linhas = c.parcelas.map(x => `<tr>
+        <td class="m">${x.p.venc ? fmtDate(x.p.venc) : '—'}</td>
+        <td>${x.p.nf ? 'NF ' + x.p.nf : '—'}${x.p.prod ? `<div style="color:#94a3b8;font-size:11px">${getProdVendaNome(x.p.prod)}</div>` : ''}</td>
+        <td>${x.p.totalParc > 1 ? `${x.p.parcIdx}/${x.p.totalParc}` : 'Única'}<div style="color:#94a3b8;font-size:11px">${x.recebidas}/${x.total} recebida(s)</div></td>
+        <td>${pill(x.atraso)}</td>
+        <td class="m r" style="font-weight:700">${fmtBRL(x.p.valParc || 0)}</td>
+        <td class="r"><div style="display:flex;gap:4px;justify-content:flex-end">
+          <button class="cob-btn g" onclick="marcarRecebido('${x.p.lancId}',${x.p.parcIdx})">✓ Receber</button>
+          <button class="cob-btn" onclick="editLancReceber('${x.p.lancId}')">✎ Editar</button>
+        </div></td></tr>`).join('');
+    return `<div class="cob-cli ${aberto ? 'aberto' : ''}">
+      <div class="cob-cli-h" onclick="_cobToggle('${c.id}')">
+        <span class="seta">▶</span>
+        <div class="cob-cli-nome">${c.nome}<small>${c.lancs.size} lançamento(s) · ${c.parcelas.length} parcela(s) em aberto${c.tel ? ' · 📞 ' + c.tel : ''}${c.contato ? ' · ' + c.contato : ''}</small></div>
+        <div class="cob-cli-num hm"><span>Maior atraso</span>${c.maiorAtraso > 0 ? c.maiorAtraso + ' dia(s)' : '—'}</div>
+        <div class="cob-cli-num"><span>Vencido</span><b style="color:#b91c1c">${fmtBRL(c.vencido)}</b></div>
+        <div class="cob-cli-num hm"><span>Saldo total</span>${fmtBRL(c.total)}</div>
+        <div class="cob-cli-acts" onclick="event.stopPropagation()">
+          ${c.vencido > 0 ? `<button class="cob-btn g" onclick="_cobReceberVencidas('${c.id}')" title="Baixar de uma vez todas as parcelas vencidas deste cliente">Receber vencidas</button>` : ''}
+          ${wa ? `<a class="cob-btn w" href="${wa}" target="_blank" rel="noopener" title="Abrir WhatsApp com a mensagem de cobrança">WhatsApp</a>` : ''}
+          ${c.vencido > 0 ? `<button class="cob-btn" onclick="_cobCopiar('${c.id}')" title="Copiar mensagem de cobrança">Copiar msg</button>` : ''}
+        </div>
+      </div>
+      <div class="cob-cli-body"><table><thead><tr><th>Vencimento</th><th>Documento</th><th>Parcela</th><th>Situação</th><th class="r">Valor</th><th class="r">Ações</th></tr></thead><tbody>${linhas}</tbody></table></div>
+    </div>`;
+  }).join('');
+}
+// Contador verde no menu + atualização automática da tela após recebimentos
+function _cobAtualizarBadge(n) {
+  const b = document.getElementById('nav-cob-badge');
+  if (!b) return;
+  if (n == null) { try { n = new Set(_cobDados().map(x => x.l.cliente || '__sem__')).size; } catch (e) { return; } }
+  b.textContent = n; b.style.display = n ? '' : 'none';
+}
+let _cobSig = '';
+setInterval(() => {
+  if (typeof db === 'undefined' || !db.lancreceber || !currentUser) return;
+  const sig = [typeof _dbVer !== 'undefined' ? _dbVer : '', db.lancreceber.length, document.querySelectorAll('.modal-overlay.open').length].join('|');
+  if (sig === _cobSig) return;
+  _cobSig = sig;
+  const pg = document.getElementById('page-cobranca');
+  if (pg && pg.classList.contains('active')) renderCobranca(); else _cobAtualizarBadge();
+}, 1500);
 
 // ══════════════════════════════════════════════════════════
 // AVISOS DE VENCIMENTO — abre sempre ao entrar no sistema (e ao trocar de
