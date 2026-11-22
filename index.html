@@ -4232,6 +4232,11 @@ body.menu-oculto .sidebar { transform:translateX(-248px); }
           </div>
         </div>
     <div id="edit-parcela-dates" style="display:none;margin-bottom:16px;">
+      <label id="edit-dre-venc-wrap" style="display:flex;align-items:flex-start;gap:10px;margin-bottom:10px;padding:10px 12px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;cursor:pointer;">
+        <input type="checkbox" id="edit-dre-venc" style="width:16px;height:16px;margin:2px 0 0;accent-color:#ea580c;flex-shrink:0;" />
+        <span style="font-size:12.5px;line-height:1.4;color:#334155;"><b>DRE pelo vencimento</b><br>
+        <span style="color:#64748b">A 1ª parcela fica na competência (mês da data da compra) e as demais entram na DRE no mês de vencimento de cada uma. Desligado: o valor total fica no mês da compra.</span></span>
+      </label>
       <div style="font-size:12px;font-weight:600;color:#ea580c;margin-bottom:10px;padding:8px 12px;background:#fff1e6;border-radius:6px;border-left:3px solid #ea580c;">
         📅 Datas de vencimento de cada parcela (opcional)
       </div>
@@ -7523,6 +7528,8 @@ function editLancamento(id) {
   populateDreCatSelects();
   const ecd = document.getElementById('edit-catdre');
   if (ecd) { ecd.innerHTML = _optsCategoriaLanc('saida', l.cat_dre || ''); ecd.value = l.cat_dre || ''; }
+  const _chkDreVenc = document.getElementById('edit-dre-venc');
+  if (_chkDreVenc) _chkDreVenc.checked = !!l.dre_pelo_venc;
   // Datas manuais de parcelas no modal
   if (l.parcelas > 1) {
     toggleParcelaDates('edit-parcelas', 'edit-parcela-dates');
@@ -7621,6 +7628,18 @@ async function updateLancamento() {
     }
     if (_mud) l.parcela_datas = JSON.stringify({ datas: _nv.datas, valores: _nv.valores, pagos: _nv.pagos, dtpagos: _nv.dtpagos });
   }
+  // DRE pelo vencimento (só faz sentido parcelado). Precisa da coluna
+  // dre_pelo_venc na tabela lancamentos (criada uma única vez no Supabase).
+  const _chkDV = document.getElementById('edit-dre-venc');
+  const _dreVenc = !!(_chkDV && _chkDV.checked && l.parcelas > 1);
+  const _colDreVenc = db.lancamentos.some(x => x && Object.prototype.hasOwnProperty.call(x, 'dre_pelo_venc'));
+  if (_dreVenc && !_colDreVenc) {
+    Object.keys(l).forEach(k => { if (!(k in _origLanc)) delete l[k]; });
+    Object.assign(l, _origLanc);
+    alert('Para usar "DRE pelo vencimento" é preciso criar a coluna no banco de dados uma única vez.\n\nNo Supabase → SQL Editor, rode:\n\nalter table lancamentos add column if not exists dre_pelo_venc boolean default false;\n\nDepois recarregue o sistema e salve de novo.');
+    return;
+  }
+  if (_colDreVenc) l.dre_pelo_venc = _dreVenc;
   const _payloadLanc = {
     dtpago: l.dtpago,
     empresa_id: l.empresa_id,
@@ -7631,6 +7650,7 @@ async function updateLancamento() {
     cat_dre: l.cat_dre,
     parcela_datas: l.parcela_datas
   };
+  if (_colDreVenc) _payloadLanc.dre_pelo_venc = _dreVenc;
   // Mês já fechado + usuário comum: nada é gravado; vira pedido ao master.
   if (_precisaAprovacao('pagar', _origLanc)) {
     Object.keys(l).forEach(k => { if (!(k in _origLanc)) delete l[k]; });
@@ -10364,6 +10384,23 @@ function calcularDespesasCpsvParaMetas(ano) {
 // Calcula, para cada mês do ano, o REALIZADO de Venda, CPV, Margem de
 // Contribuição e Lucro Líquido — seguindo exatamente a mesma lógica do DRE
 // (inclusive a variação de estoque somada ao CPV).
+// DRE pelo vencimento (opção do lançamento parcelado): a 1ª parcela fica na
+// competência (data da compra) e as demais no mês de vencimento de cada uma.
+// Retorna null quando o lançamento segue a regra normal (total na competência).
+function _dreParcelasPorVenc(l, mapaParc) {
+  if (!l || !l.dre_pelo_venc || (l.parcelas || 1) <= 1) return null;
+  const ps = (mapaParc.get(l.id) || []).slice().sort((a, b) => a.parcIdx - b.parcIdx);
+  if (!ps.length) return null;
+  return ps.map(pc => ({ data: pc.parcIdx === 1 ? (l.dtcompra || pc.venc) : (pc.venc || l.dtcompra), valor: pc.valParc || 0, pc }));
+}
+function _dreMapaParcelasPagar() {
+  const mapa = new Map();
+  getParcelas(false).concat(getParcelas(true)).forEach(pc => {
+    if (!mapa.has(pc.lancId)) mapa.set(pc.lancId, []);
+    mapa.get(pc.lancId).push(pc);
+  });
+  return mapa;
+}
 function calcularDreParaMetas(ano) {
   const vazio = { venda:{}, cpv:{}, mc:{}, lucro:{} };
   if (!ano || !db.dre_grupos.length) return vazio;
@@ -10389,7 +10426,24 @@ function calcularDreParaMetas(ano) {
     if (!grupoId && !somenteClass && grupoBase) grupoId = grupoBase.id;
     if (grupoId && valoresMes[m][grupoId] !== undefined) valoresMes[m][grupoId] += (l.valor||0);
   });
+  let _mapaParcMetas = null;
   db.lancamentos.forEach(l => {
+    if (l.dre_pelo_venc && (l.parcelas || 1) > 1) {
+      if (!_mapaParcMetas) _mapaParcMetas = _dreMapaParcelasPagar();
+      const rat = _dreParcelasPorVenc(l, _mapaParcMetas);
+      if (rat) {
+        const prodObjR = db.produtos.find(x => x.id === l.prod);
+        const catIdR = l.cat_dre || (prodObjR ? prodObjR.cat : null);
+        const grupoIdR = catIdR ? getDreCatGrupo(catIdR) : null;
+        rat.forEach(r => {
+          if (!r.data) return;
+          const pr = r.data.split('-'); if (parseInt(pr[0]) !== ano) return;
+          const mr = parseInt(pr[1]);
+          if (grupoIdR && valoresMes[mr][grupoIdR] !== undefined) valoresMes[mr][grupoIdR] += r.valor;
+        });
+        return;
+      }
+    }
     const dtRef = l.dtcompra; if (!dtRef) return;
     const p = dtRef.split('-'); if (parseInt(p[0]) !== ano) return;
     const m = parseInt(p[1]);
@@ -13943,6 +13997,7 @@ function renderDre() {
   });
 
   // 2. Lançamentos a Pagar (competência = data da compra)
+  let _mapaParcDreVenc = null;
   db.lancamentos.forEach(l => {
     // A fatura do cartão não é despesa: as despesas entram pela data da compra (bloco 2b)
     if (l.cartao_fatura) return;
@@ -13966,6 +14021,34 @@ function renderDre() {
         });
       });
       return;
+    }
+    // DRE pelo vencimento (opção do lançamento): 1ª parcela na competência,
+    // demais no mês de vencimento de cada parcela
+    if (l.dre_pelo_venc && (l.parcelas || 1) > 1) {
+      if (!_mapaParcDreVenc) _mapaParcDreVenc = _dreMapaParcelasPagar();
+      const rat = _dreParcelasPorVenc(l, _mapaParcDreVenc);
+      if (rat) {
+        const prodObjR = db.produtos.find(x => x.id === l.prod);
+        const catIdR = l.cat_dre || (prodObjR ? prodObjR.cat : null);
+        if (!catIdR && somenteClassificados) return;
+        const grupoIdR = catIdR ? getDreCatGrupo(catIdR) : null;
+        rat.forEach(r => {
+          if (!r.data) return;
+          const pr = r.data.split('-');
+          if (parseInt(pr[0]) !== ano) return;
+          const mr = parseInt(pr[1]);
+          if (!grupoIdR || valoresMes[mr][grupoIdR] === undefined) return;
+          valoresMes[mr][grupoIdR] += r.valor;
+          if (catIdR && valoresCatMes[mr][catIdR] !== undefined) valoresCatMes[mr][catIdR] += r.valor;
+          itensMes[mr][grupoIdR].push({
+            id: l.id, tipo: 'pagar', data: r.data,
+            nome: getFornNome(l.forn) + ` (parc. ${r.pc.parcIdx}/${r.pc.totalParc}${r.pc.parcIdx === 1 ? ' · competência' : ' · vencimento'})`,
+            prod: l.prod ? getProdNome(l.prod) : '', valor: r.valor,
+            status: r.pc.isPago ? 'Pago' : 'A Pagar', catId: catIdR || null, parc: r.pc.parcIdx
+          });
+        });
+        return;
+      }
     }
     const dtRef = l.dtcompra;
     if (!dtRef) return;
