@@ -473,7 +473,8 @@ th.ef-th { padding:8px 8px 8px 12px; }
 .dfcp .dfc-row-sub td { color:#374151; }
 .dfcp .dfc-row-sub td:first-child { padding-left:22px; color:#57534e; }
 .dfcp .dfc-val-pos { color:inherit; }
-.dfcp-neg { color:#b91c1c; }
+.dfcp-neg { color:#b91c1c !important; }
+.dfcp-pos { color:#15803d !important; }
 .dfcp-sec td { background:#f8fafc; color:#334155; font-weight:700; font-size:11px !important; text-transform:uppercase; letter-spacing:.6px; padding-top:9px; border-top:1px solid #e2e8f0; border-bottom:1px solid #e2e8f0; font-family:inherit !important; }
 .dfcp-sub td { font-weight:700; border-top:1px solid #cbd5e1; background:#fcfcfb; }
 .dfcp-res td { font-weight:800; background:#f1f5f9; border-top:2px solid #334155; border-bottom:1px solid #cbd5e1; }
@@ -2674,7 +2675,7 @@ body.menu-oculto .sidebar { transform:translateX(-248px); }
     <!-- ══ DFC DEMONSTRATIVO ══ -->
     <div class="page" id="page-dfc-demonstrativo">
       <div class="page-title">Demonstrativo de Fluxo de Caixa <span class="empresa-tag"></span></div>
-      <div class="page-sub">Visão mensal com acumulado do ano</div>
+      <div class="page-sub">Visão mensal com acumulado do ano — somente o que já foi pago ou recebido</div>
 
       <!-- Filtro Ano -->
       <div class="card" style="padding:14px 20px;margin-bottom:16px;">
@@ -2687,18 +2688,10 @@ body.menu-oculto .sidebar { transform:translateX(-248px); }
             <input type="checkbox" id="dfc-incluir-pagar" checked onchange="renderDfc()" style="width:15px;height:15px;margin:0;accent-color:#ea580c;" />
             Incluir Contas a Pagar
           </label>
-          <div style="display:flex;align-items:center;gap:4px;background:#faf9f7;border-radius:8px;padding:3px;">
-            <button id="btn-dfc-todos" onclick="setDfcFiltro('todos')" style="padding:5px 12px;font-size:12px;font-weight:600;border:none;border-radius:6px;cursor:pointer;background:#ea580c;color:#fff;">Todos</button>
-            <button id="btn-dfc-apagar" onclick="setDfcFiltro('apagar')" style="padding:5px 12px;font-size:12px;font-weight:600;border:none;border-radius:6px;cursor:pointer;background:transparent;color:#57534e;">Contas a Pagar</button>
-          </div>
           <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;">
             <input type="checkbox" id="dfc-incluir-receber" checked onchange="renderDfc()" style="width:15px;height:15px;margin:0;accent-color:#ea580c;" />
             Incluir Contas a Receber
           </label>
-          <div style="display:flex;align-items:center;gap:4px;background:#faf9f7;border-radius:8px;padding:3px;">
-            <button id="btn-dfc-rec-todos" onclick="setDfcFiltroRec('todos')" style="padding:5px 12px;font-size:12px;font-weight:600;border:none;border-radius:6px;cursor:pointer;background:#ea580c;color:#fff;">Todos</button>
-            <button id="btn-dfc-rec-aberto" onclick="setDfcFiltroRec('aberto')" style="padding:5px 12px;font-size:12px;font-weight:600;border:none;border-radius:6px;cursor:pointer;background:transparent;color:#57534e;">Contas a Receber</button>
-          </div>
         </div>
       </div>
 
@@ -6864,8 +6857,22 @@ function validarDataQuitacao(status, wrapId, inputId, rotulo) {
     if (inp) inp.focus();
     return null;
   }
+  if (_quitacaoFuturaBloqueada(val, rotulo.includes('recebimento'))) { if (inp) inp.focus(); return null; }
   return val;
 }
+// Pagamento/recebimento só pode ser registrado até hoje (nunca com data futura).
+// Retorna true (e avisa) quando a data é posterior a hoje.
+function _quitacaoFuturaBloqueada(data, ehRec) {
+  if (!data || data <= today()) return false;
+  alert(`Não é possível ${ehRec ? 'receber' : 'pagar'} com data futura (${fmtDate(data)}).\n\nA data do ${ehRec ? 'recebimento' : 'pagamento'} pode ser no máximo hoje (${fmtDate(today())}).`);
+  return true;
+}
+// Campos de data de pagamento/recebimento não aceitam datas depois de hoje
+const _IDS_DATA_QUITACAO = ['modal-pago-data','modal-recebido-data','bx-data','cc-pg-data','pgd-ed-data','comp-data','l-dtpago','lr-dtrecebido','edit-dtpago','elr-dtrecebido'];
+document.addEventListener('focusin', e => {
+  const t = e.target;
+  if (t && t.type === 'date' && (_IDS_DATA_QUITACAO.includes(t.id) || t.classList.contains('import-row-pago-data'))) t.max = today();
+});
 // Lançamento parcelado criado já quitado: todas as parcelas ficam
 // pagas/recebidas na data informada (status por parcela em parcela_datas).
 function _parcelasTodasQuitadas(raw, n, data) {
@@ -9034,6 +9041,7 @@ async function confirmarPago() {
   const banco = document.getElementById('modal-pago-banco').value;
   const tipoPag = document.getElementById('modal-pago-tipo-pag').value;
   if(!dtpago) { alert('Informe a data do pagamento.'); return; }
+  if (_quitacaoFuturaBloqueada(dtpago, false)) return;
   if (ccEhFormaCartao(tipoPag)) { ccPagarContaComCartao(); return; }
   if(!banco) { alert('Selecione o banco/conta de onde o valor foi pago.'); return; }
   const l = db.lancamentos.find(x=>x.id===id);
@@ -9099,6 +9107,7 @@ async function confirmarMarcarPagoMassa() {
   const banco = document.getElementById('mp-banco').value;
   if (!dataDe || !dataAte) { alert('Informe o período de vencimento (de/até).'); return; }
   if (dataDe > dataAte) { alert('A data "De" não pode ser depois da data "Até".'); return; }
+  if (dataAte > today()) { alert(`A data "Até" não pode ser depois de hoje (${fmtDate(today())}): cada parcela é paga na data do seu vencimento, e não é possível pagar com data futura.`); return; }
   if (!banco) { alert('Selecione o banco/conta.'); return; }
 
   const alvo = getParcelas(false).filter(p => !p.cartaoFatura && p.venc && p.venc >= dataDe && p.venc <= dataAte);
@@ -9196,6 +9205,7 @@ async function confirmarMarcarRecebidoMassa() {
   const banco = document.getElementById('mr-banco').value;
   if (!dataDe || !dataAte) { alert('Informe o período de vencimento (de/até).'); return; }
   if (dataDe > dataAte) { alert('A data "De" não pode ser depois da data "Até".'); return; }
+  if (dataAte > today()) { alert(`A data "Até" não pode ser depois de hoje (${fmtDate(today())}): cada parcela é recebida na data do seu vencimento, e não é possível receber com data futura.`); return; }
   if (!banco) { alert('Selecione o banco/conta.'); return; }
 
   const alvo = getParcelasReceber(false).filter(p => p.venc && p.venc >= dataDe && p.venc <= dataAte);
@@ -12017,7 +12027,7 @@ function marcarRecebido(id, parcIdx) {
 function usarVencimentoReceber() {
   const id=document.getElementById('modal-recebido-id').value;
   const l=db.lancreceber.find(x=>x.id===id);
-  document.getElementById('modal-recebido-data').value=(l&&l.dtprev)?l.dtprev:today();
+  document.getElementById('modal-recebido-data').value=(l&&l.dtprev&&l.dtprev<=today())?l.dtprev:today();
 }
 async function confirmarRecebido() {
   const id=document.getElementById('modal-recebido-id').value;
@@ -12026,6 +12036,7 @@ async function confirmarRecebido() {
   const banco=document.getElementById('modal-recebido-banco').value;
   const tipoPag=document.getElementById('modal-recebido-tipo-pag').value;
   if(!dtrecebido){ alert('Informe a data do recebimento.'); return; }
+  if (_quitacaoFuturaBloqueada(dtrecebido, true)) return;
   if(!banco){ alert('Selecione o banco/conta em que o valor foi recebido.'); return; }
   const l=db.lancreceber.find(x=>x.id===id); if(!l) return;
   const n = l.parcelas || 1;
@@ -12584,114 +12595,98 @@ function renderDfc() {
     grupos.forEach(g => { dados[m][g.id] = 0; itensDfc[m][g.id] = []; });
   }
 
-  // 1. Contas a Receber → Categoria do lançamento, senão do produto de venda, senão Receitas
+  // DFC em regime de caixa: só entra o que já foi efetivamente pago/recebido,
+  // na data do pagamento/recebimento e nas contas ativas — mesmo critério do
+  // saldo dos bancos, para o "Saldo final do mês" bater com o "Total em bancos".
+  const bancosAtivos = (db.bancos || []).filter(b => b.ativo !== false);
+  const bancosAtivosIds = new Set(bancosAtivos.map(b => b.id));
+  const mesDaData = d => { if (!d) return 0; const pt = d.split('-'); return parseInt(pt[0]) === ano ? parseInt(pt[1]) : 0; };
+  const catDe = id => id ? db.dfc_cats.find(x => x.id === id) : null;
+
+  // 1. Recebimentos realizados → categoria do lançamento, senão do produto de venda, senão Receitas
   if (inclReceber) {
-    db.lancreceber.forEach(l => {
-      if (dfcFiltroRec === 'aberto' && l.recebido === 'sim') return;
-      const dtRef = l.dtprev || l.dtvenda;
-      if (!dtRef) return;
-      const parts = dtRef.split('-');
-      if (parseInt(parts[0]) !== ano) return;
-      const m = parseInt(parts[1]);
-      const valParc = (l.valor||0) / (l.parcelas||1);
-      const catLanc = l.cat_dre ? db.dfc_cats.find(x => x.id === l.cat_dre) : null;
-      const prodObj = db.prodvenda.find(x => x.id === l.prod);
-      const catProd = !catLanc && prodObj && prodObj.cat ? db.dfc_cats.find(x => x.id === prodObj.cat) : null;
-      const catObj  = catLanc || catProd;
+    getParcelasReceber(true).forEach(p => {
+      if (!p.dtrecebido || !bancosAtivosIds.has(p.banco)) return;
+      const m = mesDaData(p.dtrecebido); if (!m) return;
+      const catObj  = catDe(p.catId);
       const grupoId = catObj ? catObj.grupo : (grupoPadraoReceita && grupoPadraoReceita.id);
-      if (grupoId && dados[m][grupoId] !== undefined) {
-        dados[m][grupoId] += valParc;
-        itensDfc[m][grupoId].push({
-          id: l.id, tipo: 'receber', data: dtRef, nome: getClienteNome(l.cliente),
-          prod: l.prod ? getProdVendaNome(l.prod) : '', valor: valParc,
-          status: l.recebido === 'sim' ? 'Recebido' : 'A Receber', catId: catObj ? catObj.id : null
-        });
-      }
-    });
-  }
-
-  // 2. Contas a Pagar → Categoria do lançamento, senão do produto, senão Custos
-  if (inclPagar) {
-    const _ccOriDfc = ccOrigensSet();
-    db.lancamentos.forEach(l => {
-      // Fatura do cartão: entra abaixo, aberta pelas despesas (cada uma na sua categoria)
-      if (l.cartao_fatura) return;
-      if (dfcFiltroPago === 'apagar' && l.pago === 'sim') return;
-      const n = l.parcelas || 1;
-      const valParc = (l.valor || 0) / n;
-      const catLanc = l.cat_dre ? db.dfc_cats.find(x => x.id === l.cat_dre) : null;
-      const prodObj = db.produtos.find(x => x.id === l.prod);
-      const catProd = !catLanc && prodObj && prodObj.cat ? db.dfc_cats.find(x => x.id === prodObj.cat) : null;
-      const catObj  = catLanc || catProd;
-      const grupoId = catObj ? catObj.grupo : (grupoPadraoCusto && grupoPadraoCusto.id);
-      let pagosParc = [];
-      if (n > 1) { try { pagosParc = _parseParcelas(l.parcela_datas).pagos || []; } catch(e) { pagosParc = []; } }
-      for (let i = 1; i <= n; i++) {
-        // parcela paga com cartão: o valor sai na fatura (bloco 2b), não aqui
-        if (_ccOriDfc.has(`${l.id}|${i}`)) continue;
-        const venc = parcelaVencimento(l.dtprev, i, n) || l.dtcompra;
-        if (!venc) continue;
-        const parts = venc.split('-');
-        if (parseInt(parts[0]) !== ano) continue;
-        const m = parseInt(parts[1]);
-        if (grupoId && dados[m][grupoId] !== undefined) {
-          dados[m][grupoId] += valParc;
-          const pagoParc = n > 1 ? (pagosParc[i-1] === true) : (l.pago === 'sim');
-          itensDfc[m][grupoId].push({
-            id: l.id, tipo: 'pagar', data: venc,
-            nome: getFornNome(l.forn) + (n > 1 ? ` (parc. ${i}/${n})` : ''),
-            prod: l.prod ? getProdNome(l.prod) : '', valor: valParc,
-            status: pagoParc ? 'Pago' : 'A Pagar', catId: catObj ? catObj.id : null, parc: i
-          });
-        }
-      }
-    });
-  }
-
-  // 2b. Despesas dos cartões de crédito → saem no VENCIMENTO da fatura,
-  // cada uma na categoria informada na despesa (sem categoria → Custos)
-  if (inclPagar) {
-    (db.cartao_despesas || []).forEach(d => {
-      const c = ccCartao(d.cartao_id);
-      if (!c || !d.fatura) return;
-      const paga = ccFaturaPaga(c.id, d.fatura);
-      if (dfcFiltroPago === 'apagar' && paga) return;
-      const venc = ccDataVencimento(c, d.fatura);
-      if (!venc) return;
-      const parts = venc.split('-');
-      if (parseInt(parts[0]) !== ano) return;
-      const m = parseInt(parts[1]);
-      const catObj = d.cat_dre ? db.dfc_cats.find(x => x.id === d.cat_dre) : null;
-      const grupoId = catObj ? catObj.grupo : (grupoPadraoCusto && grupoPadraoCusto.id);
       if (!grupoId || dados[m][grupoId] === undefined) return;
-      const v = Number(d.valor) || 0;
+      const v = p.valParc || 0;
       dados[m][grupoId] += v;
       itensDfc[m][grupoId].push({
-        id: d.id, tipo: 'cartao', chave: ccChave(c.id, d.fatura), data: venc,
-        nome: `💳 ${c.nome} — ${d.descricao || ''}${(d.total_parcelas || 1) > 1 ? ` (${d.parcela}/${d.total_parcelas})` : ''}`,
-        prod: 'Fatura ' + ccMesCurto(d.fatura), valor: v,
-        status: paga ? 'Pago' : 'A Pagar', catId: catObj ? catObj.id : null
+        id: p.lancId, tipo: 'receber', data: p.dtrecebido,
+        nome: getClienteNome(p.cliente) + (p.totalParc > 1 ? ` (parc. ${p.parcIdx}/${p.totalParc})` : ''),
+        prod: p.prod ? getProdVendaNome(p.prod) : '', valor: v,
+        status: 'Recebido', catId: catObj ? catObj.id : null, parc: p.parcIdx
       });
     });
   }
 
-  // 3. Lançamentos extras DFC
-  db.dfc_lans.forEach(l => {
-    if (!l.data) return;
-    const parts = l.data.split('-');
-    if (parseInt(parts[0]) !== ano) return;
-    const m = parseInt(parts[1]);
-    const catObj = db.dfc_cats.find(x => x.id === l.cat);
-    if (!catObj) return;
-    const key = catObj.grupo;
-    if (dados[m][key] !== undefined) {
-      dados[m][key] += (l.valor || 0);
-      itensDfc[m][key].push({
-        id: '', tipo: 'dfc', data: l.data, nome: catObj.nome + (l.desc ? ' — ' + l.desc : ''),
-        prod: '', valor: l.valor || 0, status: 'Lançamento DFC', catId: catObj.id
+  // 2. Pagamentos realizados → categoria do lançamento, senão do produto, senão Custos.
+  // Parcelas pagas via cartão não têm banco (o dinheiro sai na fatura).
+  // Fatura do cartão paga: sai na data do pagamento, aberta pelas despesas
+  // (cada uma na sua categoria; sem categoria → Custos).
+  if (inclPagar) {
+    getParcelas(true).forEach(p => {
+      if (!p.dtpago || !bancosAtivosIds.has(p.banco)) return;
+      const m = mesDaData(p.dtpago); if (!m) return;
+      const v = p.valParc || 0;
+      if (p.cartaoFatura) {
+        const [cid, mesFat] = String(p.cartaoFatura).split('|');
+        const c = ccCartao(cid);
+        const desp = (cid && mesFat) ? ccDespesasFatura(cid, mesFat) : [];
+        const totDesp = desp.reduce((s2, d) => s2 + (Number(d.valor) || 0), 0);
+        const add = (catObj, val, nome, dId) => {
+          const grupoId = catObj ? catObj.grupo : (grupoPadraoCusto && grupoPadraoCusto.id);
+          if (!grupoId || dados[m][grupoId] === undefined) return;
+          dados[m][grupoId] += val;
+          itensDfc[m][grupoId].push({
+            id: dId, tipo: 'cartao', chave: p.cartaoFatura, data: p.dtpago, nome,
+            prod: mesFat ? 'Fatura ' + ccMesCurto(mesFat) : 'Fatura', valor: val,
+            status: 'Pago', catId: catObj ? catObj.id : null
+          });
+        };
+        if (Math.abs(totDesp) > 0.004) {
+          // rateia o valor efetivamente pago entre as despesas da fatura
+          const fator = v / totDesp;
+          desp.forEach(d => add(catDe(d.cat_dre), (Number(d.valor) || 0) * fator,
+            `💳 ${c ? c.nome : 'Cartão'} — ${d.descricao || ''}${(d.total_parcelas || 1) > 1 ? ` (${d.parcela}/${d.total_parcelas})` : ''}`, d.id));
+        } else {
+          add(null, v, `💳 ${c ? c.nome : 'Cartão'} — pagamento da fatura`, '');
+        }
+        return;
+      }
+      const catObj  = catDe(p.catId);
+      const grupoId = catObj ? catObj.grupo : (grupoPadraoCusto && grupoPadraoCusto.id);
+      if (!grupoId || dados[m][grupoId] === undefined) return;
+      dados[m][grupoId] += v;
+      itensDfc[m][grupoId].push({
+        id: p.lancId, tipo: 'pagar', data: p.dtpago,
+        nome: getFornNome(p.forn) + (p.totalParc > 1 ? ` (parc. ${p.parcIdx}/${p.totalParc})` : ''),
+        prod: p.prod ? getProdNome(p.prod) : '', valor: v,
+        status: 'Pago', catId: catObj ? catObj.id : null, parc: p.parcIdx
       });
-    }
+    });
+  }
+
+  // 3. Outras movimentações de caixa que alteram o saldo dos bancos:
+  // transferências de/para contas fora do sistema (ou inativas) e saldos de
+  // clientes/fornecedores com dinheiro movimentado. Transferência entre duas
+  // contas ativas não muda o total e fica de fora.
+  const outrasMov = {};
+  for (let m = 1; m <= 12; m++) outrasMov[m] = 0;
+  (db.transferencias || []).forEach(t => {
+    const m = mesDaData(t.data); if (!m) return;
+    const o = bancosAtivosIds.has(t.origem), d = bancosAtivosIds.has(t.destino);
+    if (o && !d) outrasMov[m] -= (t.valor || 0);
+    if (d && !o) outrasMov[m] += (t.valor || 0);
   });
+  (db.conta_terceiros || []).forEach(e => {
+    if (!e.caixa || !bancosAtivosIds.has(e.banco)) return;
+    const m = mesDaData(e.data); if (!m) return;
+    outrasMov[m] += (Number(e.caixa) || 0);
+  });
+  const temOutrasMov = Object.values(outrasMov).some(v => Math.abs(v) > 0.004);
   _dfcItensCache = itensDfc;
   _dfcAnoCache = ano;
 
@@ -12700,7 +12695,7 @@ function renderDfc() {
   for (let m = 1; m <= 12; m++) {
     let tot = 0;
     grupos.forEach(g => { tot += g.tipo === 'entrada' ? dados[m][g.id] : -dados[m][g.id]; });
-    liquido[m] = tot;
+    liquido[m] = tot + outrasMov[m];
   }
 
   // Total ano
@@ -12711,6 +12706,7 @@ function renderDfc() {
   }
   let totalLiquido = 0;
   grupos.forEach(g => totalLiquido += g.tipo === 'entrada' ? totais[g.id] : -totais[g.id]);
+  for (let m = 1; m <= 12; m++) totalLiquido += outrasMov[m];
 
   // Montar cabeçalho
   const mesesHeader = MESES_ABR.slice(1).map(m =>
@@ -12752,7 +12748,6 @@ function renderDfc() {
   const somaAno = o => Object.values(o).reduce((s, v) => s + v, 0);
 
   // Resultado acumulado no ano e saldo (saldo dos bancos em 31/12 do ano anterior + resultado)
-  const bancosAtivos = (db.bancos || []).filter(b => b.ativo !== false);
   const saldoIniAno = bancosAtivos.reduce((s, b) => s + _dfcSaldoBancoAte(b, `${ano - 1}-12-31`), 0);
   const acum = {}, saldoIni = {}, saldoFim = {};
   let a = 0, sd = saldoIniAno;
@@ -12775,21 +12770,24 @@ function renderDfc() {
   for (let m = 1; m <= 12; m++) totBanco[m] = mesAberto(m) ? saldosBanco.reduce((s, x) => s + (x.v[m] || 0), 0) : null;
   let ultMes = 0; for (let m = 1; m <= 12; m++) if (mesAberto(m)) ultMes = m;
 
-  const brl = v => v == null ? '<span class="dfc-val-zero">—</span>'
+  // Cores: negativo vermelho, positivo verde; contas de receita sempre verdes
+  // e contas de despesa sempre vermelhas (cor fixa via "corFixa").
+  const brl = (v, corFixa) => v == null ? '<span class="dfc-val-zero">—</span>'
     : (Math.abs(v) < 0.005 ? '<span class="dfc-val-zero">—</span>'
-    : `<span class="${v < 0 ? 'dfcp-neg' : ''}">${v < 0 ? '(' + fmtBRL(Math.abs(v)) + ')' : fmtBRL(v)}</span>`);
-  const linhaVal = (cls, label, vals, total, title) =>
-    `<tr class="${cls}"${title ? ` title="${title}"` : ''}><td>${label}</td>${Array.from({length:12},(_,i)=>`<td>${brl(vals[i+1])}</td>`).join('')}<td class="dfc-col-total">${brl(total)}</td></tr>`;
+    : `<span class="${corFixa || (v < 0 ? 'dfcp-neg' : 'dfcp-pos')}">${v < 0 ? '(' + fmtBRL(Math.abs(v)) + ')' : fmtBRL(v)}</span>`);
+  const linhaVal = (cls, label, vals, total, title, corFixa) =>
+    `<tr class="${cls}"${title ? ` title="${title}"` : ''}><td>${label}</td>${Array.from({length:12},(_,i)=>`<td>${brl(vals[i+1], corFixa)}</td>`).join('')}<td class="dfc-col-total">${brl(total, corFixa)}</td></tr>`;
   const linhaSaida = (g) => {
+    const brlG = v => brl(v, g.tipo === 'entrada' ? 'dfcp-pos' : 'dfcp-neg');
     const cells = Array.from({length:12},(_,i)=>{
       const v = dados[i+1][g.id];
       return v > 0
-        ? `<td class="dre-cell-click" onclick="abrirDetalheDfc('${g.id}',${i+1})" title="Ver lançamentos">${brl(v)}</td>`
+        ? `<td class="dre-cell-click" onclick="abrirDetalheDfc('${g.id}',${i+1})" title="Ver lançamentos">${brlG(v)}</td>`
         : `<td><span class="dfc-val-zero">—</span></td>`;
     }).join('');
     const tot = totais[g.id];
     const totCell = tot > 0
-      ? `<td class="dfc-col-total dre-cell-click" onclick="abrirDetalheDfc('${g.id}','total')" title="Ver lançamentos do ano">${brl(tot)}</td>`
+      ? `<td class="dfc-col-total dre-cell-click" onclick="abrirDetalheDfc('${g.id}','total')" title="Ver lançamentos do ano">${brlG(tot)}</td>`
       : `<td class="dfc-col-total"><span class="dfc-val-zero">—</span></td>`;
     return `<tr class="dfc-row-sub"><td>${g.nome}</td>${cells}${totCell}</tr>`;
   };
@@ -12799,8 +12797,9 @@ function renderDfc() {
     <thead><tr><th>Descrição</th>${mesesHeader}</tr></thead>
     <tbody>
       ${linhaVal('dfcp-saldo', 'Saldo inicial do mês', saldoIni, saldoIniAno, 'Saldo das contas em 31/12/' + (ano - 1) + ' + resultado dos meses anteriores')}
-      ${entradaGrupos.length ? sec('Entradas') + entradaGrupos.map(linhaSaida).join('') + linhaVal('dfcp-sub', 'Total de entradas', totEnt, somaAno(totEnt)) : ''}
-      ${saidaGrupos.length ? sec('Saídas') + saidaGrupos.map(linhaSaida).join('') + linhaVal('dfcp-sub', 'Total de saídas', totSai, somaAno(totSai)) : ''}
+      ${entradaGrupos.length ? sec('Entradas') + entradaGrupos.map(linhaSaida).join('') + linhaVal('dfcp-sub', 'Total de entradas', totEnt, somaAno(totEnt), '', 'dfcp-pos') : ''}
+      ${saidaGrupos.length ? sec('Saídas') + saidaGrupos.map(linhaSaida).join('') + linhaVal('dfcp-sub', 'Total de saídas', totSai, somaAno(totSai), '', 'dfcp-neg') : ''}
+      ${temOutrasMov ? linhaVal('dfc-row-sub', 'Transferências e outros ajustes de caixa', outrasMov, somaAno(outrasMov), 'Transferências de/para contas fora do sistema ou inativas e saldos de clientes/fornecedores movimentados em caixa') : ''}
       ${linhaVal('dfcp-res', 'Resultado do mês (entradas − saídas)', liquido, totalLiquido)}
       ${linhaVal('dfcp-acum', 'Fluxo de caixa acumulado no ano', acum, acum[12])}
       ${linhaVal('dfcp-final', 'Saldo final do mês', saldoFim, saldoFim[12], 'Saldo inicial + resultado do mês')}
@@ -12809,7 +12808,7 @@ function renderDfc() {
         + linhaVal('dfcp-sub', 'Total em bancos', totBanco, ultMes ? totBanco[ultMes] : null) : ''}
     </tbody>
   </table>
-  <div class="dfcp-nota">Valores entre parênteses são negativos. Entradas e saídas pela data de vencimento. Saldo inicial = saldo das contas em 31/12/${ano - 1}. Saldos bancários = o que já foi efetivamente recebido, pago e transferido até o fim de cada mês${ultMes ? ` (mês atual: até hoje); na coluna Total, o saldo de ${MESES_ABR[ultMes]}` : ''}.</div>`;
+  <div class="dfcp-nota">Valores entre parênteses são negativos. Regime de caixa: só entram valores já pagos/recebidos, pela data do pagamento/recebimento, nas contas ativas — o saldo final do mês bate com o total em bancos. Saldo inicial = saldo das contas em 31/12/${ano - 1}. Saldos bancários = o que já foi efetivamente recebido, pago e transferido até o fim de cada mês${ultMes ? ` (mês atual: até hoje); na coluna Total, o saldo de ${MESES_ABR[ultMes]}` : ''}.</div>`;
 
   wrap.innerHTML = html;
 }
@@ -18761,6 +18760,11 @@ function aplicarPagoMassaImport(pago) {
 // Lançamento marcado como pago/recebido precisa de banco (mesma regra da
 // tela "Marcar como Pago"), senão o saldo da conta não fecha.
 function _validarLinhasPagasImport(linhas, tipo) {
+  const futuras = linhas.filter(r => r.pago && (r.dtpago || r.dataRef) > today()).length;
+  if (futuras) {
+    alert(`${futuras} linha(s) marcada(s) como ${tipo==='pagar'?'paga(s)':'recebida(s)'} com data futura.\n\nA data do ${tipo==='pagar'?'pagamento':'recebimento'} pode ser no máximo hoje (${fmtDate(today())}). Ajuste a data ou desmarque "${tipo==='pagar'?'Já pago':'Já recebido'}".`);
+    return false;
+  }
   const semBanco = linhas.filter(r => r.pago && !r.banco).length;
   if (semBanco) {
     alert(`${semBanco} linha(s) marcada(s) como ${tipo==='pagar'?'paga(s)':'recebida(s)'} sem Banco / Conta.\n\nEscolha o banco (linha a linha ou em "Banco em massa") ou desmarque "${tipo==='pagar'?'Já pago':'Já recebido'}".`);
@@ -20543,6 +20547,7 @@ async function ccSalvarDespesa() {
   const valor = parseFloat(document.getElementById('cc-d-valor').value) || 0;
   if (!cid) { alert('Selecione o cartão.'); return; }
   if (!data) { alert('Informe a data da compra.'); return; }
+  if (document.getElementById('cc-d-orig-lanc').value && !document.getElementById('cc-d-grupo').value && _quitacaoFuturaBloqueada(data, false)) return;
   if (!descricao) { alert('Informe a descrição.'); return; }
   if (!valor) { alert('Informe o valor.'); return; }
   if (valor < 0 && document.getElementById('cc-d-parcelada').value === 'sim') { alert('Crédito/estorno (valor negativo) não pode ser parcelado.'); return; }
@@ -20673,6 +20678,7 @@ async function ccConfirmarPagamento() {
   const dtpago = document.getElementById('cc-pg-data').value;
   const banco = document.getElementById('cc-pg-banco').value;
   if (!dtpago) { alert('Informe a data do pagamento.'); return; }
+  if (_quitacaoFuturaBloqueada(dtpago, false)) return;
   if (!banco) { alert('Selecione a conta (banco) de onde saiu o pagamento.'); return; }
   // garante que o valor do lançamento está igual ao total da fatura
   if (!(await ccSincronizarFatura(cid, mes))) { alert('❌ Erro ao atualizar a fatura.' + sbErroDetalhe()); return; }
@@ -21413,6 +21419,7 @@ async function _compConfirmar() {
   c.data = document.getElementById('comp-data').value;
   c.desconto = _r2(document.getElementById('comp-desconto').value);
   if (!c.data) { alert('Informe a data.'); return; }
+  if (_quitacaoFuturaBloqueada(c.data, c.tipo === 'receber')) return;
   const k = _compCalc(); const ehRec = c.tipo === 'receber'; const tp = _tipoPessoa(c.tipo);
   const linhas = [];
 
@@ -21537,6 +21544,7 @@ function _patchQuitarComp(tipo, l, parcelas, data, desconto, banco, forma) {
 
 async function aplicarComposicao(tipo, l, parcelas, C) {
   if (!_chqExigeTabelas()) return false;
+  if (_quitacaoFuturaBloqueada(C && C.data, tipo === 'receber')) return false;
   const ehRec = tipo === 'receber';
   const tp = _tipoPessoa(tipo);
   const pessoa = ehRec ? l.cliente : l.forn;
@@ -22602,7 +22610,7 @@ function _bxTotais() {
 }
 function _bxUsarVencimento() {
   const p = _bx && _bx.itens[0];
-  document.getElementById('bx-data').value = (p && p.venc) || today();
+  document.getElementById('bx-data').value = (p && p.venc && p.venc <= today()) ? p.venc : today();
 }
 function _bxPagarComCartao() {
   const p = _bx.itens[0];
@@ -22622,6 +22630,7 @@ function _bxAbrirAvancado() {
 async function _bxBaixaSimples(tipo, l, parcs, data, banco, forma) {
   const n = l.parcelas || 1;
   const ehRec = tipo === 'receber';
+  if (_quitacaoFuturaBloqueada(data, ehRec)) return false;
   const fl = ehRec ? 'recebido' : 'pago', dtk = ehRec ? 'dtrecebido' : 'dtpago';
   const patch = { banco, tipo_pag: forma };
   if (n > 1) {
@@ -22660,6 +22669,7 @@ async function _bxConfirmar() {
   const ehRec = b.tipo === 'receber';
   const data = document.getElementById('bx-data').value;
   if (!data) { alert('Informe a data do ' + (ehRec ? 'recebimento.' : 'pagamento.')); return; }
+  if (_quitacaoFuturaBloqueada(data, ehRec)) return;
   if (b.linhas.some(x => x.forma === 'Cheque')) { await _bxConfirmarComCheques(data, b.linhas.filter(x => x.forma === 'Cheque' || _r2(x.valor) > 0)); return; }
   const linhas = b.linhas.filter(x => _r2(x.valor) > 0);
   if (!linhas.length) { alert('Informe o valor ' + (ehRec ? 'recebido.' : 'pago.')); return; }
@@ -23365,6 +23375,7 @@ async function _pgdSalvarEdicao() {
     banco: comp ? antes.banco : document.getElementById('pgd-ed-banco').value
   };
   if (!novaData) { alert('Informe a data.'); return; }
+  if (_quitacaoFuturaBloqueada(novaData, tipo === 'receber')) return;
   if (antes.data === depois.data && antes.forma === depois.forma && antes.banco === depois.banco) { alert('Nada foi alterado.'); return; }
   if (!motivo) { alert('Informe o motivo da alteração — ele fica registrado na auditoria.'); document.getElementById('pgd-ed-motivo').focus(); return; }
   const btn = document.getElementById('pgd-ed-ok'); if (btn) btn.disabled = true;
