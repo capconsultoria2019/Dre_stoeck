@@ -443,6 +443,67 @@ th.ef-th { padding:8px 8px 8px 12px; }
 .badge-tipo-banco { display:inline-flex;align-items:center;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;background:#fff1e6;color:#ea580c; }
 
 
+
+/* ── AVISOS DE VENCIMENTO (janela ao entrar) ── */
+#modal-avisos { z-index:190; backdrop-filter:blur(2px); }
+#modal-avisos .modal { max-width:1180px; width:96vw; max-height:92vh; padding:0; overflow:hidden; display:flex; flex-direction:column; border-radius:16px; box-shadow:0 24px 60px rgba(15,23,42,.35); }
+.av-head { background:linear-gradient(135deg,#1f2937 0%,#111827 100%); color:#fff; padding:18px 24px; display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap; }
+.av-head h2 { margin:0; font-size:18px; font-weight:800; letter-spacing:.2px; display:flex; align-items:center; gap:10px; }
+.av-head h2 .av-ico { width:34px; height:34px; border-radius:10px; background:#ea580c; display:flex; align-items:center; justify-content:center; }
+.av-head h2 .av-ico svg { width:18px; height:18px; }
+.av-head .av-sub { font-size:12px; color:#cbd5e1; margin-top:3px; font-weight:500; }
+.av-head-ctrl { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+.av-head-ctrl input, .av-head-ctrl select { background:#374151; border:1px solid #4b5563; color:#fff; border-radius:8px; padding:7px 10px; font-size:13px; width:auto; }
+.av-head-ctrl input::placeholder { color:#9ca3af; }
+.av-head-ctrl input { width:220px; }
+.av-x { background:transparent; border:none; color:#cbd5e1; font-size:22px; cursor:pointer; line-height:1; padding:2px 6px; border-radius:6px; }
+.av-x:hover { background:#374151; color:#fff; }
+.av-body { padding:18px 24px; overflow:auto; background:#f8fafc; flex:1; }
+.av-kpis { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:18px; }
+.av-kpi { position:relative; border-radius:12px; padding:14px 16px 14px 18px; background:#fff; border:1px solid #e5e7eb; box-shadow:0 1px 2px rgba(0,0,0,.04); overflow:hidden; }
+.av-kpi:before { content:''; position:absolute; left:0; top:0; bottom:0; width:4px; }
+.av-kpi.atr:before { background:#dc2626; } .av-kpi.ven:before { background:#f59e0b; }
+.av-kpi .lbl { font-size:10.5px; color:#6b7280; text-transform:uppercase; letter-spacing:.6px; font-weight:700; }
+.av-kpi .val { font-family:'DM Mono',monospace; font-size:20px; font-weight:700; margin:4px 0 2px; color:#111827; }
+.av-kpi.atr .val { color:#b91c1c; } .av-kpi.ven .val { color:#b45309; }
+.av-kpi .qtd { font-size:12px; color:#6b7280; }
+.av-cols { display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+.av-card { background:#fff; border:1px solid #e5e7eb; border-radius:12px; overflow:hidden; box-shadow:0 1px 2px rgba(0,0,0,.04); }
+.av-card-h { display:flex; justify-content:space-between; align-items:center; padding:12px 16px; border-bottom:1px solid #eef0f3; }
+.av-card-h h3 { margin:0; font-size:14px; font-weight:800; color:#111827; display:flex; align-items:center; gap:8px; }
+.av-card-h h3 i { width:8px; height:8px; border-radius:50%; display:inline-block; }
+.av-tabs { display:flex; gap:4px; background:#f1f5f9; border-radius:8px; padding:3px; }
+.av-tab { border:none; background:transparent; font-size:12px; font-weight:700; color:#475569; padding:5px 10px; border-radius:6px; cursor:pointer; white-space:nowrap; }
+.av-tab.on { background:#fff; color:#111827; box-shadow:0 1px 2px rgba(0,0,0,.08); }
+.av-tab .n { display:inline-block; min-width:18px; padding:0 5px; border-radius:9px; font-size:10.5px; margin-left:4px; }
+.av-tab .n.atr { background:#fee2e2; color:#b91c1c; } .av-tab .n.ven { background:#fef3c7; color:#92400e; }
+.av-lista { max-height:46vh; overflow:auto; }
+.av-lista table { width:100%; border-collapse:collapse; font-size:12.5px; }
+.av-lista thead th { position:sticky; top:0; background:#f8fafc; color:#64748b; font-size:10.5px; text-transform:uppercase; letter-spacing:.5px; font-weight:700; text-align:left; padding:7px 10px; border-bottom:1px solid #e5e7eb; z-index:1; }
+.av-lista thead th.r { text-align:right; }
+.av-lista td { padding:8px 10px; border-bottom:1px solid #f1f5f9; vertical-align:middle; color:#1f2937; }
+.av-lista tr:hover td { background:#fafafa; }
+.av-lista td.v { text-align:right; font-family:'DM Mono',monospace; white-space:nowrap; font-weight:600; }
+.av-lista td.d { white-space:nowrap; color:#475569; font-family:'DM Mono',monospace; font-size:12px; }
+.av-lista td.n { line-height:1.3; }
+.av-lista td.n small { display:block; color:#94a3b8; font-size:11px; }
+.av-pill { display:inline-block; font-size:11px; font-weight:700; padding:2px 8px; border-radius:20px; white-space:nowrap; }
+.av-pill.atr { background:#fee2e2; color:#b91c1c; } .av-pill.hoje { background:#ffedd5; color:#c2410c; }
+.av-pill.ven { background:#f1f5f9; color:#475569; } .av-pill.inv { background:#fef2f2; color:#991b1b; border:1px dashed #fca5a5; }
+.av-acts { display:flex; gap:4px; justify-content:flex-end; white-space:nowrap; }
+.av-btn { width:28px; height:28px; border-radius:7px; border:1px solid #e5e7eb; background:#fff; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; padding:0; color:#475569; transition:all .12s; }
+.av-btn svg { width:14px; height:14px; }
+.av-btn:hover { border-color:#cbd5e1; background:#f8fafc; color:#111827; }
+.av-btn.ok { background:#16a34a; border-color:#16a34a; color:#fff; } .av-btn.ok:hover { background:#15803d; }
+.av-btn.del:hover { background:#fef2f2; border-color:#fecaca; color:#dc2626; }
+.av-btn.cc { width:auto; padding:0 8px; font-size:11px; font-weight:700; }
+.av-tot { display:flex; justify-content:space-between; padding:10px 16px; background:#f8fafc; border-top:1px solid #eef0f3; font-size:12px; color:#475569; font-weight:700; }
+.av-tot b { font-family:'DM Mono',monospace; color:#111827; }
+.av-vazio { padding:34px 16px; text-align:center; color:#94a3b8; font-size:13px; }
+.av-vazio b { display:block; font-size:22px; margin-bottom:4px; color:#16a34a; }
+.av-foot { display:flex; justify-content:space-between; align-items:center; gap:8px; padding:12px 24px; border-top:1px solid #e5e7eb; background:#fff; flex-wrap:wrap; }
+.av-foot .av-dica { font-size:11.5px; color:#94a3b8; }
+@media (max-width:900px) { .av-cols { grid-template-columns:1fr !important; } .av-kpis { grid-template-columns:1fr 1fr !important; } .av-head-ctrl input { width:150px; } }
 /* ── DFC ── */
 .dfc-table { width:100%; border-collapse:collapse; font-size:13px; }
 .dfc-table th { background:#faf9f7; padding:8px 12px; text-align:right; font-size:11px; font-weight:700; color:#57534e; text-transform:uppercase; letter-spacing:.4px; white-space:nowrap; border-bottom:2px solid #e7e5e4; }
@@ -1570,6 +1631,10 @@ body.menu-oculto .sidebar { transform:translateX(-248px); }
       <div class="nav-item active" onclick="showPage('dashboard')" id="nav-dashboard" style="margin-bottom:8px;">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
         Dashboard
+      </div>
+      <div class="nav-item" onclick="abrirAvisosVencimento()" id="nav-avisos-venc" style="margin-bottom:8px;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        Avisos de vencimento
       </div>
       <div class="nav-item" onclick="showPage('dre-demonstrativo')" id="nav-dre-demonstrativo">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
@@ -4365,6 +4430,30 @@ body.menu-oculto .sidebar { transform:translateX(-248px); }
     <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('modal-bfc-detalhe')">Fechar</button></div>
   </div>
 </div>
+<div class="modal-overlay" id="modal-avisos">
+  <div class="modal">
+    <div class="av-head">
+      <div>
+        <h2><span class="av-ico"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></span>Avisos de vencimento</h2>
+        <div class="av-sub" id="av-sub"></div>
+      </div>
+      <div class="av-head-ctrl">
+        <input type="text" id="av-busca" placeholder="Buscar fornecedor ou cliente..." oninput="renderAvisosVencimento()" />
+        <select id="av-dias" onchange="renderAvisosVencimento()"><option value="7">Próximos 7 dias</option><option value="15">Próximos 15 dias</option><option value="30">Próximos 30 dias</option></select>
+        <button class="av-x" onclick="closeModal('modal-avisos')" title="Fechar">×</button>
+      </div>
+    </div>
+    <div class="av-body" id="av-corpo"></div>
+    <div class="av-foot">
+      <span class="av-dica">✓ Marcar pago/recebido &nbsp;·&nbsp; ✎ Editar &nbsp;·&nbsp; 🗑 Excluir — a lista se atualiza sozinha.</span>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="btn btn-secondary" id="av-btn-pagar" onclick="closeModal('modal-avisos');showPage('apagar')">Abrir Contas a Pagar</button>
+        <button class="btn btn-secondary" id="av-btn-receber" onclick="closeModal('modal-avisos');showPage('areceber')">Abrir Contas a Receber</button>
+        <button class="btn btn-primary" onclick="closeModal('modal-avisos')">Fechar</button>
+      </div>
+    </div>
+  </div>
+</div>
 <div class="modal-overlay" id="modal-pago">
   <div class="modal" style="width:400px;">
     <div class="modal-title">Confirmar Pagamento</div>
@@ -6689,6 +6778,7 @@ async function trocarEmpresa(id) {
   atualizarTagsEmpresa();
   await loadAllData();
   renderPaginaAtual();
+  abrirAvisosAoEntrar();
 }
 
 // Empresa que deve ser gravada em um lançamento novo.
@@ -17313,6 +17403,151 @@ function _depoisDecisaoAprov(tipo) {
   if (tipo) _rerenderDemonstrativoAtual();
 }
 
+// ══════════════════════════════════════════════════════════
+// AVISOS DE VENCIMENTO — abre sempre ao entrar no sistema (e ao trocar de
+// empresa): contas a pagar e a receber atrasadas e as que vencem nos
+// próximos dias. Cada usuário só vê Pagar/Receber se tiver acesso à tela.
+// ══════════════════════════════════════════════════════════
+function _avPode(pg) {
+  if (!currentUser) return false;
+  if (currentUser.role === 'admin') return true;
+  return (currentUser.pages || []).includes(pg);
+}
+function _avDias(d) {
+  const [y, m, dd] = d.split('-').map(Number);
+  const [ty, tm, td] = today().split('-').map(Number);
+  return Math.round((Date.UTC(y, m - 1, dd) - Date.UTC(ty, tm - 1, td)) / 86400000);
+}
+const _avAba = { pagar: 'atr', receber: 'atr' };
+let _avTimer = null, _avSig = '';
+function _avDados() {
+  // garante que as parcelas são recalculadas com os dados atuais
+  if (typeof _parcCache !== 'undefined') _parcCache.ver = -1;
+  const hoje = today();
+  const dias = parseInt((document.getElementById('av-dias') || {}).value) || 7;
+  const busca = normText((document.getElementById('av-busca') || {}).value || '');
+  const limite = (() => { const d = new Date(); d.setDate(d.getDate() + dias); return d.toISOString().slice(0, 10); })();
+  const filtra = l => busca ? l.filter(x => normText(x.nome + ' ' + (x.det || '')).includes(busca)) : l;
+  const separa = lista => {
+    lista = filtra(lista);
+    return {
+      atrasadas: lista.filter(p => p.venc && p.venc < hoje).sort((a, b) => a.venc.localeCompare(b.venc)),
+      aVencer: lista.filter(p => p.venc && p.venc >= hoje && p.venc <= limite).sort((a, b) => a.venc.localeCompare(b.venc))
+    };
+  };
+  const pagar = _avPode('apagar') ? separa(getParcelas(false).map(p => ({
+    tipo: 'pagar', id: p.lancId, parc: p.parcIdx, venc: p.venc, valor: p.valParc || 0, fatura: p.cartaoFatura || '',
+    nome: p.cartaoFatura ? ccRotuloFatura(p.cartaoFatura) : (getFornNome(p.forn) || '—'),
+    det: [p.totalParc > 1 ? `Parcela ${p.parcIdx}/${p.totalParc}` : '', p.prod ? getProdNome(p.prod) : '', p.nf ? 'NF ' + p.nf : ''].filter(Boolean).join(' · ')
+  }))) : null;
+  const receber = _avPode('areceber') ? separa(getParcelasReceber(false).map(p => ({
+    tipo: 'receber', id: p.lancId, parc: p.parcIdx, venc: p.venc, valor: p.valParc || 0,
+    nome: getClienteNome(p.cliente) || '—',
+    det: [p.totalParc > 1 ? `Parcela ${p.parcIdx}/${p.totalParc}` : '', p.prod ? getProdVendaNome(p.prod) : '', p.nf ? 'NF ' + p.nf : ''].filter(Boolean).join(' · ')
+  }))) : null;
+  return { dias, pagar, receber };
+}
+const _AV_ICO = {
+  ok:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><polyline points="20 6 9 17 4 12"/></svg>',
+  ed:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>',
+  del: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>'
+};
+function _avAcao(acao, tipo, id, parc) {
+  if (tipo === 'pagar') {
+    if (acao === 'ok') marcarPago(id, parc);
+    else if (acao === 'ed') editLancamento(id);
+    else if (acao === 'del') deleteLancamento(id).then(() => renderAvisosVencimento());
+  } else {
+    if (acao === 'ok') marcarRecebido(id, parc);
+    else if (acao === 'ed') editLancReceber(id);
+    else if (acao === 'del') deleteLancReceber(id).then(() => renderAvisosVencimento());
+  }
+}
+function _avSetAba(tipo, aba) { _avAba[tipo] = aba; renderAvisosVencimento(); }
+function renderAvisosVencimento() {
+  const corpo = document.getElementById('av-corpo');
+  if (!corpo) return null;
+  const { dias, pagar, receber } = _avDados();
+  const soma = l => l.reduce((s, x) => s + x.valor, 0);
+  const pill = venc => {
+    if (parseInt(venc.slice(0, 4)) > 2100 || parseInt(venc.slice(0, 4)) < 1990) return '<span class="av-pill inv" title="Verifique a data de vencimento deste lançamento">⚠ data inválida</span>';
+    const d = _avDias(venc);
+    if (d < 0) return `<span class="av-pill atr">${-d} dia${d === -1 ? '' : 's'} em atraso</span>`;
+    if (d === 0) return '<span class="av-pill hoje">vence hoje</span>';
+    return `<span class="av-pill ven">em ${d} dia${d === 1 ? '' : 's'}</span>`;
+  };
+  const acoes = x => {
+    const a = `'${x.tipo}','${x.id}',${x.parc}`;
+    if (x.fatura) return `<div class="av-acts"><button class="av-btn cc" onclick="closeModal('modal-avisos');ccIrParaFatura('${x.fatura}')" title="A fatura do cartão é paga e alterada na tela do cartão">💳 Ver fatura</button></div>`;
+    return `<div class="av-acts">
+      <button class="av-btn ok" onclick="_avAcao('ok',${a})" title="${x.tipo === 'pagar' ? 'Marcar como pago' : 'Marcar como recebido'}">${_AV_ICO.ok}</button>
+      <button class="av-btn" onclick="_avAcao('ed',${a})" title="Editar lançamento">${_AV_ICO.ed}</button>
+      <button class="av-btn del" onclick="_avAcao('del',${a})" title="Excluir lançamento">${_AV_ICO.del}</button>
+    </div>`;
+  };
+  const tabela = (lista, vazio) => lista.length
+    ? `<div class="av-lista"><table><thead><tr><th>Vencimento</th><th>${lista[0].tipo === 'pagar' ? 'Fornecedor' : 'Cliente'}</th><th>Situação</th><th class="r">Valor</th><th class="r">Ações</th></tr></thead><tbody>
+      ${lista.map(x => `<tr><td class="d">${fmtDate(x.venc)}</td><td class="n">${x.nome}${x.det ? `<small>${x.det}</small>` : ''}</td><td>${pill(x.venc)}</td><td class="v">${fmtBRL(x.valor)}</td><td>${acoes(x)}</td></tr>`).join('')}
+      </tbody></table></div>`
+    : `<div class="av-vazio"><b>✓</b>${vazio}</div>`;
+  const card = (tipo, titulo, cor, d) => {
+    const aba = _avAba[tipo];
+    const lista = aba === 'atr' ? d.atrasadas : d.aVencer;
+    const verbo = tipo === 'pagar' ? 'pagamento' : 'recebimento';
+    return `<div class="av-card">
+      <div class="av-card-h"><h3><i style="background:${cor}"></i>${titulo}</h3>
+        <div class="av-tabs">
+          <button class="av-tab ${aba === 'atr' ? 'on' : ''}" onclick="_avSetAba('${tipo}','atr')">Em atraso<span class="n atr">${d.atrasadas.length}</span></button>
+          <button class="av-tab ${aba === 'ven' ? 'on' : ''}" onclick="_avSetAba('${tipo}','ven')">A vencer · ${dias}d<span class="n ven">${d.aVencer.length}</span></button>
+        </div></div>
+      ${tabela(lista, aba === 'atr' ? `Nenhum ${verbo} em atraso.` : `Nenhum ${verbo} vencendo nos próximos ${dias} dias.`)}
+      <div class="av-tot"><span>${lista.length} parcela(s)</span><span>Total: <b>${fmtBRL(soma(lista))}</b></span></div>
+    </div>`;
+  };
+  const kpi = (cls, lbl, lista) => `<div class="av-kpi ${cls}"><div class="lbl">${lbl}</div><div class="val">${fmtBRL(soma(lista))}</div><div class="qtd">${lista.length} parcela(s)</div></div>`;
+  const kpis = [], cols = [];
+  if (pagar) { kpis.push(kpi('atr', 'A pagar · em atraso', pagar.atrasadas), kpi('ven', `A pagar · próximos ${dias} dias`, pagar.aVencer)); cols.push(card('pagar', 'Contas a Pagar', '#dc2626', pagar)); }
+  if (receber) { kpis.push(kpi('atr', 'A receber · em atraso', receber.atrasadas), kpi('ven', `A receber · próximos ${dias} dias`, receber.aVencer)); cols.push(card('receber', 'Contas a Receber', '#16a34a', receber)); }
+  corpo.innerHTML = cols.length
+    ? `<div class="av-kpis" style="grid-template-columns:repeat(${kpis.length},1fr)">${kpis.join('')}</div><div class="av-cols" style="grid-template-columns:repeat(${cols.length},1fr)">${cols.join('')}</div>`
+    : '<div class="av-vazio">Seu usuário não tem acesso a Contas a Pagar nem a Contas a Receber.</div>';
+  const sub = document.getElementById('av-sub');
+  if (sub) { const [y, m, d] = today().split('-'); sub.textContent = `Posição em ${d}/${m}/${y}` + (typeof empresaAtual === 'function' && empresaAtual() && typeof empresaNome === 'function' ? ' · ' + empresaNome(empresaAtual()) : ''); }
+  const bp = document.getElementById('av-btn-pagar'), br = document.getElementById('av-btn-receber');
+  if (bp) bp.style.display = pagar ? '' : 'none';
+  if (br) br.style.display = receber ? '' : 'none';
+  _avSig = _avAssinatura();
+  return { pagar, receber };
+}
+// Atualiza a lista sozinha depois de pagar/editar/excluir (enquanto a janela está aberta)
+function _avAssinatura() {
+  return [typeof _dbVer !== 'undefined' ? _dbVer : '', db.lancamentos.length, db.lancreceber.length,
+    document.querySelectorAll('.modal-overlay.open').length].join('|');
+}
+function _avMonitorar() {
+  clearInterval(_avTimer);
+  _avTimer = setInterval(() => {
+    const m = document.getElementById('modal-avisos');
+    if (!m || !m.classList.contains('open')) { clearInterval(_avTimer); _avTimer = null; return; }
+    if (_avAssinatura() !== _avSig) renderAvisosVencimento();
+  }, 700);
+}
+function abrirAvisosVencimento() {
+  const r = renderAvisosVencimento();
+  if (!r || (!r.pagar && !r.receber)) return;
+  openModal('modal-avisos');
+  _avMonitorar();
+}
+// Ao entrar: só abre se o usuário tiver acesso a pagar/receber.
+function abrirAvisosAoEntrar() {
+  try {
+    const nav = document.getElementById('nav-avisos-venc');
+    if (nav) nav.style.display = (_avPode('apagar') || _avPode('areceber')) ? '' : 'none';
+    if (!_avPode('apagar') && !_avPode('areceber')) return;
+    abrirAvisosVencimento();
+  } catch (e) { console.warn('[AVISOS] falha ao abrir avisos de vencimento:', e); }
+}
+
 async function initApp() {
   await loadAllData();
   await fixaEstenderIndeterminadas();
@@ -17371,6 +17606,7 @@ async function initApp() {
   aplicarFiltrosPadraoMesAno();
   applyNavPermissions();
   iniciarMonitorAprov();
+  setTimeout(abrirAvisosAoEntrar, 800);
   // Backup automático diário: roda em segundo plano, sem travar a tela
   // nem avisar o usuário; só baixa algo se ainda não tiver rodado hoje.
   // Restrito ao usuário admin (outros perfis não disparam o backup).
