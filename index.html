@@ -24417,11 +24417,10 @@ function fecharDetalhesPgto() { closeModal('modal-pgd'); _pgd = null; }
 async function _pgdCarregarLogs() {
   if (!_pgd) return;
   const tk = _pgd.token;
-  const r = await sbFetch('auditoria_pagamentos', 'GET', null,
-    `?tipo=eq.${_pgd.tipo}&lanc_id=eq.${encodeURIComponent(_pgd.lancId)}&order=data_hora.desc&limit=500`);
+  const r = await _audListar(_pgd.tipo, _pgd.lancId);
   if (!_pgd || _pgd.token !== tk) return;
   window._pgdAuditOk = r !== null;
-  window._pgdAuditErro = r === null ? _audErroTexto() : '';
+  window._pgdAuditErro = r === null ? (window._pgdAuditErro || _audErroTexto()) : '';
   const comp = _compDaParcela(_pgd.tipo, _pgd.lancId, _pgd.parc);
   const parcs = comp ? comp.parcelas.map(Number) : [_pgd.parc];
   _pgd.logs = (r || []).filter(x => x.parcela == null || parcs.includes(Number(x.parcela)));
@@ -24435,7 +24434,7 @@ async function _pgdLog(acao, detalhe, motivo, antes, depois) {
     usuario: _quem() + (currentUser && currentUser.user && currentUser.nome ? ` (${currentUser.user})` : ''),
     acao, detalhe: detalhe || '', motivo: motivo || '', antes: antes || null, depois: depois || null
   };
-  return !!(await sbFetch('auditoria_pagamentos', 'POST', reg));
+  return _audInserir(reg);
 }
 
 // ── Situação de cada cheque (para fiscalização) ───────────────────
@@ -25076,10 +25075,50 @@ let _fch = null;
 
 async function _audVerificar() {
   if (window._pgdAuditOk !== null && window._pgdAuditOk !== undefined) return window._pgdAuditOk;
-  const r = await sbFetch('auditoria_pagamentos', 'GET', null, '?limit=1');
-  window._pgdAuditOk = r !== null;
-  window._pgdAuditErro = r === null ? _audErroTexto() : '';
+  window._pgdAuditOk = !!(await _audDetectar());
   return window._pgdAuditOk;
+}
+// ── Onde a auditoria é gravada ─────────────────────────────────────
+// Preferência: tabela "auditoria_pagamentos". Se ela NÃO existir no banco,
+// a auditoria vai para a tabela "config" (que o sistema já usa), com a
+// chave "audpg:<tipo>:<lançamento>:<id>" — assim as edições não ficam
+// travadas e toda alteração continua registrada.
+window._audModo = null; // 'tabela' | 'config' | null (indisponível)
+async function _audDetectar() {
+  if (window._audModo) return window._audModo;
+  const r = await sbFetch('auditoria_pagamentos', 'GET', null, '?limit=1');
+  if (r !== null) { window._pgdAuditErro = ''; return (window._audModo = 'tabela'); }
+  const erroTabela = _audErroTexto();
+  const e = window.SB_ULTIMO_ERRO;
+  const naoExiste = e && e.table === 'auditoria_pagamentos' &&
+    (e.status === 404 || /could not find the table|does not exist/i.test(e.detalhe || ''));
+  if (naoExiste) {
+    const c = await sbFetch('config', 'GET', null, '?key=eq.__audpg_teste&select=id');
+    if (c !== null) { window._pgdAuditErro = ''; return (window._audModo = 'config'); }
+  }
+  window._pgdAuditErro = erroTabela;
+  return null;
+}
+async function _audInserir(reg) {
+  const modo = await _audDetectar();
+  if (modo === 'tabela') return !!(await sbFetch('auditoria_pagamentos', 'POST', reg));
+  if (modo === 'config') {
+    const rec = Object.assign({ data_hora: new Date().toISOString() }, reg);
+    return !!(await sbFetch('config', 'POST', { id: reg.id, key: `audpg:${reg.tipo}:${reg.lanc_id}:${reg.id}`, value: JSON.stringify(rec) }));
+  }
+  return false;
+}
+async function _audListar(tipo, lancId) {
+  const modo = await _audDetectar();
+  if (modo === 'tabela') return sbFetch('auditoria_pagamentos', 'GET', null,
+    `?tipo=eq.${tipo}&lanc_id=eq.${encodeURIComponent(lancId)}&order=data_hora.desc&limit=500`);
+  if (modo === 'config') {
+    const rows = await sbFetch('config', 'GET', null, `?key=like.${encodeURIComponent(`audpg:${tipo}:${lancId}:`)}*&limit=5000`);
+    if (rows === null) return null;
+    return rows.map(x => { try { return JSON.parse(x.value); } catch (e) { return null; } })
+      .filter(Boolean).sort((a, b) => String(b.data_hora || '').localeCompare(String(a.data_hora || '')));
+  }
+  return null;
 }
 // Texto do erro que o Supabase devolveu ao acessar a tabela de auditoria
 function _audErroTexto() {
@@ -25101,7 +25140,7 @@ async function _audLog(tipo, lancId, parcela, acao, detalhe, motivo, antes, depo
     usuario: _quem() + (currentUser && currentUser.user && currentUser.nome ? ` (${currentUser.user})` : ''),
     acao, detalhe: detalhe || '', motivo: motivo || '', antes: antes || null, depois: depois || null
   };
-  return !!(await sbFetch('auditoria_pagamentos', 'POST', reg));
+  return _audInserir(reg);
 }
 function _fchDatalists() {
   const dlE = document.getElementById('chq-emitentes');
