@@ -5138,6 +5138,25 @@ body.menu-oculto .sidebar { transform:translateX(-248px); }
   </div>
 </div>
 
+<div class="modal-overlay" id="modal-chq-banco" style="z-index:205">
+  <div class="modal" style="width:1100px;max-width:96vw">
+    <div class="modal-title" id="chqb-titulo">Cheques da conta</div>
+    <div id="chqb-resumo"></div>
+    <div style="display:flex;gap:8px;align-items:center;margin:10px 0">
+      <div class="chq-busca" style="flex:1"><span>🔍</span><input id="chqb-busca" type="text" placeholder="Buscar nº, emitente, cliente ou banco…" oninput="renderChequesDoBanco()" /></div>
+      <button class="btn btn-secondary btn-sm" onclick="chqBancoExcel()" title="Exportar a lista com totais em Excel">📊 Excel</button>
+      <button class="btn btn-secondary btn-sm" onclick="chqBancoPdf()" title="Imprimir / salvar em PDF com totais">🖨 PDF</button>
+      <button class="btn btn-secondary btn-sm" id="chqb-btn-lancar" onclick="abrirChequesSaldoInicial(_chqBancoId)">+ Lançar cheques (saldo inicial)</button>
+    </div>
+    <div class="table-scroll" style="max-height:55vh;overflow:auto"><table class="chq-tab">
+      <thead><tr><th>Nº do cheque</th><th>Banco</th><th>Emitente</th><th>Recebido de</th><th>Entrada</th><th>Bom para</th><th>Situação</th><th style="text-align:right">Valor</th><th style="text-align:right">Ações</th></tr></thead>
+      <tbody id="chqb-tb"></tbody>
+      <tfoot id="chqb-tf"></tfoot>
+    </table></div>
+    <div class="modal-footer"><button class="btn btn-secondary" onclick="fecharChequesDoBanco()">Fechar</button></div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="modal-chq-hist" style="z-index:250">
   <div class="modal" style="width:560px">
     <div class="modal-title" id="chqh-titulo">Histórico do cheque</div>
@@ -16070,7 +16089,9 @@ function renderBancos() {
         </div>
       </div>
       <div class="banco-saldo">
-        <div class="banco-saldo-val ${saldoCls}">${fmtBRL(saldo)}</div>
+        ${(typeof _bancoEhCustodia === 'function' && _bancoEhCustodia(b))
+          ? `<div class="banco-saldo-val ${saldoCls}" style="cursor:pointer;text-decoration:underline dotted;text-underline-offset:4px" onclick="abrirChequesDoBanco('${b.id}')" title="Ver os cheques que compõem este saldo">${fmtBRL(saldo)}</div>`
+          : `<div class="banco-saldo-val ${saldoCls}">${fmtBRL(saldo)}</div>`}
         <div class="banco-saldo-lbl">Saldo estimado</div>
         ${(typeof chqSaldoInicialDoBanco === 'function' && chqSaldoInicialDoBanco(b.id) > 0) ? `<div class="banco-saldo-lbl" style="color:#ea580c">inclui ${fmtBRL(chqSaldoInicialDoBanco(b.id))} de cheques (saldo inicial)</div>` : ''}
       </div>
@@ -22347,6 +22368,7 @@ function _chqPosAlteracaoRender(tipo, lancId) {
   renderDashboard();
   if (paginaVisivel('bancos')) { renderBancos(); renderFluxoBancoDiario(); }
   if (paginaVisivel('transferencias')) renderTransferencias();
+  if (typeof renderChequesDoBanco === 'function') renderChequesDoBanco();
   if (lancId) _aposEditarLancamento(lancId);
 }
 
@@ -23017,6 +23039,364 @@ async function salvarChequesSaldoInicial() {
 }
 function _podeExcluirChqSI(q) {
   return _ehChqSaldoInicial(q) && q.status === 'carteira' && !q.comp_pagar_id;
+}
+// ── Bancos → clique no saldo: cheques em carteira que compõem o saldo da conta ──
+let _chqBancoId = null;
+function abrirChequesDoBanco(bancoId) {
+  if (!_chqExigeTabelas()) return;
+  _chqBancoId = bancoId;
+  _chqbObservarFilhas();
+  const bus = document.getElementById('chqb-busca'); if (bus) bus.value = '';
+  const btn = document.getElementById('chqb-btn-lancar'); if (btn) btn.style.display = _chqSIBloqueado() ? 'none' : '';
+  document.getElementById('chqb-titulo').textContent = '🧾 Cheques em carteira — ' + getBancoNome(bancoId);
+  renderChequesDoBanco();
+  openModal('modal-chq-banco');
+}
+function fecharChequesDoBanco() { closeModal('modal-chq-banco'); _chqBancoId = null; window._chqbDifAberto = false; }
+function _chqbBtn(txt, acao, perigo) {
+  return `<button type="button" class="btn ${perigo ? 'btn-danger' : 'btn-secondary'} btn-sm" style="padding:2px 8px;font-size:11px;margin-left:4px" onclick="event.stopPropagation();${_e(acao).replace(/"/g, '&quot;')}">${txt}</button>`;
+}
+// Editores que ficam por baixo desta tela: esconde a tela de cheques, abre o
+// editor e, quando ele fechar, reabre a tela de cheques já atualizada.
+function _chqbAbrirEditor(modalId, abrir) {
+  const meu = document.getElementById('modal-chq-banco');
+  const alvo = document.getElementById(modalId);
+  meu.classList.remove('open');
+  try { abrir(); } catch (e) { console.error(e); }
+  if (!alvo || !alvo.classList.contains('open')) { meu.classList.add('open'); renderChequesDoBanco(); return; }
+  const obs = new MutationObserver(() => {
+    if (alvo.classList.contains('open')) return;
+    obs.disconnect();
+    if (_chqBancoId) { meu.classList.add('open'); renderChequesDoBanco(); }
+  });
+  obs.observe(alvo, { attributes: true, attributeFilter: ['class'] });
+}
+async function _chqbExcluirTransf(id) {
+  await deleteTransferencia(id);
+  renderChequesDoBanco();
+}
+// Telas que abrem por cima desta (ficha, detalhes, extrato): ao fechar, atualiza
+function _chqbObservarFilhas() {
+  if (window._chqbObsOk) return; window._chqbObsOk = true;
+  ['modal-fch', 'modal-pgd', 'modal-terc-extrato'].forEach(mid => {
+    const el = document.getElementById(mid); if (!el) return;
+    new MutationObserver(() => {
+      if (!el.classList.contains('open') && _chqBancoId) renderChequesDoBanco();
+    }).observe(el, { attributes: true, attributeFilter: ['class'] });
+  });
+}
+// Conciliação exata: agrupa tudo o que mexe no saldo da conta e na carteira de
+// cheques dela por operação (venda, pagamento, compensação, transferência…).
+// Diferença da operação = efeito no saldo − efeito na carteira. A soma das
+// diferenças é exatamente "Outros valores (sem cheque)".
+function _chqbConciliar(banco) {
+  const id = banco.id;
+  const ops = new Map();
+  const baseDaChave = k => k.startsWith('R:') ? { tipo: 'receber', lancId: k.slice(2) } : k.startsWith('P:') ? { tipo: 'pagar', lancId: k.slice(2) } : k.startsWith('C:') ? { tipo: 'comp', chqId: k.slice(2) } : {};
+  const op = (k, base) => {
+    if (!ops.has(k)) ops.set(k, Object.assign({ k, saldo: 0, chq: 0, itens: [], d: '' }, baseDaChave(k)));
+    const o = ops.get(k);
+    Object.entries(base || {}).forEach(([c, v]) => { if (o[c] == null) o[c] = v; });
+    return o;
+  };
+  const add = (k, base, campo, v, txt, d) => {
+    const o = op(k, base); o[campo] = _r2(o[campo] + v); o.itens.push(txt);
+    if (d && (!o.d || d > o.d)) o.d = d;
+  };
+  const compPorId = new Map((db.composicoes || []).map(c => [c.id, c]));
+  const kComp = c => c ? (c.tipo === 'pagar' ? 'P:' : 'R:') + c.lanc_id : null;
+  const baseLanc = (tipo, lancId) => ({ tipo, lancId });
+  // transferências e saldos com terceiros ligados a uma operação
+  const trOp = new Map(), ledOp = new Map();
+  (db.composicoes || []).forEach(c => {
+    (c.transf_ids || []).forEach(t => trOp.set(t, kComp(c)));
+    (c.ledger_ids || []).forEach(e => ledOp.set(e, kComp(c)));
+  });
+  db.cheques.forEach(q => { if (q.transf_id && !trOp.has(q.transf_id)) trOp.set(q.transf_id, 'C:' + q.id); });
+
+  if (Number(banco.saldo_inicial)) add('BANCO', { tipo: 'banco' }, 'saldo', Number(banco.saldo_inicial), 'Saldo inicial no cadastro da conta', '');
+
+  // cheques guardados nesta conta: entrada (+) e saída (−) da carteira
+  db.cheques.filter(q => q.banco_custodia === id).forEach(q => {
+    const v = Number(q.valor) || 0;
+    let kE, bE;
+    if (_ehChqSaldoInicial(q)) { kE = 'SI:' + q.id; bE = { tipo: 'si', chqId: q.id }; add(kE, bE, 'saldo', v, `Cheque nº ${q.numero} lançado como saldo inicial`, q.dt_entrada); }
+    else if (q.lanc_receber_id) { kE = 'R:' + q.lanc_receber_id; bE = baseLanc('receber', q.lanc_receber_id); }
+    else if (compPorId.has(q.comp_receber_id)) { const c = compPorId.get(q.comp_receber_id); kE = kComp(c); bE = baseLanc(c.tipo, c.lanc_id); }
+    else { kE = 'CE:' + q.id; bE = { tipo: 'chq', chqId: q.id }; }
+    add(kE, bE, 'chq', v, `Cheque nº ${q.numero} entrou na carteira (${fmtBRL(v)})`, q.dt_entrada);
+    if (q.status !== 'carteira') {
+      let kS, bS;
+      const cp = q.comp_pagar_id && compPorId.get(q.comp_pagar_id);
+      if (q.destino_tipo === 'pagamento' && (q.destino_lanc || cp)) { const lid = q.destino_lanc || cp.lanc_id; kS = 'P:' + lid; bS = baseLanc('pagar', lid); }
+      else { kS = 'C:' + q.id; bS = { tipo: 'comp', chqId: q.id }; }
+      const rot = q.destino_tipo === 'deposito' ? 'depositado' : q.destino_tipo === 'resgate' ? 'resgatado' : q.destino_tipo === 'pagamento' ? 'usado em pagamento' : 'baixado (outro)';
+      add(kS, bS, 'chq', -v, `Cheque nº ${q.numero} saiu da carteira — ${rot}${q.destino_banco ? ' em ' + getBancoNome(q.destino_banco) : ''}`, q.dt_compensacao);
+    }
+  });
+
+  getParcelasReceber(true).filter(p => p.banco === id && p.dtrecebido).forEach(p => {
+    add('R:' + p.lancId, Object.assign(baseLanc('receber', p.lancId), { parcIdx: p.parcIdx }), 'saldo', p.valParc || 0,
+      `Recebido ${fmtBRL(p.valParc || 0)}${p.totalParc > 1 ? ` (parcela ${p.parcIdx}/${p.totalParc})` : ''}${p.tipoPag && p.tipoPag !== FORMA_COMPOSTA ? ' · ' + p.tipoPag : ''}`, p.dtrecebido);
+  });
+  getParcelas(true).filter(p => p.banco === id && p.dtpago).forEach(p => {
+    add('P:' + p.lancId, Object.assign(baseLanc('pagar', p.lancId), { parcIdx: p.parcIdx }), 'saldo', -(p.valParc || 0),
+      `Pago ${fmtBRL(p.valParc || 0)}${p.totalParc > 1 ? ` (parcela ${p.parcIdx}/${p.totalParc})` : ''}${p.tipoPag && p.tipoPag !== FORMA_COMPOSTA ? ' · ' + p.tipoPag : ''}`, p.dtpago);
+  });
+  (db.transferencias || []).filter(t => t.origem === id || t.destino === id).forEach(t => {
+    const v = t.destino === id ? (t.valor || 0) : -(t.valor || 0);
+    const k = trOp.get(t.id) || ('TR:' + t.id);
+    const o = op(k, k.startsWith('TR:') ? { tipo: 'transf', trId: t.id } : null);
+    if (!o.trIds) o.trIds = []; o.trIds.push(t.id);
+    add(k, null, 'saldo', v, `Transferência ${t.destino === id ? 'recebida de ' + getBancoNome(t.origem) : 'enviada para ' + getBancoNome(t.destino)} ${fmtBRL(t.valor || 0)}${t.obs ? ' · ' + t.obs : ''}`, t.data);
+  });
+  (db.conta_terceiros || []).filter(e => e.banco === id && e.caixa).forEach(e => {
+    const k = ledOp.get(e.id) || (e.comp_id && compPorId.has(e.comp_id) ? kComp(compPorId.get(e.comp_id)) : 'TE:' + e.id);
+    const nome = e.tipo === 'fornecedor' ? getFornNome(e.pessoa) : getClienteNome(e.pessoa);
+    add(k, k.startsWith('TE:') ? { tipo: 'terc', terc: e } : null, 'saldo', Number(e.caixa) || 0,
+      `Saldo com ${e.tipo === 'fornecedor' ? 'fornecedor' : 'cliente'} ${nome || '—'} ${fmtBRL(Number(e.caixa) || 0)}${e.obs ? ' · ' + e.obs : ''}`, e.data);
+  });
+
+  const lista = [...ops.values()].map(o => {
+    o.dif = _r2(o.saldo - o.chq);
+    // descrição e motivo
+    if (o.tipo === 'receber' || o.tipo === 'pagar') {
+      const l = (o.tipo === 'pagar' ? db.lancamentos : db.lancreceber).find(x => x.id === o.lancId);
+      o.desc = `${o.tipo === 'pagar' ? 'Pagamento' : 'Recebimento'} · ${(l && (o.tipo === 'pagar' ? getFornNome(l.forn) : getClienteNome(l.cliente))) || '—'}${l && l.nf ? ' · NF ' + l.nf : ''}`;
+      const temChq = o.itens.some(t => t.startsWith('Cheque nº'));
+      o.motivo = !temChq
+        ? (o.tipo === 'pagar' ? 'Pagamento feito por esta conta sem usar cheque' : 'Recebimento lançado nesta conta sem cheque (dinheiro, PIX, etc.)')
+        : (o.tipo === 'pagar' ? 'Valor pago diferente do valor dos cheques usados' : 'Valor recebido diferente do valor dos cheques');
+    } else if (o.tipo === 'comp') {
+      const q = db.cheques.find(x => x.id === o.chqId);
+      o.desc = `Cheque nº ${q ? q.numero : '?'}${q && q.emitente ? ' · ' + q.emitente : ''}`;
+      o.motivo = o.dif > 0 ? 'Cheque saiu da carteira mas o valor não saiu da conta (baixa "Outro" ou depósito na própria conta)' : 'Transferência da compensação maior que o cheque';
+    } else if (o.tipo === 'transf') { o.desc = 'Transferência manual'; o.motivo = 'Transferência sem cheque vinculado'; }
+    else if (o.tipo === 'terc') { o.desc = o.itens[0]; o.motivo = 'Ajuste com cliente/fornecedor sem venda/pagamento vinculado'; }
+    else if (o.tipo === 'banco') { o.desc = 'Cadastro da conta'; o.motivo = 'Saldo inicial digitado no cadastro (não é cheque)'; }
+    else if (o.tipo === 'chq') { o.desc = 'Cheque sem venda vinculada'; o.motivo = 'Cheque entrou na carteira sem lançamento no saldo'; }
+    else { o.desc = o.itens[0]; o.motivo = ''; }
+    return o;
+  });
+  return lista.filter(o => Math.abs(o.dif) >= 0.01).sort((a, b) => (a.d || '').localeCompare(b.d || ''));
+}
+function _chqbAcoesOp(o) {
+  if (o.tipo === 'receber') return _chqbBtn('✎ Editar', `_chqbAbrirEditor('modal-lancreceber', () => editLancReceber('${o.lancId}'))`) + (o.parcIdx ? _chqbBtn('🔍 Detalhes', `abrirDetalhesPgto('receber','${o.lancId}',${o.parcIdx})`) : '');
+  if (o.tipo === 'pagar') return _chqbBtn('✎ Editar', `_chqbAbrirEditor('modal-lanc', () => editLancamento('${o.lancId}'))`) + (o.parcIdx ? _chqbBtn('🔍 Detalhes', `abrirDetalhesPgto('pagar','${o.lancId}',${o.parcIdx})`) : '');
+  if (o.tipo === 'comp' || o.tipo === 'chq' || o.tipo === 'si') return _chqbBtn('✎ Ficha do cheque', `abrirFichaCheque('${o.chqId}','editar')`);
+  if (o.tipo === 'transf') return _chqbBtn('🗑 Excluir', `_chqbExcluirTransf('${o.trId}')`, true);
+  if (o.tipo === 'terc') return _chqbBtn('🔍 Abrir extrato', `abrirExtratoTerceiro('${o.terc.tipo}','${o.terc.pessoa}')`);
+  if (o.tipo === 'banco') return _chqbBtn('✎ Editar conta', `_chqbAbrirEditor('modal-banco', () => editBanco('${_chqBancoId}'))`);
+  return '';
+}
+function _chqbExatoHtml(banco, saldo, totChq) {
+  const ops = _chqbConciliar(banco);
+  const tot = _r2(ops.reduce((s, o) => s + o.dif, 0));
+  const alvo = _r2(saldo - totChq);
+  const cor = v => v < 0 ? '#dc2626' : '#1f2937';
+  const mono = "font-family:'DM Mono',monospace";
+  return `<div style="margin-top:10px;border:1px solid #fdba74;background:#fff7ed;border-radius:10px;padding:12px 16px">
+    <div style="font-weight:700;margin-bottom:2px">Lançamentos que geram a diferença (${ops.length})</div>
+    <div style="font-size:11.5px;color:#78716c;margin-bottom:8px">Cada operação compara o que entrou/saiu do saldo da conta com o que entrou/saiu da carteira de cheques. Só aparecem as que não batem.</div>
+    <div style="max-height:320px;overflow:auto"><table class="comp-tab" style="width:100%">
+      <thead><tr><th style="width:84px">Data</th><th>Lançamento</th><th>Motivo</th><th style="text-align:right">No saldo</th><th style="text-align:right">Nos cheques</th><th style="text-align:right">Diferença</th><th></th></tr></thead>
+      <tbody>${ops.map(o => `<tr>
+        <td>${o.d ? fmtDate(o.d) : ''}</td>
+        <td><b>${_e(o.desc)}</b><div style="font-size:11px;color:#78716c">${o.itens.map(_e).join('<br>')}</div></td>
+        <td style="font-size:12px">${_e(o.motivo)}</td>
+        <td style="text-align:right;${mono};color:${cor(o.saldo)}">${fmtBRL(o.saldo)}</td>
+        <td style="text-align:right;${mono};color:${cor(o.chq)}">${fmtBRL(o.chq)}</td>
+        <td style="text-align:right;${mono};font-weight:700;color:${o.dif < 0 ? '#dc2626' : '#d97706'}">${fmtBRL(o.dif)}</td>
+        <td style="text-align:right;white-space:nowrap;width:1%">${_chqbAcoesOp(o)}</td></tr>`).join('') || '<tr><td colspan="7" class="empty-state">Nenhuma diferença encontrada.</td></tr>'}</tbody>
+      <tfoot><tr><td colspan="5" style="font-weight:700">TOTAL ${Math.abs(tot - alvo) < 0.01 ? '<span style="color:#16a34a;font-weight:600">✓ bate com "Outros valores"</span>' : `<span style="color:#dc2626">≠ Outros valores (${fmtBRL(alvo)})</span>`}</td><td style="text-align:right;${mono};font-weight:800">${fmtBRL(tot)}</td><td></td></tr></tfoot>
+    </table></div>
+  </div>`;
+}
+function chqbToggleDif() { window._chqbDifAberto = !window._chqbDifAberto; renderChequesDoBanco(); }
+// Composição do saldo da conta (mesmo cálculo de getBancoSaldo), separando o
+// que tem cheque do que não tem, para explicar "Outros valores (sem cheque)".
+function _chqbDifHtml(banco, saldo, totChq) {
+  const id = banco.id;
+  const soma = l => _r2(l.reduce((s, x) => s + (Number(x.v) || 0), 0));
+  const temChqComp = c => (c.cheque_ids || []).length || (c.linhas || []).some(x => x.tipo === 'cheque');
+  // ids de transferências geradas por cheques (compensação ou composição com cheque)
+  const trChq = new Set();
+  db.cheques.forEach(q => { if (q.transf_id) trChq.add(q.transf_id); });
+  (db.composicoes || []).filter(temChqComp).forEach(c => (c.transf_ids || []).forEach(t => trChq.add(t)));
+
+  const G = []; // { tit, sinal, itens:[{d, desc, v}], chq: bool, dica }
+  if (Number(banco.saldo_inicial)) G.push({ tit: 'Saldo inicial do cadastro da conta', chq: false, dica: 'Valor digitado em Bancos → Editar → Saldo inicial. Não corresponde a nenhum cheque.', itens: [{ d: '', desc: 'Saldo inicial (cadastro)', v: Number(banco.saldo_inicial), a: _chqbBtn('✎ Editar conta', `_chqbAbrirEditor('modal-banco', () => editBanco('${id}'))`) }] });
+
+  const si = db.cheques.filter(q => _ehChqSaldoInicial(q) && q.banco_custodia === id);
+  if (si.length) G.push({ tit: 'Cheques lançados como saldo inicial', chq: true, itens: si.map(q => ({ d: q.dt_entrada, desc: `Cheque nº ${q.numero} · ${q.emitente || '—'}${q.status !== 'carteira' ? ' (já saiu da carteira)' : ''}`, v: Number(q.valor) || 0, a: _chqbBtn('✎ Editar', `abrirFichaCheque('${q.id}','editar')`) })) });
+
+  const rec = getParcelasReceber(true).filter(p => p.banco === id && p.dtrecebido);
+  const recComChq = p => db.cheques.some(q => q.lanc_receber_id === p.lancId) || p.tipoPag === 'Cheque' || _compsDoLanc('receber', p.lancId).some(temChqComp);
+  const itRec = (l) => l.map(p => ({ d: p.dtrecebido, desc: `${getClienteNome(p.cliente) || '—'}${p.nf ? ' · NF ' + p.nf : ''}${p.tipoPag && p.tipoPag !== FORMA_COMPOSTA ? ' · ' + p.tipoPag : ''}`, v: p.valParc || 0, a: _chqbBtn('✎ Editar', `_chqbAbrirEditor('modal-lancreceber', () => editLancReceber('${p.lancId}'))`) + _chqbBtn('🔍 Detalhes', `abrirDetalhesPgto('receber','${p.lancId}',${p.parcIdx})`) }));
+  const recC = rec.filter(recComChq), recS = rec.filter(p => !recComChq(p));
+  if (recC.length) G.push({ tit: 'Recebimentos com cheque', chq: true, itens: itRec(recC) });
+  if (recS.length) G.push({ tit: 'Recebimentos SEM cheque (dinheiro, PIX, etc.)', chq: false, dica: 'Recebimentos lançados nesta conta com outra forma que não cheque.', itens: itRec(recS) });
+
+  const pag = getParcelas(true).filter(p => p.banco === id && p.dtpago);
+  const pagComChq = p => db.cheques.some(q => q.destino_lanc === p.lancId) || _compsDoLanc('pagar', p.lancId).some(temChqComp);
+  const itPag = (l) => l.map(p => ({ d: p.dtpago, desc: `${getFornNome(p.forn) || '—'}${p.nf ? ' · NF ' + p.nf : ''}${p.tipoPag && p.tipoPag !== FORMA_COMPOSTA ? ' · ' + p.tipoPag : ''}`, v: -(p.valParc || 0), a: _chqbBtn('✎ Editar', `_chqbAbrirEditor('modal-lanc', () => editLancamento('${p.lancId}'))`) + _chqbBtn('🔍 Detalhes', `abrirDetalhesPgto('pagar','${p.lancId}',${p.parcIdx})`) }));
+  const pagC = pag.filter(pagComChq), pagS = pag.filter(p => !pagComChq(p));
+  if (pagC.length) G.push({ tit: 'Pagamentos com cheque', chq: true, itens: itPag(pagC) });
+  if (pagS.length) G.push({ tit: 'Pagamentos SEM cheque', chq: false, dica: 'Pagamentos feitos por esta conta sem usar cheque.', itens: itPag(pagS) });
+
+  const tr = (db.transferencias || []).filter(t => t.origem === id || t.destino === id);
+  const itTr = l => l.map(t => ({ d: t.data, desc: (t.destino === id ? '← de ' + getBancoNome(t.origem) : '→ para ' + getBancoNome(t.destino)) + (t.obs ? ' · ' + t.obs : ''), v: t.destino === id ? (t.valor || 0) : -(t.valor || 0), a: _chqbBtn('🗑 Excluir', `_chqbExcluirTransf('${t.id}')`, true) }));
+  const trC = tr.filter(t => trChq.has(t.id) || /cheque n/i.test(t.obs || '')), trS = tr.filter(t => !(trChq.has(t.id) || /cheque n/i.test(t.obs || '')));
+  if (trC.length) G.push({ tit: 'Transferências de cheques (depósitos/compensações)', chq: true, itens: itTr(trC) });
+  if (trS.length) G.push({ tit: 'Transferências SEM cheque', chq: false, dica: 'Transferências manuais de/para esta conta.', itens: itTr(trS) });
+
+  const ter = (db.conta_terceiros || []).filter(e => e.banco === id && e.caixa);
+  if (ter.length) G.push({ tit: 'Saldos com clientes/fornecedores (excedentes, devoluções)', chq: false, dica: 'Diferenças de cheque maior/menor que a conta, devoluções em dinheiro etc.', itens: ter.map(e => ({ d: e.data, desc: `${e.tipo === 'fornecedor' ? getFornNome(e.pessoa) : getClienteNome(e.pessoa) || '—'}${e.obs ? ' · ' + e.obs : ''}`, v: Number(e.caixa) || 0, a: _chqbBtn('🔍 Abrir extrato', `abrirExtratoTerceiro('${e.tipo}','${e.pessoa}')`) })) });
+
+  // Cheques que saíram da carteira sem tirar o valor desta conta
+  const semSaida = db.cheques.filter(q => q.status === 'compensado' && q.banco_custodia === id && !q.transf_id && q.destino_tipo !== 'pagamento');
+  const totSemSaida = _r2(semSaida.reduce((s, q) => s + (Number(q.valor) || 0), 0));
+
+  const cor = v => v < 0 ? '#dc2626' : '#1f2937';
+  const linhaG = g => {
+    const t = soma(g.itens);
+    const itens = g.itens.slice().sort((a, b) => (a.d || '').localeCompare(b.d || ''));
+    return `<details style="border-bottom:1px solid #f0efed;padding:6px 0">
+      <summary style="cursor:pointer;display:flex;justify-content:space-between;gap:12px;align-items:center">
+        <span>${g.chq ? '<span class="badge badge-blue" style="font-size:10px">cheque</span>' : '<span class="badge" style="font-size:10px;background:#fef3c7;color:#92400e">sem cheque</span>'} <b>${_e(g.tit)}</b> <span style="color:#a8a29e;font-size:11px">(${g.itens.length})</span></span>
+        <span style="font-family:'DM Mono',monospace;font-weight:700;color:${cor(t)}">${fmtBRL(t)}</span>
+      </summary>
+      ${g.dica ? `<div style="font-size:11px;color:#78716c;margin:4px 0 4px 4px">${_e(g.dica)}</div>` : ''}
+      <div style="max-height:220px;overflow:auto;margin-top:4px"><table class="comp-tab" style="width:100%"><tbody>
+        ${itens.map(x => `<tr><td style="width:84px">${x.d ? fmtDate(x.d) : ''}</td><td>${_e(x.desc)}</td><td style="text-align:right;font-family:'DM Mono',monospace;color:${cor(x.v)}">${fmtBRL(x.v)}</td><td style="text-align:right;white-space:nowrap;width:1%">${x.a || ''}</td></tr>`).join('')}
+      </tbody></table></div>
+    </details>`;
+  };
+  const totSem = _r2(G.filter(g => !g.chq).reduce((s, g) => s + soma(g.itens), 0));
+  const conf = _r2(G.reduce((s, g) => s + soma(g.itens), 0));
+  return `<div style="margin-top:10px;border:1px solid #fde68a;background:#fffbeb;border-radius:10px;padding:12px 16px">
+    <div style="font-weight:700;margin-bottom:6px">Composição do saldo de ${_e(banco.nome)}</div>
+    ${G.map(linhaG).join('')}
+    <div style="display:flex;justify-content:space-between;padding:8px 0 2px;font-weight:700"><span>= Saldo estimado</span><span style="font-family:'DM Mono',monospace">${fmtBRL(conf)}</span></div>
+    <div style="display:flex;justify-content:space-between;padding:2px 0;color:#ea580c"><span>− Cheques em carteira</span><span style="font-family:'DM Mono',monospace">${fmtBRL(-totChq)}</span></div>
+    <div style="display:flex;justify-content:space-between;padding:2px 0 8px;font-weight:800;color:#d97706;border-bottom:1px solid #fde68a"><span>= Outros valores (sem cheque)</span><span style="font-family:'DM Mono',monospace">${fmtBRL(_r2(saldo - totChq))}</span></div>
+    <div style="font-weight:700;margin:10px 0 4px">Possíveis causas da diferença</div>
+    <ul style="margin:0;padding-left:18px;font-size:12.5px;line-height:1.7">
+      ${Number(banco.saldo_inicial) ? `<li>Saldo inicial no cadastro da conta: <b>${fmtBRL(Number(banco.saldo_inicial))}</b></li>` : ''}
+      ${semSaida.length ? `<li>${semSaida.length} cheque(s) saíram da carteira (baixa "Outro" ou depósito/resgate na própria conta) <b>sem tirar o valor desta conta</b>: <b>${fmtBRL(totSemSaida)}</b> — ${semSaida.slice(0, 10).map(q => `nº ${_e(q.numero)} (${fmtBRL(q.valor)})`).join(', ')}${semSaida.length > 10 ? '…' : ''}</li>` : ''}
+      ${G.filter(g => !g.chq && g.tit.indexOf('Saldo inicial do cadastro') !== 0).map(g => `<li>${_e(g.tit)}: <b>${fmtBRL(soma(g.itens))}</b></li>`).join('')}
+      <li style="color:#78716c">Total dos grupos sem cheque: <b>${fmtBRL(totSem)}</b>${semSaida.length ? ` · mais cheques baixados sem saída: <b>${fmtBRL(totSemSaida)}</b>` : ''}</li>
+    </ul>
+  </div>`;
+}
+function renderChequesDoBanco() {
+  if (!_chqBancoId) return;
+  const banco = db.bancos.find(b => b.id === _chqBancoId);
+  if (!banco) { fecharChequesDoBanco(); return; }
+  const busca = normText(document.getElementById('chqb-busca').value);
+  const todos = db.cheques.filter(q => q.status === 'carteira' && q.banco_custodia === _chqBancoId);
+  const lista = todos.filter(q => !busca || normText(`${q.numero} ${q.emitente} ${getClienteNome(q.cliente)} ${q.banco_cheque}`).includes(busca))
+    .sort((a, b) => (a.bom_para || '').localeCompare(b.bom_para || ''));
+  const soma = l => _r2(l.reduce((s, q) => s + (Number(q.valor) || 0), 0));
+  const saldo = _r2(getBancoSaldo(banco));
+  const totChq = soma(todos);
+  const outros = _r2(saldo - totChq);
+  window._chqbAtual = { banco, lista, todos, saldo, totChq, outros, busca: document.getElementById('chqb-busca').value.trim() };
+  const card =(lbl, val, cor, sub) => `<div class="comp-tot-item"><div class="lbl">${lbl}</div><div class="val" style="color:${cor}">${val}</div>${sub ? `<div style="font-size:11px;color:#78716c">${sub}</div>` : ''}</div>`;
+  document.getElementById('chqb-resumo').innerHTML = `<div style="display:flex;gap:28px;flex-wrap:wrap;align-items:flex-start;background:#fafaf9;border:1px solid #e7e5e4;border-radius:10px;padding:12px 16px">
+    ${card('Saldo estimado da conta', fmtBRL(saldo), saldo >= 0 ? '#16a34a' : '#dc2626')}
+    ${card('Cheques em carteira', fmtBRL(totChq), '#ea580c', `${todos.length} cheque(s)`)}
+    ${card('Outros valores (sem cheque)', fmtBRL(outros), Math.abs(outros) < 0.005 ? '#16a34a' : '#d97706', Math.abs(outros) < 0.005 ? 'saldo 100% comprovado por cheques' : 'dinheiro, lançamentos ou transferências sem cheque')}
+    ${Math.abs(outros) >= 0.005 ? `<div style="align-self:center;margin-left:auto"><button class="btn btn-secondary btn-sm" onclick="chqbToggleDif()">${window._chqbDifAberto ? '▲ Ocultar composição' : '🔎 Ver de onde vem a diferença'}</button></div>` : ''}
+  </div>
+  ${window._chqbDifAberto && Math.abs(outros) >= 0.005 ? _chqbExatoHtml(banco, saldo, totChq) + `<details style="margin-top:8px"><summary style="cursor:pointer;font-weight:600;color:#57534e">Ver composição completa do saldo</summary>${_chqbDifHtml(banco, saldo, totChq)}</details>` : ''}`;
+  const tb = document.getElementById('chqb-tb');
+  const tf = document.getElementById('chqb-tf');
+  if (!lista.length) {
+    tb.innerHTML = `<tr><td colspan="9" class="empty-state">${todos.length ? 'Nenhum cheque com essa busca.' : 'Nenhum cheque em carteira nesta conta.'}</td></tr>`;
+    tf.innerHTML = ''; return;
+  }
+  tb.innerHTML = lista.map(q => `<tr class="${q.devolvido ? 'chq-row-dev' : ''}">
+    <td><span class="chq-num">${_e(q.numero)}</span></td>
+    <td class="chq-mut">${_e(q.banco_cheque || '—')}</td>
+    <td>${_e(q.emitente || '—')}</td>
+    <td><b>${_e(getClienteNome(q.cliente) || '—')}</b>${_ehChqSaldoInicial(q) ? ' <span class="badge badge-blue" style="font-size:10px">saldo inicial</span>' : ''}</td>
+    <td>${fmtDate(q.dt_entrada)}</td>
+    <td>${fmtDate(q.bom_para)}</td>
+    <td>${q.devolvido ? `<span class="chq-st dev" title="${_e(q.motivo_devolucao || '')}">● Devolvido</span>` : '<span class="chq-st ok">● Em carteira</span>'}</td>
+    <td class="chq-val">${fmtBRL(q.valor)}</td>
+    <td class="actions" style="justify-content:flex-end;white-space:nowrap">
+      <button class="btn btn-primary btn-sm" onclick="abrirCompensarCheques(['${q.id}'])">Compensar</button>
+      <button class="btn btn-secondary btn-sm" onclick="abrirFichaCheque('${q.id}','editar')" title="Editar cheque">✎ Editar</button>
+      ${_podeExcluirChqSI(q)
+        ? `<button class="btn btn-danger btn-sm" onclick="excluirChequeSaldoInicial('${q.id}')" title="Excluir cheque de saldo inicial">🗑 Excluir</button>`
+        : `<button class="btn btn-danger btn-sm" disabled style="opacity:.4;cursor:not-allowed" title="Cheque veio de um recebimento de venda: para excluir, estorne o recebimento em Contas Recebidas">🗑 Excluir</button>`}
+      <button class="btn btn-secondary btn-sm" onclick="abrirFichaCheque('${q.id}')" title="Ficha completa e histórico">🔍</button>
+    </td></tr>`).join('');
+  tf.innerHTML = `<tr><td colspan="7">${lista.length} de ${todos.length} cheque(s)</td><td class="chq-val">${fmtBRL(soma(lista))}</td><td></td></tr>`;
+}
+function _chqbDados() {
+  renderChequesDoBanco();
+  const d = window._chqbAtual;
+  if (!d || !d.lista.length) { alert('Nenhum cheque para exportar.'); return null; }
+  return d;
+}
+function chqBancoPdf() {
+  const d = _chqbDados(); if (!d) return;
+  const hoje = today();
+  const tot = _r2(d.lista.reduce((s, q) => s + (Number(q.valor) || 0), 0));
+  const prontos = _r2(d.lista.filter(q => q.bom_para && q.bom_para <= hoje).reduce((s, q) => s + (Number(q.valor) || 0), 0));
+  const dev = _r2(d.lista.filter(q => q.devolvido).reduce((s, q) => s + (Number(q.valor) || 0), 0));
+  const linhas = d.lista.map(q => `<tr>
+    <td><b>${_e(q.numero)}</b>${q.banco_cheque ? `<div class="mut">${_e(q.banco_cheque)}</div>` : ''}</td>
+    <td>${_e(q.emitente || '—')}</td>
+    <td>${_e(getClienteNome(q.cliente) || '—')}${_ehChqSaldoInicial(q) ? ' <span class="tag tag-b">saldo inicial</span>' : ''}</td>
+    <td>${fmtDate(q.dt_entrada)}</td>
+    <td>${fmtDate(q.bom_para)}</td>
+    <td>${q.devolvido ? '<span class="tag tag-r">Devolvido</span>' : '<span class="tag tag-b">Em carteira</span>'}</td>
+    <td class="num">${fmtBRL(q.valor)}</td></tr>`);
+  _relAbrir({
+    titulo: 'Cheques da Conta', docTitulo: 'Cheques ' + getBancoNome(d.banco.id) + ' ' + hoje, orientacao: 'paisagem',
+    blocoHtml: `<div class="bloco"><div><div class="bloco-nome">Cheques em carteira — ${_e(getBancoNome(d.banco.id))}</div><div class="bloco-sub">${d.busca ? 'Busca: ' + _e(d.busca) : 'Todos os cheques em carteira da conta'}</div></div><div class="bloco-dir">Posição em<b>${fmtDate(hoje)}</b></div></div>`,
+    resumo: [['Saldo estimado da conta', fmtBRL(d.saldo)], ['Cheques em carteira (' + d.todos.length + ')', fmtBRL(d.totChq), 'cred'], ['Outros valores (sem cheque)', fmtBRL(d.outros)], ['Já podem ser depositados', fmtBRL(prontos), 'cred'], ['Devolvidos', fmtBRL(dev), 'deb']],
+    cabec: [['Nº / Banco', '', ''], ['Emitente', '', ''], ['Recebido de', '', ''], ['Entrada', '', '80px'], ['Bom para', '', '80px'], ['Situação', '', ''], ['Valor', 'num', '110px']],
+    linhas,
+    rodapeTabela: `<tfoot><tr><td colspan="6">TOTAL (${d.lista.length} cheque(s))</td><td class="num">${fmtBRL(tot)}</td></tr></tfoot>`,
+    rodapeEsq: 'Cheques de terceiros guardados na conta ' + getBancoNome(d.banco.id) + '.', rodapeDir: d.lista.length + ' cheque(s)'
+  });
+}
+async function chqBancoExcel() {
+  const d = _chqbDados(); if (!d) return;
+  try { await ccImpCarregarXLSX(); } catch (e) { alert('Não foi possível carregar o gerador de Excel (verifique a internet).'); return; }
+  const hoje = today();
+  const conta = getBancoNome(d.banco.id);
+  const tot = _r2(d.lista.reduce((s, q) => s + (Number(q.valor) || 0), 0));
+  const aoa = [
+    ['Cheques em carteira — ' + conta],
+    ['Posição em ' + fmtDate(hoje) + (d.busca ? ' · Busca: ' + d.busca : '')],
+    [],
+    ['Saldo estimado da conta', d.saldo],
+    ['Cheques em carteira (' + d.todos.length + ')', d.totChq],
+    ['Outros valores (sem cheque)', d.outros],
+    [],
+    ['Nº do cheque', 'Banco', 'Emitente', 'Recebido de', 'Entrada', 'Bom para', 'Situação', 'Origem', 'Valor (R$)']
+  ];
+  const ini = aoa.length;
+  d.lista.forEach(q => aoa.push([
+    q.numero || '', q.banco_cheque || '', q.emitente || '', getClienteNome(q.cliente) || '',
+    fmtDate(q.dt_entrada), fmtDate(q.bom_para), q.devolvido ? 'Devolvido' : 'Em carteira',
+    _ehChqSaldoInicial(q) ? 'Saldo inicial' : 'Recebimento', _r2(q.valor)
+  ]));
+  aoa.push(['TOTAL (' + d.lista.length + ' cheque(s))', '', '', '', '', '', '', '', tot]);
+  const ws = XLSX.utils.aoa_to_sheet(aoa);
+  const fmt = '#,##0.00;-#,##0.00';
+  [3, 4, 5].forEach(r => { const c = ws[XLSX.utils.encode_cell({ r, c: 1 })]; if (c) c.z = fmt; });
+  for (let r = ini; r <= aoa.length - 1; r++) { const c = ws[XLSX.utils.encode_cell({ r, c: 8 })]; if (c) c.z = fmt; }
+  ws['!cols'] = [{ wch: 26 }, { wch: 22 }, { wch: 30 }, { wch: 30 }, { wch: 11 }, { wch: 11 }, { wch: 12 }, { wch: 13 }, { wch: 15 }];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Cheques');
+  const nomeArq = ('Cheques ' + conta + ' ' + hoje).replace(/[\\/:*?"<>|]/g, '-') + '.xlsx';
+  XLSX.writeFile(wb, nomeArq);
 }
 async function excluirChequeSaldoInicial(id) {
   const q = db.cheques.find(x => x.id === id);
